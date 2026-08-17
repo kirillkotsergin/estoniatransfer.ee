@@ -27,10 +27,15 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
       </p>
     </div>
 
+    {/* Заголовки колонок подвала — <p>, а не <h2>.
+        Подвал стоит на каждой странице, и три постоянных H2 («Контакты»,
+        «Направления», «Полезное») смешивались с содержанием: на гиде из
+        пятнадцати H2 пять были служебными. Роль заголовка здесь берёт на себя
+        aria-label у <nav>, поэтому доступность не страдает. */}
     <div>
-      <h2 class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
+      <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
         {t("footer.contacts")}
-      </h2>
+      </p>
       <ul class="mt-4 grid gap-2 text-[0.95rem]">
         <li><a class="hover:text-brand-ink" href={facts.phoneHref}>{facts.phone}</a></li>
         <li><a class="hover:text-brand-ink" href={`mailto:${facts.email}`}>{facts.email}</a></li>
@@ -40,10 +45,10 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
       </div>
     </div>
 
-    <div>
-      <h2 class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
+    <nav aria-label={t("footer.routes")}>
+      <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
         {t("footer.routes")}
-      </h2>
+      </p>
       <ul class="mt-4 grid gap-2 text-[0.95rem]">
         {
           links.routes.map((l) => (
@@ -61,12 +66,12 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
           </a>
         </li>
       </ul>
-    </div>
+    </nav>
 
-    <div>
-      <h2 class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
+    <nav aria-label={t("footer.useful")}>
+      <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
         {t("footer.useful")}
-      </h2>
+      </p>
       <ul class="mt-4 grid gap-2 text-[0.95rem]">
         {
           links.guides.map((l) => (
@@ -82,7 +87,7 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
           <a class="hover:text-brand-ink" href={`${localePath(lang, "/")}#faq`}>{t("nav.faq")}</a>
         </li>
       </ul>
-    </div>
+    </nav>
   </div>
 
   <div class="border-t border-line">

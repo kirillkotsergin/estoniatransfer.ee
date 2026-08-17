@@ -42,7 +42,10 @@ const logo = {
     <p class="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
       {t("order.eyebrow")}
     </p>
-    <h2 id="fab-title" class="mt-2 text-2xl font-semibold tracking-tight">{t("fab.title")}</h2>
+    {/* <p>, а не <h2>: модалка есть на каждой странице, и её заголовок попадал
+        в структуру документа рядом с содержанием. Имя диалогу даёт
+        aria-labelledby, оно ссылается на этот же элемент. */}
+    <p id="fab-title" class="mt-2 text-2xl font-semibold tracking-tight">{t("fab.title")}</p>
     <p class="mt-3 text-[0.97rem] leading-relaxed text-ink-muted">
       <a class="font-semibold text-ink hover:text-brand-ink" href={facts.phoneHref}>
         {facts.phone}

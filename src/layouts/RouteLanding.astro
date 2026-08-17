@@ -210,6 +210,7 @@ const td = "px-4 py-3.5 align-top";
   title={c.title}
   description={c.description}
   ogDescription={c.ogDescription}
+  ogType={isGuide ? "article" : "website"}
 >
   {/* ─────────────── крошки ─────────────── */}
   <nav class={`${wrap} pt-6`} aria-label={lang === "ru" ? "Хлебные крошки" : "Breadcrumb"}>
@@ -278,9 +279,13 @@ const td = "px-4 py-3.5 align-top";
       {
         !isGuide && (
           <div class="reveal mt-8 max-w-3xl" style="--d:5">
-            <h2 class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
+            {/* Подпись к списку внутри героя, а не раздел страницы, поэтому <p>.
+                Как H2 она вставала перед настоящим H2 про цену и дублировала
+                его смысл — в структуре документа выглядело как два раздела
+                об одном и том же. */}
+            <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
               {t("perks.title")}
-            </h2>
+            </p>
             <ul class="mt-3 grid gap-2.5 sm:grid-cols-2">
               {perks.map((k) => (
                 <li class="flex items-start gap-2.5 text-[0.95rem]">

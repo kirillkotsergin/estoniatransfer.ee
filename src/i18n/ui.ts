@@ -23,6 +23,28 @@ export const languages = {
 export const defaultLang = "ru" as const;
 export type Lang = keyof typeof languages;
 
+/**
+ * Дата последнего заметного изменения сайта — идёт в `lastmod` карты сайта
+ * для главной. Ставим руками, а не `new Date()`: карта, у которой lastmod
+ * меняется от каждой пересборки, обесценивается — краулер перестаёт ей верить.
+ */
+export const siteUpdated = "2026-08-17";
+
+/**
+ * Подтверждение владения в панелях вебмастеров. Метатег выводится только если
+ * строка не пустая, поэтому пустые значения ничего не ломают.
+ *
+ * Google подтверждён TXT-записью в DNS, здесь его нет и не нужно.
+ * Bing питает ChatGPT Search и Copilot, Яндекс — Алису, поэтому обе панели
+ * стоит завести: код из панели вставляется сюда.
+ *
+ * ⚠️ Удалите значение — панель снимет подтверждение и доступ к данным пропадёт.
+ */
+export const verification = {
+  bing: "", // <meta name="msvalidate.01"> из Bing Webmaster Tools
+  yandex: "", // <meta name="yandex-verification"> из Яндекс.Вебмастера
+} as const;
+
 /** Цены, телефон и парк — в одном месте: правится один раз, меняется везде. */
 export const facts = {
   phone: "+372 56277764",
@@ -61,10 +83,12 @@ export const facts = {
 
 export const ui = {
   ru: {
-    "meta.title": "Индивидуальный трансфер Таллинн — граница | EstoniaTransfer",
-    // 157 знаков: описание длиннее ~160 в выдаче обрезается на полуслове
+    // 51 знак. Ключ впереди, бренда нет намеренно: его пока никто не ищет, а
+    // место в выдаче стоит отдать словам, которые люди вводят сами.
+    "meta.title": "Трансфер Таллинн — Нарва, Койдула, Лухамаа от 130 €",
+    // 147 знаков: описание длиннее ~160 в выдаче обрезается на полуслове
     "meta.description":
-      "Частный трансфер из Таллинна к погранпереходам Нарва, Койдула и Лухамаа: 130–160 € за автомобиль целиком. Встречаем в аэропорту и порту, выезд круглосуточно.",
+      "Индивидуальный трансфер из Таллинна до границы: Нарва 130 €, Койдула и Лухамаа 160 € за машину. Встречаем в аэропорту и порту, выезд круглосуточно.",
 
     "nav.routes": "Направления",
     "nav.car": "Автомобиль",
@@ -73,8 +97,11 @@ export const ui = {
     "nav.faq": "Вопросы",
 
     "hero.eyebrow": "Индивидуальный трансфер · Эстония",
-    "hero.title.1": "Личный трансфер",
-    "hero.title.2": "к погранпереходам Эстонии",
+    // H1 главной. Две части — это одна строка с переносом, а не два заголовка:
+    // вместе они дают «Трансфер из Таллинна к границе: Нарва, Койдула, Лухамаа»,
+    // то есть ровно то, что вводят в поиске.
+    "hero.title.1": "Трансфер из Таллинна",
+    "hero.title.2": "к границе: Нарва, Койдула, Лухамаа",
     "hero.lead":
       "Пассажирские перевозки из Таллинна к пунктам пропуска Нарва, Койдула и Лухамаа. Забираем от двери и довозим прямо к шлагбауму: без пересадок, без ожидания на автовокзале и без счётчика, который набегает в пробке.",
     "hero.cta": "Рассчитать поездку",
@@ -91,7 +118,7 @@ export const ui = {
     "perks.5": "Расчёт наличными водителю или переводом, предоплату не берём",
 
     "routes.eyebrow": "Цены",
-    "routes.title": "Направления и стоимость",
+    "routes.title": "Трансфер Нарва, Койдула и Лухамаа: направления и цены",
     "routes.lead":
       "Цена указана за машину целиком, а не за пассажира: поедет один человек или четверо — сумма та же. Нужен маршрут, которого нет в списке, или поездка в аэропорт — посчитаем отдельно.",
     "routes.narva": "Таллинн — Нарва",
@@ -139,7 +166,7 @@ export const ui = {
       "Привозим к самому шлагбауму. Границу вы проходите самостоятельно; если дальше нужна машина уже на российской стороне, скажите заранее — поможем состыковать.",
 
     "why.eyebrow": "Почему так",
-    "why.title": "Чем это отличается от такси и автобуса",
+    "why.title": "Чем трансфер отличается от такси и автобуса",
     "why.1.title": "Сумма известна заранее",
     "why.1.text":
       "Никакого счётчика: цену вы видите до выезда и платите ровно её, сколько бы времени ни заняла дорога.",
@@ -154,7 +181,7 @@ export const ui = {
       "Вы общаетесь с водителем, а не с диспетчером: договорённости не теряются при пересказе, а изменения решаются одним сообщением.",
 
     "car.eyebrow": "Автомобиль",
-    "car.title": "Toyota Corolla",
+    "car.title": "Toyota Corolla: машина для поездки к границе",
     "car.lead":
       "Одна машина и один водитель на всю поездку. Салон чистый: это личный автомобиль, а не сменная машина таксопарка.",
     "car.f1": "Четыре пассажирских места",
@@ -205,7 +232,7 @@ export const ui = {
     "form.nextMonth": "Следующий месяц",
 
     "faq.eyebrow": "Частые вопросы",
-    "faq.title": "Коротко о главном",
+    "faq.title": "Трансфер до границы: частые вопросы",
     "faq.q1": "Сколько стоит трансфер и что входит в эту сумму?",
     "faq.a1":
       "До Нарвы — 130 €, до Койдулы и Лухамаа — 160 € за автомобиль целиком. В сумму уже входят встреча с табличкой, помощь с багажом, детское кресло и ожидание рейса. Доплат за ночное время и количество чемоданов нет. Отдельно оплачивается только место в очереди на границе, если оно нужно: плюс 50 € к маршруту в Нарву.",
@@ -238,9 +265,9 @@ export const ui = {
 
   en: {
     // было 61 знак — Google обрезал хвост вместе с брендом
-    "meta.title": "Private Transfer Tallinn to the Border | EstoniaTransfer",
+    "meta.title": "Transfer Tallinn — Narva, Koidula, Luhamaa from €130",
     "meta.description":
-      "Private transfer from Tallinn to the Narva, Koidula and Luhamaa border crossings: €130–160 for the whole car. Airport and port pickup, departures at any hour.",
+      "Private transfer from Tallinn to the Russian border: Narva €130, Koidula and Luhamaa €160 per car. Airport and cruise port pickup, departures at any hour.",
 
     "nav.routes": "Routes",
     "nav.car": "Vehicle",
@@ -249,8 +276,8 @@ export const ui = {
     "nav.faq": "FAQ",
 
     "hero.eyebrow": "Private transfer · Estonia",
-    "hero.title.1": "Your own transfer",
-    "hero.title.2": "to Estonia's border crossings",
+    "hero.title.1": "Transfer from Tallinn",
+    "hero.title.2": "to the border: Narva, Koidula, Luhamaa",
     "hero.lead":
       "Passenger transport from Tallinn to the Narva, Koidula and Luhamaa checkpoints. We pick you up at the door and drive you right to the barrier — no changes, no waiting at a bus station, no meter ticking in traffic.",
     "hero.cta": "Get a price",
@@ -267,7 +294,7 @@ export const ui = {
     "perks.5": "Pay the driver in cash or by bank transfer; no prepayment required",
 
     "routes.eyebrow": "Prices",
-    "routes.title": "Routes and fares",
+    "routes.title": "Transfer to Narva, Koidula and Luhamaa: routes and fares",
     "routes.lead":
       "The price is for the whole car, not per seat: one passenger or four, the sum stays the same. Need a route that is not listed, or an airport run? We will quote it.",
     "routes.narva": "Tallinn — Narva",
@@ -314,7 +341,7 @@ export const ui = {
       "We bring you to the barrier itself. You cross the border on your own; if you need a car waiting on the Russian side, tell us in advance and we will help line it up.",
 
     "why.eyebrow": "Why this way",
-    "why.title": "How it differs from a taxi or a bus",
+    "why.title": "How a transfer differs from a taxi or a bus",
     "why.1.title": "The sum is known upfront",
     "why.1.text":
       "No meter: you see the price before departure and pay exactly that, however long the drive turns out to be.",
@@ -329,7 +356,7 @@ export const ui = {
       "No dispatcher in between: nothing gets lost in retelling, and any change is settled in a single message.",
 
     "car.eyebrow": "Vehicle",
-    "car.title": "Toyota Corolla",
+    "car.title": "Toyota Corolla: the car for your border run",
     "car.lead":
       "One car and one driver for the whole trip. The interior is clean because this is a private car, not a rotating taxi-fleet vehicle.",
     "car.f1": "Four passenger seats",
@@ -380,7 +407,7 @@ export const ui = {
     "form.nextMonth": "Next month",
 
     "faq.eyebrow": "FAQ",
-    "faq.title": "The short answers",
+    "faq.title": "Border transfer: common questions",
     "faq.q1": "What does the transfer cost and what is included?",
     "faq.a1":
       "Narva is €130; Koidula and Luhamaa are €160 for the whole car. The fare already covers the name-board pickup, help with luggage, a child seat and waiting for your flight. There is no surcharge for night trips or extra suitcases. The only extra is a booked slot in the border queue, if you want one: €50 on top of the Narva route.",

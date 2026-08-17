@@ -1,9 +1,18 @@
 ---
 import "../styles/global.css";
+import { getImage } from "astro:assets";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import OrderFab from "../components/OrderFab.astro";
-import { useTranslations, languages, defaultLang, localePath, type Lang } from "../i18n/ui";
+import ogSource from "../assets/car/car-1.jpg";
+import {
+  useTranslations,
+  languages,
+  defaultLang,
+  localePath,
+  verification,
+  type Lang,
+} from "../i18n/ui";
 
 interface Props {
   lang: Lang;
@@ -12,6 +21,8 @@ interface Props {
   description?: string;
   /** описание для соцсетей, если оно должно отличаться от meta description */
   ogDescription?: string;
+  /** website у страниц услуг, article у гида — от этого зависит вид карточки */
+  ogType?: "website" | "article";
   /**
    * Страница не должна попадать в индекс. Нужно 404-й: она отдаётся по любому
    * несуществующему адресу, и без noindex поисковик заводит в индексе столько
@@ -33,11 +44,32 @@ const {
   title,
   description,
   ogDescription,
+  ogType = "website",
   noindex = false,
   langs = allLangs,
 } = Astro.props;
 const t = useTranslations(lang);
 const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
+
+/**
+ * Картинка для карточки ссылки. Заказ идёт через WhatsApp и Telegram, и
+ * развёрнутая карточка с фото машины — это первое, что там видит пассажир;
+ * без og:image мессенджер показывает голый текст.
+ *
+ * Собирается из того же фото, что и галерея: 1200×630 — размер, который ждут
+ * Facebook, WhatsApp, Telegram и Twitter. Отдельный файл не нужен, Astro
+ * режет его на сборке. Адрес обязан быть абсолютным — краулеры соцсетей
+ * относительные пути не разворачивают.
+ */
+const ogImage = await getImage({
+  src: ogSource,
+  width: 1200,
+  height: 630,
+  fit: "cover",
+  position: "center",
+  format: "jpeg",
+});
+const ogImageUrl = new URL(ogImage.src, site).href;
 const pageTitle = title ?? t("meta.title");
 const pageDesc = description ?? t("meta.description");
 const canonical = new URL(localePath(lang, path), site).href;
@@ -50,7 +82,6 @@ const canonical = new URL(localePath(lang, path), site).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={pageDesc} />
-    <link rel="canonical" href={canonical} />
     <meta
       name="robots"
       content={
@@ -60,16 +91,22 @@ const canonical = new URL(localePath(lang, path), site).href;
       }
     />
 
+    {/* У noindex-страницы ни canonical, ни hreflang не ставим: 404-я отдаётся
+        по любому несуществующему адресу, и canonical на главную превращал бы
+        каждую опечатку в заявку «проиндексируй вместо неё главную». */}
+    {!noindex && <link rel="canonical" href={canonical} />}
+
     {/* Каждый язык — отдельный URL, плюс x-default. Без этого поисковик
         считает версии дублями, а не переводами. Список — только реально
         существующие переводы этой страницы. */}
     {
-      langs.map((l) => (
-        <link rel="alternate" hreflang={l} href={new URL(localePath(l, path), site).href} />
-      ))
+      !noindex &&
+        langs.map((l) => (
+          <link rel="alternate" hreflang={l} href={new URL(localePath(l, path), site).href} />
+        ))
     }
     {
-      langs.includes(defaultLang) && (
+      !noindex && langs.includes(defaultLang) && (
         <link
           rel="alternate"
           hreflang="x-default"
@@ -78,13 +115,30 @@ const canonical = new URL(localePath(lang, path), site).href;
       )
     }
 
-    <meta property="og:type" content="website" />
+    {/* Подтверждение владения в панелях вебмастеров. Пустое значение — тега нет.
+        Google подтверждён TXT-записью в DNS, здесь его быть и не должно. */}
+    {verification.bing && <meta name="msvalidate.01" content={verification.bing} />}
+    {verification.yandex && <meta name="yandex-verification" content={verification.yandex} />}
+
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content="EstoniaTransfer" />
     <meta property="og:locale" content={lang === "ru" ? "ru_RU" : "en_US"} />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={ogDescription ?? pageDesc} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content={String(ogImage.attributes.width ?? 1200)} />
+    <meta property="og:image:height" content={String(ogImage.attributes.height ?? 630)} />
+    <meta
+      property="og:image:alt"
+      content={
+        lang === "ru"
+          ? "Toyota Corolla EstoniaTransfer — трансфер из Таллинна к границе"
+          : "Toyota Corolla EstoniaTransfer — transfer from Tallinn to the border"
+      }
+    />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImageUrl} />
 
     <meta name="theme-color" content="#ffffff" />
 

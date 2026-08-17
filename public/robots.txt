@@ -1,9 +1,16 @@
 # Сайт открыт целиком: закрывать нечего.
+#
+# Отдельные группы для ИИ-краулеров технически ничего не меняют — правило * их
+# и так разрешает. Они нужны для двух вещей: чтобы намерение читалось
+# однозначно, и чтобы было куда поставить Disallow, если конкретный бот начнёт
+# мешать (свою группу бот предпочитает правилу *).
+#
+# Порядок групп значения не имеет. Пустая строка между группами обязательна.
+
 User-agent: *
 Allow: /
 
-# ИИ-ассистенты и их поисковые краулеры — разрешены явно, чтобы намерение
-# читалось однозначно и было куда поставить Disallow, если передумаем.
+# ─── OpenAI: ChatGPT и его поиск ───
 User-agent: GPTBot
 Allow: /
 
@@ -13,19 +20,86 @@ Allow: /
 User-agent: ChatGPT-User
 Allow: /
 
+# ─── Google: обучение моделей и AI Overviews ───
 User-agent: Google-Extended
 Allow: /
 
+User-agent: Googlebot
+Allow: /
+
+# ─── Anthropic ───
 User-agent: ClaudeBot
 Allow: /
 
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+# ─── Perplexity ───
 User-agent: PerplexityBot
 Allow: /
 
+User-agent: Perplexity-User
+Allow: /
+
+# ─── Apple, Microsoft, Amazon, Meta ───
 User-agent: Applebot
 Allow: /
 
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: bingbot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+# ─── Яндекс: индекс питает Алису и YandexGPT, аудитория русскоязычная ───
+User-agent: YandexBot
+Allow: /
+
+User-agent: YandexRenderResourcesBot
+Allow: /
+
+# ─── Прочие ассистенты и поисковики ───
+User-agent: MistralAI-User
+Allow: /
+
+User-agent: DuckAssistBot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+User-agent: MojeekBot
+Allow: /
+
+User-agent: SeznamBot
+Allow: /
+
+User-agent: PetalBot
+Allow: /
+
+User-agent: Ai2Bot
+Allow: /
+
+# Common Crawl: из его архива собирают обучающие наборы, а значит и знания
+# моделей о сервисе.
 User-agent: CCBot
+Allow: /
+
+# Краулер ByteDance, ходит жадно. Если начнёт мешать — Disallow ставить именно
+# в его группе, а не в общей.
+User-agent: Bytespider
 Allow: /
 
 Sitemap: https://estoniatransfer.ee/sitemap.xml

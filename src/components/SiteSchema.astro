@@ -1,0 +1,125 @@
+---
+/**
+ * Микроразметка главной страницы: один граф вместо россыпи отдельных блоков.
+ *
+ * Зачем: без него поисковик знает про сайт только из текста, а ИИ-поиску нечего
+ * цитировать структурно. `TaxiService` — подтип LocalBusiness, из него берутся
+ * телефон, зона обслуживания, цены и машина. `@id` у сущностей проставлены,
+ * чтобы страницы маршрутов могли на них ссылаться, а не описывать заново.
+ *
+ * Чего здесь намеренно нет:
+ * - `address` — точного адреса офиса у сервиса нет, а выдумывать его нельзя:
+ *   несуществующий адрес в разметке хуже отсутствующего.
+ * - `aggregateRating` — отзывов нет. Рейтинг без отзывов Google считает
+ *   нарушением и снимает расширенные сниппеты со всего сайта.
+ * - `openingHours` — работаем круглосуточно, это выражено через
+ *   `availableLanguage` и текст, а не через график.
+ *
+ * ПРОВЕРЬ: `availableLanguage` указан только `ru`. Если водитель говорит
+ * по-английски или по-эстонски — допишите `en`, `et`: по этому полю
+ * ассистенты отвечают на вопрос «а по-английски с ними можно?».
+ */
+import { facts, localePath, type Lang } from "../i18n/ui";
+import { landingsFor } from "../data/routes";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
+const home = new URL(localePath(lang, "/"), site).href;
+const org = `${site}/#business`;
+
+const routeNames: Record<string, { ru: string; en: string }> = {
+  narva: { ru: "Трансфер Таллинн — Нарва", en: "Transfer Tallinn — Narva" },
+  koidula: { ru: "Трансфер Таллинн — Койдула", en: "Transfer Tallinn — Koidula" },
+  luhamaa: { ru: "Трансфер Таллинн — Лухамаа", en: "Transfer Tallinn — Luhamaa" },
+};
+
+const schema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TaxiService",
+      "@id": org,
+      name: "EstoniaTransfer",
+      url: `${site}/`,
+      description:
+        lang === "ru"
+          ? "Индивидуальный трансфер из Таллинна к погранпереходам Нарва, Койдула и Лухамаа: фиксированная цена за автомобиль, встреча в аэропорту и круизном порту, выезд в любое время суток."
+          : "Private transfer from Tallinn to the Narva, Koidula and Luhamaa border crossings: a fixed price per car, airport and cruise port pickup, departures at any hour.",
+      telephone: facts.phoneHref.replace("tel:", ""),
+      email: facts.email,
+      image: new URL("/favicon.svg", site).href,
+      priceRange: "80–160 €",
+      currenciesAccepted: "EUR",
+      paymentAccepted: lang === "ru" ? "Наличные, банковский перевод" : "Cash, bank transfer",
+      // Мессенджеры — это и есть профили сервиса на стороне: другого способа
+      // связаться нет, поэтому они стоят в sameAs, а не только ссылками.
+      sameAs: [facts.whatsapp, facts.telegram],
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: facts.phoneHref.replace("tel:", ""),
+        contactType: lang === "ru" ? "заказ трансфера" : "transfer booking",
+        availableLanguage: ["ru"],
+        contactOption: "TollFree",
+      },
+      areaServed: [
+        { "@type": "City", name: lang === "ru" ? "Таллинн" : "Tallinn" },
+        { "@type": "City", name: lang === "ru" ? "Тарту" : "Tartu" },
+        { "@type": "City", name: lang === "ru" ? "Нарва" : "Narva" },
+        { "@type": "Place", name: lang === "ru" ? "Койдула" : "Koidula" },
+        { "@type": "Place", name: lang === "ru" ? "Лухамаа" : "Luhamaa" },
+      ],
+      vehicle: {
+        "@type": "Vehicle",
+        name: facts.car,
+        vehicleSeatingCapacity: facts.seats,
+        vehicleConfiguration: lang === "ru" ? "седан, кондиционер" : "sedan, air conditioning",
+      },
+      employee: {
+        "@type": "Person",
+        name: facts.driver,
+        jobTitle: lang === "ru" ? "Водитель" : "Driver",
+        worksFor: { "@id": org },
+      },
+      hasOfferCatalog: {
+        "@type": "OfferCatalog",
+        name: lang === "ru" ? "Направления и цены" : "Routes and fares",
+        itemListElement: facts.routes.map((r) => ({
+          "@type": "Offer",
+          name: routeNames[r.id][lang],
+          price: String(r.price),
+          priceCurrency: "EUR",
+          availability: "https://schema.org/InStock",
+          url:
+            landingsFor(lang).some((l) => l.routeId === r.id)
+              ? new URL(
+                  localePath(lang, `/${landingsFor(lang).find((l) => l.routeId === r.id)!.slug}/`),
+                  site
+                ).href
+              : `${home}#routes`,
+        })),
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${site}/#website`,
+      url: `${site}/`,
+      name: "EstoniaTransfer",
+      inLanguage: lang,
+      publisher: { "@id": org },
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${home}#webpage`,
+      url: home,
+      isPartOf: { "@id": `${site}/#website` },
+      about: { "@id": org },
+      inLanguage: lang,
+    },
+  ],
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />
