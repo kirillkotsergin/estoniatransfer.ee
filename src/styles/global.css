@@ -43,46 +43,63 @@
   --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-/* ---------- база ---------- */
+/* ---------- база ----------
+   ВАЖНО: всё это обязано лежать в @layer base.
+   Tailwind держит утилиты в @layer utilities, а нелейерный CSS в каскаде
+   всегда сильнее любого слоя — независимо от специфичности. Без обёртки
+   правило a { color: inherit } перебивало text-white, и активный язык в
+   переключателе получался чёрным на чёрном. Добавляете базовые стили —
+   добавляйте их сюда, а не рядом. */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 88px;
-  -webkit-text-size-adjust: 100%;
-}
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 88px;
+    -webkit-text-size-adjust: 100%;
+  }
 
-body {
-  margin: 0;
-  background: var(--color-page);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-size: 17px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
+  body {
+    margin: 0;
+    background: var(--color-page);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
 
-img,
-svg {
-  display: block;
-  max-width: 100%;
-}
+  img,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-/* Фокус виден всегда и на белом, и на оранжевом: тёмное кольцо с отступом */
-:focus-visible {
-  outline: 3px solid var(--color-ink);
-  outline-offset: 2px;
-  border-radius: 4px;
+  /* Фокус виден и на белом, и на оранжевом: тёмное кольцо с отступом */
+  :focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Свою стрелку рисуем сами */
+  summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
 }
 
 /* ---------- стекломорфизм ---------- */

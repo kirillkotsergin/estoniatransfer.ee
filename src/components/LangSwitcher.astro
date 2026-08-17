@@ -10,23 +10,76 @@ const t = useTranslations(lang);
 const codes = Object.keys(languages) as Lang[];
 ---
 
-{/* Простые ссылки, а не выпадающий список на JS: переключатель должен
-    работать и быть виден краулеру как обычная ссылка на другой язык. */}
-<nav class="ml-auto flex items-center gap-1 md:ml-0" aria-label={t("lang.label")}>
-  {
-    codes.map((code) => (
-      <a
-        href={localePath(code, path)}
-        hreflang={code}
-        lang={code}
-        aria-current={code === lang ? "true" : undefined}
-        class:list={[
-          "rounded-lg px-2.5 py-1.5 text-[0.8rem] font-semibold uppercase tracking-wide transition-colors",
-          code === lang ? "bg-ink text-white" : "text-ink-dim hover:text-ink",
-        ]}
-      >
-        {code}
-      </a>
-    ))
-  }
-</nav>
+{/* Выпадающий список на <details>: открывается по клику и работает БЕЗ JS —
+    это нативный элемент с клавиатурной поддержкой и ролью кнопки у summary.
+    Скрипт ниже добавляет только то, чего у details нет: закрытие по Escape
+    и по клику вне меню. Внутри — обычные ссылки, поэтому краулер видит
+    переходы на другие языки как ссылки, а не как поведение скрипта. */}
+<details class="relative" data-lang-menu>
+  <summary
+    class="flex items-center gap-1.5 rounded-xl border border-line-strong/50 px-3 py-2 text-[0.82rem] font-semibold uppercase tracking-wide text-ink transition-colors hover:bg-surface"
+    aria-label={t("lang.label")}
+  >
+    <span>{lang}</span>
+    <svg viewBox="0 0 20 20" fill="none" class="size-3.5 text-ink-dim" aria-hidden="true">
+      <path
+        d="M5 8l5 5 5-5"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"></path>
+    </svg>
+  </summary>
+
+  <ul
+    class="glass absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-2xl p-1.5"
+    role="list"
+  >
+    {
+      codes.map((code) => (
+        <li>
+          <a
+            href={localePath(code, path)}
+            hreflang={code}
+            lang={code}
+            aria-current={code === lang ? "true" : undefined}
+            class:list={[
+              "flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-[0.95rem] transition-colors",
+              code === lang ? "bg-surface font-semibold text-ink" : "text-ink-muted hover:bg-surface hover:text-ink",
+            ]}
+          >
+            <span>{languages[code]}</span>
+            <span class="text-[0.75rem] font-semibold uppercase tracking-wide text-ink-dim">
+              {code}
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</details>
+
+<script is:inline>
+  // Закрытие по клику вне меню и по Escape — единственное, чего не умеет
+  // <details> сам. Без скрипта меню всё равно открывается и закрывается.
+  (function () {
+    "use strict";
+    var menus = document.querySelectorAll("[data-lang-menu]");
+    if (!menus.length) return;
+    document.addEventListener("click", function (e) {
+      menus.forEach(function (m) {
+        if (m.open && !m.contains(e.target)) m.open = false;
+      });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      menus.forEach(function (m) {
+        if (m.open) {
+          m.open = false;
+          var s = m.querySelector("summary");
+          if (s) s.focus();
+        }
+      });
+    });
+  })();
+</script>
