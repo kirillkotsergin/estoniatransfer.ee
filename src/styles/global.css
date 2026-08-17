@@ -237,8 +237,18 @@
   }
 }
 
+/* Центрирование задаём сами, и вот почему: браузер центрирует модальный
+   <dialog> правилом inset: 0 + margin: auto из своей таблицы стилей, а
+   preflight Tailwind сбрасывает margin у всех элементов. Из-за этого окно
+   прилипало к левому верхнему углу. Ставим оба свойства явно — тогда
+   центровка не зависит ни от UA-таблицы, ни от порядка сброса. */
 .order-modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
   width: min(26rem, calc(100vw - 2rem));
+  max-height: min(90dvh, calc(100vh - 2rem));
+  overflow: auto;
   padding: 0;
   border: 0;
   background: transparent;
@@ -246,8 +256,9 @@
 }
 
 .order-modal::backdrop {
-  background: rgb(11 11 12 / 0.45);
-  backdrop-filter: blur(3px);
+  background: rgb(11 11 12 / 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .order-modal[open] {
