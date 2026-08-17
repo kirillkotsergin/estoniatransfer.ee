@@ -1,0 +1,121 @@
+# Выкладка статики на zone.ee.
+#
+# ВАЖНО про триггер. Сейчас workflow запускается ТОЛЬКО вручную, и это сделано
+# намеренно: на домене пока живёт старый WordPress, а rsync --delete делает
+# хостинг точной копией public/. Пока сайт не готов, автоматический запуск по
+# push снёс бы работающий сайт. После первого успешного выката раскомментируйте
+# блок push ниже.
+name: deploy
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  #   paths: ['public/**', '.github/workflows/deploy.yml']
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: rsync public/ -> htdocs
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---------- проверки до того, как что-то менять на сервере ----------
+
+      - name: Проверить, что заданы все секреты
+        env:
+          KEY: ${{ secrets.ZONE_SSH_PRIVATE_KEY }}
+          USER: ${{ secrets.ZONE_SSH_USER }}
+          HOST: ${{ secrets.ZONE_SSH_HOST }}
+          PATH_REMOTE: ${{ secrets.ZONE_REMOTE_PATH }}
+        run: |
+          missing=""
+          [ -z "$KEY" ]         && missing="$missing ZONE_SSH_PRIVATE_KEY"
+          [ -z "$USER" ]        && missing="$missing ZONE_SSH_USER"
+          [ -z "$HOST" ]        && missing="$missing ZONE_SSH_HOST"
+          [ -z "$PATH_REMOTE" ] && missing="$missing ZONE_REMOTE_PATH"
+          if [ -n "$missing" ]; then
+            echo "::error::Не заданы секреты:$missing"
+            echo "Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          echo "Все четыре секрета на месте."
+
+      # Тот самый предохранитель. Без него один запуск по недоразумению
+      # удаляет живой сайт и оставляет пустой каталог.
+      - name: Проверить, что public/ действительно содержит сайт
+        run: |
+          if [ ! -s public/index.html ]; then
+            echo "::error::public/index.html отсутствует или пуст — деплой остановлен."
+            echo "rsync --delete сделал бы htdocs копией пустого каталога."
+            exit 1
+          fi
+          files=$(find public -type f | wc -l)
+          echo "Файлов в public/: $files"
+          if [ "$files" -lt 5 ]; then
+            echo "::error::В public/ всего $files файлов — это похоже на заготовку, а не на сайт."
+            exit 1
+          fi
+          if ! grep -qi "estoniatransfer" public/index.html; then
+            echo "::error::В public/index.html нет упоминания estoniatransfer — это не тот сайт."
+            exit 1
+          fi
+
+      - name: Подготовить SSH
+        env:
+          KEY: ${{ secrets.ZONE_SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.ZONE_SSH_HOST }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if ! ssh-keygen -y -f ~/.ssh/deploy_key >/dev/null 2>&1; then
+            echo "::error::Приватный ключ в секрете не читается. Скопирован целиком, вместе со строками BEGIN и END?"
+            exit 1
+          fi
+          ssh-keyscan -T 15 "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          if [ ! -s ~/.ssh/known_hosts ]; then
+            echo "::error::ssh-keyscan не получил host-key от $HOST. Возможен IP Whitelist на хостинге."
+            exit 1
+          fi
+
+      - name: Проверить вход и право записи
+        env:
+          USER: ${{ secrets.ZONE_SSH_USER }}
+          HOST: ${{ secrets.ZONE_SSH_HOST }}
+          PATH_REMOTE: ${{ secrets.ZONE_REMOTE_PATH }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=20 \
+            "$USER@$HOST" "test -d '$PATH_REMOTE' && test -w '$PATH_REMOTE' && command -v rsync >/dev/null" \
+            || { echo "::error::Вход не удался, нет каталога, нет права записи или нет rsync."; exit 1; }
+
+      # ---------- собственно выкладка ----------
+
+      - name: rsync
+        env:
+          USER: ${{ secrets.ZONE_SSH_USER }}
+          HOST: ${{ secrets.ZONE_SSH_HOST }}
+          PATH_REMOTE: ${{ secrets.ZONE_REMOTE_PATH }}
+        run: |
+          rsync -rlvz --delete \
+            --exclude='.well-known/' \
+            --exclude='.git*' \
+            -e "ssh -i ~/.ssh/deploy_key -o BatchMode=yes" \
+            public/ "$USER@$HOST:$PATH_REMOTE/"
+
+      # Проверяем не «rsync не упал», а что сайт реально отдаётся.
+      - name: Smoke-check
+        env:
+          HOST: ${{ secrets.ZONE_SSH_HOST }}
+        run: |
+          sleep 3
+          code=$(curl -s -o /tmp/page.html -w '%{http_code}' "https://$HOST/")
+          echo "Код ответа: $code"
+          [ "$code" = "200" ] || { echo "::error::Главная отдала $code вместо 200."; exit 1; }
+          grep -qi "transfer" /tmp/page.html || { echo "::error::В ответе нет ожидаемого текста."; exit 1; }
+          echo "Сайт отвечает и отдаёт нужную страницу."
