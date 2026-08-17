@@ -115,6 +115,13 @@ export interface RouteCopy {
   }[];
   /** Список источников в конце: гид ссылается на перевозчиков и politsei.ee */
   sources?: { label: string; href: string }[];
+  /**
+   * Как страница называется в подвале. Нужна тем страницам, у которых нет
+   * routeId: у остальных подпись и цена берутся из facts. Подвал стоит на
+   * каждой странице сайта, поэтому это основная перелинковка — новая страница
+   * обязана в нём появляться.
+   */
+  footer?: { label: string; note?: string };
   /** формулировки попадают в FAQPage дословно — они не могут разойтись */
   faq: { eyebrow: string; title: string; items: { q: string; a: string }[] };
   /** перелинковка. href — путь БЕЗ языкового префикса, его добавит шаблон */
@@ -833,6 +840,7 @@ export const landings: LandingRoute[] = [
         breadcrumb: "Из Тарту к границе",
         h1: "Трансфер Тарту — Койдула и Тарту — Лухамаа",
         badge: `Из Тарту · ${tartu} за машину`,
+        footer: { label: "Из Тарту к границе", note: tartu },
         // ПРОВЕРЬ: расстояния и время даны приблизительно
         stats: [
           { value: tartu, label: "за автомобиль" },
@@ -1059,6 +1067,7 @@ export const landings: LandingRoute[] = [
         breadcrumb: "Как добраться до границы",
         h1: "Как добраться из Таллинна до границы с Россией: Нарва, Койдула, Лухамаа",
         badge: "Гид · обновлено 17 августа 2026",
+        footer: { label: "Как добраться до границы" },
         stats: [
           { value: "210 км", label: "до Нарвы" },
           { value: "270 км", label: "до Койдулы" },
@@ -1387,6 +1396,35 @@ export const landings: LandingRoute[] = [
 /** Маршруты, для которых на этом языке есть текст. Нет текста — нет страницы. */
 export function landingsFor(lang: Lang): LandingRoute[] {
   return landings.filter((r) => r.copy[lang]);
+}
+
+/**
+ * Ссылки для подвала: маршруты отдельно, информационные страницы отдельно.
+ * Собирается из тех же данных, что и сами страницы, поэтому новая запись в
+ * landings появляется в подвале сама — забыть её там больше нельзя.
+ *
+ * Подпись и цена для страниц маршрутов берутся из facts (label приходит
+ * из словаря по routeId), для остальных — из copy.footer.
+ */
+export function footerLinks(lang: Lang, label: (id: RouteId) => string) {
+  const link = (r: LandingRoute) => {
+    const copy = r.copy[lang]!;
+    if (r.routeId) {
+      const f = facts.routes.find((x) => x.id === r.routeId)!;
+      return { label: label(r.routeId), note: `${f.price} €`, href: localePath(lang, `/${r.slug}/`) };
+    }
+    return {
+      label: copy.footer?.label ?? copy.breadcrumb,
+      note: copy.footer?.note,
+      href: localePath(lang, `/${r.slug}/`),
+    };
+  };
+
+  const pages = landingsFor(lang);
+  return {
+    routes: pages.filter((r) => r.kind !== "guide").map(link),
+    guides: pages.filter((r) => r.kind === "guide").map(link),
+  };
 }
 
 /** Языки, на которых существует страница: из этого собирается hreflang. */

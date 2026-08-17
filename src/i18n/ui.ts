@@ -226,6 +226,8 @@ export const ui = {
       "Индивидуальный трансфер и пассажирские перевозки по Эстонии: аэропорт, круизный порт, погранпереходы Нарва, Койдула и Лухамаа.",
     "footer.contacts": "Контакты",
     "footer.routes": "Направления",
+    "footer.allRoutes": "Все направления и цены",
+    "footer.useful": "Полезное",
     "footer.rights": "Все права защищены",
     "footer.city": "Таллинн, Эстония",
 
@@ -399,6 +401,8 @@ export const ui = {
       "Private transfer and passenger transport across Estonia: airport, cruise port and the Narva, Koidula and Luhamaa border crossings.",
     "footer.contacts": "Contacts",
     "footer.routes": "Routes",
+    "footer.allRoutes": "All routes and prices",
+    "footer.useful": "Useful",
     "footer.rights": "All rights reserved",
     "footer.city": "Tallinn, Estonia",
 

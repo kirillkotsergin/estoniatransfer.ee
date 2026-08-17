@@ -1,7 +1,7 @@
 ---
 import Messengers from "./Messengers.astro";
 import { useTranslations, facts, localePath, type Lang, type UIKey } from "../i18n/ui";
-import { landingHref } from "../data/routes";
+import { footerLinks } from "../data/routes";
 
 interface Props {
   lang: Lang;
@@ -9,10 +9,15 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 const year = new Date().getFullYear();
+
+// Ссылки берутся из данных о страницах, а не перечисляются руками: подвал
+// стоит на каждой странице сайта, и это основная перелинковка. Новая
+// посадочная страница появляется здесь сама.
+const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
 ---
 
 <footer class="border-t border-line bg-surface">
-  <div class="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-5">
     <div class="lg:col-span-2">
       <p class="text-[1.05rem] font-semibold tracking-tight">
         Estonia<span class="text-brand-ink">Transfer</span>
@@ -40,20 +45,42 @@ const year = new Date().getFullYear();
         {t("footer.routes")}
       </h2>
       <ul class="mt-4 grid gap-2 text-[0.95rem]">
-        {/* Есть страница маршрута — ведём на неё: подвал стоит на каждой
-            странице, и это основная перелинковка сайта. Нет — на блок цен. */}
         {
-          facts.routes.map((r) => (
+          links.routes.map((l) => (
             <li>
-              <a
-                class="hover:text-brand-ink"
-                href={landingHref(lang, r.id) ?? `${localePath(lang, "/")}#routes`}
-              >
-                {t(`routes.${r.id}` as UIKey)} — {r.price} €
+              <a class="hover:text-brand-ink" href={l.href}>
+                {l.label}
+                {l.note && <span class="text-ink-dim"> — {l.note}</span>}
               </a>
             </li>
           ))
         }
+        <li>
+          <a class="hover:text-brand-ink" href={`${localePath(lang, "/")}#routes`}>
+            {t("footer.allRoutes")}
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
+        {t("footer.useful")}
+      </h2>
+      <ul class="mt-4 grid gap-2 text-[0.95rem]">
+        {
+          links.guides.map((l) => (
+            <li>
+              <a class="hover:text-brand-ink" href={l.href}>{l.label}</a>
+            </li>
+          ))
+        }
+        <li>
+          <a class="hover:text-brand-ink" href={`${localePath(lang, "/")}#car`}>{t("nav.car")}</a>
+        </li>
+        <li>
+          <a class="hover:text-brand-ink" href={`${localePath(lang, "/")}#faq`}>{t("nav.faq")}</a>
+        </li>
       </ul>
     </div>
   </div>

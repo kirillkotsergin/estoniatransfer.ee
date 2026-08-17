@@ -1,9 +1,13 @@
 # Сборка Astro и выкладка на zone.ee.
 #
-# ВАЖНО про триггер. Пока запуск ТОЛЬКО вручную: на домене живёт старый
-# WordPress, а rsync --delete делает хостинг точной копией dist/. Один запуск
-# с недособранным сайтом удалил бы работающий. После первого успешного выката
-# раскомментируйте блок push.
+# ВАЖНО про триггер. Деплой идёт по push в main — включено 17.08, после того
+# как первый выкат прошёл и на домене вместо WordPress встал этот сайт. До
+# этого запуск был только ручной, потому что rsync --delete делает хостинг
+# точной копией dist/ и один прогон с недособранным сайтом снёс бы рабочий.
+# Страховки на месте: проверка готовности dist/ до копирования и smoke-check
+# после. Ручной запуск тоже остался.
+#
+# Фильтр paths значит, что правка README или CLAUDE.md деплой не запускает.
 #
 # Node нужен только здесь, на сборке. На сервере его нет и не требуется:
 # Astro отдаёт готовые HTML-файлы.
@@ -11,9 +15,14 @@ name: deploy
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches: [main]
-  #   paths: ['src/**', 'public/**', 'package*.json', 'astro.config.mjs', '.github/workflows/deploy.yml']
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package*.json'
+      - 'astro.config.mjs'
+      - '.github/workflows/deploy.yml'
 
 concurrency:
   group: deploy
@@ -122,7 +131,10 @@ jobs:
           HOST: ${{ secrets.ZONE_SSH_HOST }}
         run: |
           sleep 3
-          for p in "/" "/en/"; do
+          # Посадочные страницы проверяем тоже: они лежат подкаталогами, и
+          # ошибка в сборке или в правилах Apache видна только по ним —
+          # главная при этом продолжает отдавать 200.
+          for p in "/" "/en/" "/transfer-tallinn-narva/" "/kak-dobratsya-do-granicy/"; do
             code=$(curl -s -o /tmp/page.html -w '%{http_code}' "https://$HOST$p")
             echo "$p → $code"
             [ "$code" = "200" ] || { echo "::error::$p отдал $code вместо 200."; exit 1; }
