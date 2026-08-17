@@ -2,7 +2,9 @@
 import Base from "../layouts/Base.astro";
 import Hero from "../components/Hero.astro";
 import Routes from "../components/Routes.astro";
+import Steps from "../components/Steps.astro";
 import Car from "../components/Car.astro";
+import Faq from "../components/Faq.astro";
 
 const lang = "ru" as const;
 ---
@@ -10,5 +12,7 @@ const lang = "ru" as const;
 <Base lang={lang} path="/">
   <Hero lang={lang} />
   <Routes lang={lang} />
+  <Steps lang={lang} />
   <Car lang={lang} />
+  <Faq lang={lang} />
 </Base>

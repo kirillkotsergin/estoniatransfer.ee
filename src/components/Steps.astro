@@ -1,0 +1,78 @@
+---
+import { useTranslations, type Lang, type UIKey } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const steps = [1, 2, 3, 4];
+---
+
+<section id="how" class="scroll-mt-24 border-t border-line bg-surface py-16 sm:py-24">
+  <div class="mx-auto max-w-6xl px-5">
+    <header class="max-w-2xl">
+      <p class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+        {t("how.eyebrow")}
+      </p>
+      <h2
+        class="reveal mt-4 text-[clamp(1.9rem,3.6vw,2.9rem)] font-semibold leading-tight tracking-[-0.02em]"
+        style="--d:1"
+      >
+        {t("how.title")}
+      </h2>
+    </header>
+
+    <ol class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        steps.map((n) => (
+          <li class="reveal glass flex flex-col rounded-[--radius-card] p-6" style={`--d:${n}`}>
+            <span class="text-[2rem] font-semibold leading-none tracking-tight text-brand">
+              {String(n).padStart(2, "0")}
+            </span>
+            <h3 class="mt-4 text-[1.05rem] font-semibold tracking-tight">
+              {t(`how.${n}.title` as UIKey)}
+            </h3>
+            <p class="mt-2.5 text-[0.95rem] leading-relaxed text-ink-muted">
+              {t(`how.${n}.text` as UIKey)}
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<section class="relative overflow-hidden py-16 sm:py-24">
+  <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+    <div class="blob left-[-6%] top-[20%] size-[22rem] bg-brand/20"></div>
+  </div>
+  <div class="relative mx-auto max-w-6xl px-5">
+    <header class="max-w-2xl">
+      <p class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+        {t("why.eyebrow")}
+      </p>
+      <h2
+        class="reveal mt-4 text-[clamp(1.9rem,3.6vw,2.9rem)] font-semibold leading-tight tracking-[-0.02em]"
+        style="--d:1"
+      >
+        {t("why.title")}
+      </h2>
+    </header>
+
+    <div class="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2">
+      {
+        steps.map((n) => (
+          <div class="reveal border-t border-line pt-5" style={`--d:${n}`}>
+            <h3 class="text-[1.05rem] font-semibold tracking-tight">
+              {t(`why.${n}.title` as UIKey)}
+            </h3>
+            <p class="mt-2 text-[0.95rem] leading-relaxed text-ink-muted">
+              {t(`why.${n}.text` as UIKey)}
+            </p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

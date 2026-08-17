@@ -1,13 +1,18 @@
 /**
  * Тексты сайта по языкам.
  *
- * Русский — источник истины: ключи заводятся здесь. Тип Lang и функция
- * useTranslations устроены так, что при отсутствии ключа в другом языке
- * TypeScript ругается на сборке, а не после публикации. Именно за этим и
- * нужен генератор: на четырёх языках руками это не удержать.
+ * Русский — источник истины: ключи заводятся здесь. Если ключа нет в другом
+ * языке, useTranslations возьмёт русский, а TypeScript покажет это на сборке.
+ * ET и FI добавляются как ещё две записи в объект ui — роутинг, hreflang и
+ * переключатель языков уже готовы.
  *
- * ET и FI добавляются как ещё две записи в объект ui — остальной код
- * (роутинг, hreflang, переключатель) уже готов.
+ * Смысл услуг и их набор взяты с ridego.ee (проект того же владельца), но
+ * формулировки написаны заново: два сайта с одинаковыми абзацами Google
+ * склеит как дубли, и просядут оба.
+ *
+ * ПРОВЕРЬ перед публикацией: режим работы переходов и правила пересечения
+ * границы даны на август 2026 года и меняются. Ниже они стоят с оговоркой
+ * «проверяйте перед поездкой» — так и оставить.
  */
 
 export const languages = {
@@ -18,7 +23,7 @@ export const languages = {
 export const defaultLang = "ru" as const;
 export type Lang = keyof typeof languages;
 
-/** Цены и телефон живут в одном месте: правится один раз, меняется везде. */
+/** Цены, телефон и парк — в одном месте: правится один раз, меняется везде. */
 export const facts = {
   phone: "+372 56277764",
   phoneHref: "tel:+37256277764",
@@ -36,57 +41,96 @@ export const facts = {
 
 export const ui = {
   ru: {
-    "meta.title": "Индивидуальный трансфер по Эстонии и к границе | EstoniaTransfer",
+    "meta.title": "Индивидуальный трансфер Таллинн — граница | EstoniaTransfer",
     "meta.description":
-      "Индивидуальный трансфер из Таллинна к погранпереходам Нарва, Койдула и Лухамаа: от 130 € за автомобиль. Встречаем в аэропорту и порту, работаем круглосуточно.",
+      "Частный трансфер из Таллинна к погранпереходам Нарва, Койдула и Лухамаа: 130–160 € за автомобиль целиком. Встречаем в аэропорту и порту, выезжаем в любое время суток.",
+
     "nav.routes": "Направления",
     "nav.car": "Автомобиль",
-    "nav.order": "Заказать",
+    "nav.how": "Как заказать",
+    "nav.order": "Заявка",
     "nav.faq": "Вопросы",
+
     "hero.eyebrow": "Индивидуальный трансфер · Эстония",
-    "hero.title.1": "Доедем туда,",
-    "hero.title.2": "где кончается транспорт",
+    "hero.title.1": "Личный трансфер",
+    "hero.title.2": "к погранпереходам Эстонии",
     "hero.lead":
-      "Пассажирские перевозки по Эстонии и к погранпереходам с Россией. Цена известна до поездки и считается за автомобиль, а не за человека: один пассажир или четверо — сумма одна.",
+      "Пассажирские перевозки из Таллинна к пунктам пропуска Нарва, Койдула и Лухамаа. Забираем от двери и довозим прямо к шлагбауму: без пересадок, без ожидания на автовокзале и без счётчика, который набегает в пробке.",
     "hero.cta": "Рассчитать поездку",
     "hero.secondary": "Написать в WhatsApp",
     "hero.trust.price": "за автомобиль",
-    "hero.trust.time": "круглосуточно",
+    "hero.trust.time": "выезд в любое время",
     "hero.trust.seats": "места и багаж",
+
+    "perks.title": "Что входит в цену",
+    "perks.1": "Стоимость фиксируется до поездки: ни пробки, ни ночной выезд её не меняют",
+    "perks.2": "Встреча в аэропорту и круизном порту — водитель ждёт с табличкой",
+    "perks.3": "Задержали самолёт — ждём столько, сколько нужно, без доплаты",
+    "perks.4": "Детское кресло привезём по запросу, за багаж не доплачиваете",
+    "perks.5": "Расчёт наличными водителю или переводом, предоплату не берём",
+
     "routes.eyebrow": "Цены",
-    "routes.title": "Направления к границе",
+    "routes.title": "Направления и стоимость",
     "routes.lead":
-      "Фиксированная стоимость за машину целиком. Ночной выезд, пробки и ожидание её не меняют.",
+      "Цена указана за машину целиком, а не за пассажира: поедет один человек или четверо — сумма та же. Нужен маршрут, которого нет в списке, или поездка в аэропорт — посчитаем отдельно.",
     "routes.narva": "Таллинн — Нарва",
     "routes.koidula": "Таллинн — Койдула",
     "routes.luhamaa": "Таллинн — Лухамаа",
     "routes.narva.note":
-      "Погранпереход в центре города. Пешая очередь обычно короче автомобильной.",
+      "Пункт пропуска стоит прямо в городе. Границу здесь проходят пешком, и очередь у пешеходов обычно движется быстрее автомобильной.",
     "routes.koidula.note":
-      "Автомобильный переход на юго-востоке, удобен в сторону Пскова и Печор.",
+      "Автомобильный переход на юго-востоке страны, дорога идёт через Тарту. Удобен, если дальше вам в сторону Печор и Пскова.",
     "routes.luhamaa.note":
-      "Самый южный переход, на шоссе Рига — Псков. Рейсовый транспорт сюда не идёт.",
+      "Самый южный переход, на шоссе Рига — Псков. Рейсовый транспорт до него не доходит, поэтому сюда едут либо на своей машине, либо трансфером.",
     "routes.km": "километров",
     "routes.time": "в пути",
-    "routes.other": "Нужно другое направление или трансфер в аэропорт? Посчитаем отдельно.",
+    "routes.other": "Другое направление, поездка в аэропорт или обратный путь от границы — напишите, назовём цену.",
+
+    "how.eyebrow": "Как это работает",
+    "how.title": "Четыре шага от заявки до границы",
+    "how.1.title": "Согласуем время",
+    "how.1.text":
+      "Пришлите дату, адрес и маршрут. В ответ получите точное время выезда и подтверждённую цену — считаем её от часов работы перехода, чтобы вы не приехали к закрытым воротам.",
+    "how.2.title": "Забираем от двери",
+    "how.2.text":
+      "От квартиры, отеля, аэропорта или круизного порта — где скажете. Если летите, оставьте номер рейса: водитель отследит его сам и встретит с табличкой.",
+    "how.3.title": "Дорога",
+    "how.3.text":
+      "Едем по шоссе без пересадок. По пути можно остановиться размяться и выпить кофе — время на это заложено, отдельной платы за остановку нет.",
+    "how.4.title": "Высадка у пункта пропуска",
+    "how.4.text":
+      "Привозим к самому шлагбауму. Границу вы проходите самостоятельно; если дальше нужна машина уже на российской стороне, скажите заранее — поможем состыковать.",
+
+    "why.eyebrow": "Почему так",
+    "why.title": "Чем это отличается от такси и автобуса",
+    "why.1.title": "Сумма известна заранее",
+    "why.1.text":
+      "Никакого счётчика: цену вы видите до выезда и платите ровно её, сколько бы времени ни заняла дорога.",
+    "why.2.title": "Машина только ваша",
+    "why.2.text":
+      "Автомобиль закреплён за вашей поездкой. Никто не подсаживается по пути, маршрут не меняется в чужих интересах.",
+    "why.3.title": "Выезд в любой час",
+    "why.3.text":
+      "Переходы открываются рано, и к открытию удобнее выезжать ночью. Автобус так не умеет, а мы работаем круглосуточно.",
+    "why.4.title": "Разговор напрямую",
+    "why.4.text":
+      "Вы общаетесь с водителем, а не с диспетчером: договорённости не теряются при пересказе, а изменения решаются одним сообщением.",
+
     "car.eyebrow": "Автомобиль",
     "car.title": "Toyota Corolla",
     "car.lead":
-      "Один автомобиль и один водитель: вы договариваетесь напрямую с тем, кто вас повезёт, без диспетчера и пересказов.",
+      "Одна машина и один водитель на всю поездку. Салон чистый: это личный автомобиль, а не сменная машина таксопарка.",
     "car.f1": "Четыре пассажирских места",
-    "car.f2": "Два больших чемодана и ручная кладь",
+    "car.f2": "Два больших чемодана плюс ручная кладь",
     "car.f3": "Климат-контроль, зимой — зимняя резина",
     "car.f4": "Детское кресло по запросу",
-    "car.f5": "Встреча в аэропорту и порту с табличкой",
+    "car.f5": "Встреча с табличкой в аэропорту и порту",
     "car.f6": "Оплата наличными или переводом",
-    "order.eyebrow": "Заказ",
+
+    "order.eyebrow": "Заявка",
     "order.title": "Оставьте заявку",
-    "order.lead":
-      "Форма ещё настраивается — поля добавим под ваш процесс. Пока быстрее написать в мессенджер: отвечаем сразу.",
-    "order.placeholder": "Здесь будет форма заказа",
-    "order.placeholderNote":
-      "Состав полей согласуем: дата, время, маршрут, число пассажиров, контакты.",
     "order.or": "или сразу в мессенджер",
+
     "form.from": "Поездка из",
     "form.to": "Едем до",
     "form.date": "Дата поездки",
@@ -109,68 +153,128 @@ export const ui = {
     "form.clear": "Сбросить",
     "form.prevMonth": "Предыдущий месяц",
     "form.nextMonth": "Следующий месяц",
+
+    "faq.eyebrow": "Частые вопросы",
+    "faq.title": "Коротко о главном",
+    "faq.q1": "Сколько стоит трансфер и что входит в эту сумму?",
+    "faq.a1":
+      "До Нарвы — 130 €, до Койдулы и Лухамаа — 160 € за автомобиль целиком. В сумму уже входят встреча с табличкой, помощь с багажом, детское кресло и ожидание рейса. Доплат за ночное время и количество чемоданов нет.",
+    "faq.q2": "Сколько занимает дорога?",
+    "faq.a2":
+      "До Нарвы около 2 часов 30 минут, до Койдулы примерно 3 часа, до Лухамаа — 3 часа 10 минут. В снегопад и в плотном движении дольше, поэтому к открытию перехода выезжаем с запасом.",
+    "faq.q3": "Можно пересечь границу, не выходя из машины?",
+    "faq.a3":
+      "Через Койдулу и Лухамаа — да, это автомобильные переходы, но очередь на выезд бронируется заранее в системе GoSwift. Через Нарву границу проходят пешком. Режим работы переходов меняется, поэтому сверяйте его перед поездкой.",
+    "faq.q4": "Вы встречаете в аэропорту и порту?",
+    "faq.a4":
+      "Да. Оставьте номер рейса или название судна — водитель отследит прибытие и будет ждать с табличкой у выхода. Задержка рейса цену не меняет и заказ не отменяет.",
+    "faq.q5": "Как оплатить поездку?",
+    "faq.a5":
+      "Наличными водителю или банковским переводом, в евро. Предоплату не берём: сначала поездка, потом расчёт. Цену подтверждаем сообщением до выезда, чтобы у вас остался письменный ответ.",
+
     "footer.tagline":
-      "Индивидуальный трансфер и пассажирские перевозки по Эстонии: аэропорт, порт, погранпереходы.",
+      "Индивидуальный трансфер и пассажирские перевозки по Эстонии: аэропорт, круизный порт, погранпереходы Нарва, Койдула и Лухамаа.",
     "footer.contacts": "Контакты",
     "footer.routes": "Направления",
     "footer.rights": "Все права защищены",
     "footer.city": "Таллинн, Эстония",
+
     "common.from": "от",
     "common.perCar": "за автомобиль",
     "lang.label": "Язык",
   },
+
   en: {
-    "meta.title": "Private Transfer in Estonia and to the Border | EstoniaTransfer",
+    "meta.title": "Private Transfer Tallinn — Border Crossings | EstoniaTransfer",
     "meta.description":
-      "Private transfer from Tallinn to the Narva, Koidula and Luhamaa border crossings from €130 per car. Airport and port pickup, available around the clock.",
+      "Private transfer from Tallinn to the Narva, Koidula and Luhamaa border crossings: €130–160 for the whole car. Airport and port pickup, departures at any hour.",
+
     "nav.routes": "Routes",
     "nav.car": "Vehicle",
-    "nav.order": "Book",
+    "nav.how": "How it works",
+    "nav.order": "Request",
     "nav.faq": "FAQ",
+
     "hero.eyebrow": "Private transfer · Estonia",
-    "hero.title.1": "We drive where",
-    "hero.title.2": "public transport stops",
+    "hero.title.1": "Your own transfer",
+    "hero.title.2": "to Estonia's border crossings",
     "hero.lead":
-      "Passenger transport across Estonia and to the Russian border crossings. The price is agreed before departure and charged per car, not per person — one passenger or four, the sum is the same.",
+      "Passenger transport from Tallinn to the Narva, Koidula and Luhamaa checkpoints. We pick you up at the door and drive you right to the barrier — no changes, no waiting at a bus station, no meter ticking in traffic.",
     "hero.cta": "Get a price",
     "hero.secondary": "Message on WhatsApp",
     "hero.trust.price": "per car",
-    "hero.trust.time": "around the clock",
+    "hero.trust.time": "any hour",
     "hero.trust.seats": "seats and luggage",
+
+    "perks.title": "What the price covers",
+    "perks.1": "The fare is fixed before departure: traffic and night trips do not change it",
+    "perks.2": "Pickup at the airport and cruise port — the driver waits with a name board",
+    "perks.3": "If your flight is delayed we wait as long as needed, at no extra cost",
+    "perks.4": "A child seat on request, and no surcharge for luggage",
+    "perks.5": "Pay the driver in cash or by bank transfer; no prepayment required",
+
     "routes.eyebrow": "Prices",
-    "routes.title": "Border crossings we serve",
+    "routes.title": "Routes and fares",
     "routes.lead":
-      "A fixed price for the whole car. Night departures, traffic and waiting do not change it.",
+      "The price is for the whole car, not per seat: one passenger or four, the sum stays the same. Need a route that is not listed, or an airport run? We will quote it.",
     "routes.narva": "Tallinn — Narva",
     "routes.koidula": "Tallinn — Koidula",
     "routes.luhamaa": "Tallinn — Luhamaa",
     "routes.narva.note":
-      "The crossing sits in the city centre; the pedestrian queue is usually shorter than the car one.",
+      "The checkpoint sits inside the city. The border here is crossed on foot, and the pedestrian queue usually moves faster than the car one.",
     "routes.koidula.note":
-      "A car crossing in the south-east, convenient towards Pskov and Petseri.",
+      "A car crossing in the south-east, reached via Tartu. Convenient if you continue towards Petseri and Pskov.",
     "routes.luhamaa.note":
-      "The southernmost crossing, on the Riga — Pskov road. No scheduled transport reaches it.",
+      "The southernmost crossing, on the Riga — Pskov road. No scheduled transport reaches it, so people arrive either by their own car or by transfer.",
     "routes.km": "kilometres",
     "routes.time": "on the road",
-    "routes.other": "Need another destination or an airport transfer? We will quote it.",
+    "routes.other": "Another destination, an airport run or the return trip from the border — message us for a price.",
+
+    "how.eyebrow": "How it works",
+    "how.title": "Four steps from request to border",
+    "how.1.title": "We agree the time",
+    "how.1.text":
+      "Send the date, the address and the route. You get back an exact departure time and a confirmed price — we count backwards from the checkpoint's opening hours so you never arrive at a closed gate.",
+    "how.2.title": "Door-to-door pickup",
+    "how.2.text":
+      "From your flat, hotel, the airport or the cruise port — wherever you say. Flying in? Leave the flight number and the driver will track it and meet you with a name board.",
+    "how.3.title": "The drive",
+    "how.3.text":
+      "A single ride along the highway with no changes. We can stop for a coffee and a stretch on the way — that time is already allowed for, with nothing extra to pay.",
+    "how.4.title": "Drop-off at the checkpoint",
+    "how.4.text":
+      "We bring you to the barrier itself. You cross the border on your own; if you need a car waiting on the Russian side, tell us in advance and we will help line it up.",
+
+    "why.eyebrow": "Why this way",
+    "why.title": "How it differs from a taxi or a bus",
+    "why.1.title": "The sum is known upfront",
+    "why.1.text":
+      "No meter: you see the price before departure and pay exactly that, however long the drive turns out to be.",
+    "why.2.title": "The car is yours alone",
+    "why.2.text":
+      "The vehicle is booked for your trip only. Nobody else is picked up along the way and the route is not changed for someone else.",
+    "why.3.title": "Departures at any hour",
+    "why.3.text":
+      "Crossings open early, and it is easier to leave at night to be there when they do. A bus cannot do that; we work around the clock.",
+    "why.4.title": "You talk to the driver",
+    "why.4.text":
+      "No dispatcher in between: nothing gets lost in retelling, and any change is settled in a single message.",
+
     "car.eyebrow": "Vehicle",
     "car.title": "Toyota Corolla",
     "car.lead":
-      "One car and one driver: you arrange the trip directly with the person who will drive you, with no dispatcher in between.",
+      "One car and one driver for the whole trip. The interior is clean because this is a private car, not a rotating taxi-fleet vehicle.",
     "car.f1": "Four passenger seats",
     "car.f2": "Two large suitcases plus hand luggage",
     "car.f3": "Climate control, winter tyres in winter",
     "car.f4": "Child seat on request",
     "car.f5": "Name-board pickup at the airport and port",
     "car.f6": "Payment in cash or by transfer",
-    "order.eyebrow": "Booking",
+
+    "order.eyebrow": "Request",
     "order.title": "Send a request",
-    "order.lead":
-      "The form is still being set up — fields will match your process. For now a message is faster: we reply straight away.",
-    "order.placeholder": "The booking form goes here",
-    "order.placeholderNote":
-      "Fields to be agreed: date, time, route, number of passengers, contacts.",
     "order.or": "or message us directly",
+
     "form.from": "From",
     "form.to": "To",
     "form.date": "Travel date",
@@ -193,12 +297,32 @@ export const ui = {
     "form.clear": "Clear",
     "form.prevMonth": "Previous month",
     "form.nextMonth": "Next month",
+
+    "faq.eyebrow": "FAQ",
+    "faq.title": "The short answers",
+    "faq.q1": "What does the transfer cost and what is included?",
+    "faq.a1":
+      "Narva is €130; Koidula and Luhamaa are €160 for the whole car. The fare already covers the name-board pickup, help with luggage, a child seat and waiting for your flight. There is no surcharge for night trips or extra suitcases.",
+    "faq.q2": "How long is the drive?",
+    "faq.a2":
+      "About 2 hours 30 minutes to Narva, roughly 3 hours to Koidula and 3 hours 10 minutes to Luhamaa. Snow and heavy traffic make it longer, so we leave with time in hand when the crossing opens.",
+    "faq.q3": "Can I cross the border without leaving the car?",
+    "faq.a3":
+      "Through Koidula and Luhamaa, yes — these are car crossings, though the exit queue has to be booked in advance in the GoSwift system. Narva is crossed on foot. Opening hours change, so check them before you travel.",
+    "faq.q4": "Do you meet passengers at the airport and the port?",
+    "faq.a4":
+      "Yes. Leave the flight number or the ship's name and the driver will track the arrival and wait with a name board. A delayed flight changes neither the price nor the booking.",
+    "faq.q5": "How do I pay?",
+    "faq.a5":
+      "In cash to the driver or by bank transfer, in euros. No prepayment: the ride first, the settlement after. We confirm the price by message before departure so you have it in writing.",
+
     "footer.tagline":
-      "Private transfer and passenger transport across Estonia: airport, port, border crossings.",
+      "Private transfer and passenger transport across Estonia: airport, cruise port and the Narva, Koidula and Luhamaa border crossings.",
     "footer.contacts": "Contacts",
     "footer.routes": "Routes",
     "footer.rights": "All rights reserved",
     "footer.city": "Tallinn, Estonia",
+
     "common.from": "from",
     "common.perCar": "per car",
     "lang.label": "Language",
@@ -215,19 +339,16 @@ export const cities = {
 
 export type CityId = keyof typeof cities;
 
-/** Порядок в списках — как просил заказчик: свой для «откуда» и «куда». */
 export const fromOrder: CityId[] = ["tallinn", "narva", "koidula", "luhamaa"];
 export const toOrder: CityId[] = ["narva", "koidula", "luhamaa", "tallinn"];
 
-/** Названия месяцев и дней для своего календаря: Intl не тянем, чтобы не
-    зависеть от локалей в браузере и не грузить ничего лишнего. */
+/** Месяцы и дни недели для своего календаря: Intl не тянем. */
 export const calendar = {
   ru: {
     months: [
       "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
       "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
     ],
-    // Неделя начинается с понедельника
     days: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
   },
   en: {
@@ -239,7 +360,6 @@ export const calendar = {
   },
 } as const;
 
-/** Ключи берём из русского: он полный по определению. */
 export type UIKey = keyof (typeof ui)[typeof defaultLang];
 
 export function useTranslations(lang: Lang) {
@@ -249,7 +369,7 @@ export function useTranslations(lang: Lang) {
   };
 }
 
-/** Путь с языковым префиксом: ru → /о, en → /en/о */
+/** Путь с языковым префиксом: ru → /путь, en → /en/путь */
 export function localePath(lang: Lang, path = "/"): string {
   const clean = path.startsWith("/") ? path : `/${path}`;
   return lang === defaultLang ? clean : `/${lang}${clean}`;

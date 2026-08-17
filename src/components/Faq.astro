@@ -1,0 +1,64 @@
+---
+import { useTranslations, type Lang, type UIKey } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const items = [1, 2, 3, 4, 5];
+
+// Разметка FAQPage: текст вопросов и ответов берётся из тех же ключей, что и
+// видимый блок, поэтому они не могут разойтись. Расхождение Google считает
+// нарушением, а при ручном дублировании оно случается на первой же правке.
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: items.map((n) => ({
+    "@type": "Question",
+    name: t(`faq.q${n}` as UIKey),
+    acceptedAnswer: { "@type": "Answer", text: t(`faq.a${n}` as UIKey) },
+  })),
+};
+---
+
+<section id="faq" class="scroll-mt-24 border-t border-line bg-surface py-16 sm:py-24">
+  <div class="mx-auto max-w-3xl px-5">
+    <header>
+      <p class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+        {t("faq.eyebrow")}
+      </p>
+      <h2
+        class="reveal mt-4 text-[clamp(1.9rem,3.6vw,2.9rem)] font-semibold leading-tight tracking-[-0.02em]"
+        style="--d:1"
+      >
+        {t("faq.title")}
+      </h2>
+    </header>
+
+    <div class="mt-9 grid gap-3">
+      {
+        items.map((n) => (
+          <details class="reveal glass group rounded-2xl px-5 py-4" style={`--d:${n}`}>
+            <summary class="flex items-start justify-between gap-4 text-[1.02rem] font-semibold tracking-tight">
+              <span>{t(`faq.q${n}` as UIKey)}</span>
+              <span
+                class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-ink transition-transform group-open:rotate-45"
+                aria-hidden="true"
+              >
+                <svg viewBox="0 0 20 20" fill="none" class="size-3.5">
+                  <path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+                </svg>
+              </span>
+            </summary>
+            <p class="mt-3 text-[0.95rem] leading-relaxed text-ink-muted">
+              {t(`faq.a${n}` as UIKey)}
+            </p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json" set:html={JSON.stringify(faqSchema)} is:inline />
