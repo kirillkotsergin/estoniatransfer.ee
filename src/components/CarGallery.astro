@@ -82,7 +82,7 @@ const photos = Object.entries(modules)
               sizes="(min-width: 1024px) 46vw, 100vw"
               formats={["avif", "webp"]}
               fallbackFormat="jpg"
-              loading={i === 0 ? "eager" : "lazy"}
+              loading="lazy"
               decoding="async"
               class="aspect-[16/9] w-full object-cover"
             />

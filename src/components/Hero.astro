@@ -6,7 +6,6 @@ interface Props {
 }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-const minPrice = Math.min(...facts.routes.map((r) => r.price));
 ---
 
 <section class="relative overflow-hidden">
@@ -51,21 +50,5 @@ const minPrice = Math.min(...facts.routes.map((r) => r.price));
       </a>
     </div>
 
-    <dl class="reveal mt-12 grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3" style="--d:4">
-      <div class="glass rounded-[--radius-card] px-5 py-4">
-        <dt class="text-[0.82rem] text-ink-dim">{t("hero.trust.price")}</dt>
-        <dd class="mt-1 text-2xl font-semibold tracking-tight">
-          {t("common.from")} {minPrice} €
-        </dd>
-      </div>
-      <div class="glass rounded-[--radius-card] px-5 py-4">
-        <dt class="text-[0.82rem] text-ink-dim">{t("hero.trust.time")}</dt>
-        <dd class="mt-1 text-2xl font-semibold tracking-tight">24/7</dd>
-      </div>
-      <div class="glass rounded-[--radius-card] px-5 py-4">
-        <dt class="text-[0.82rem] text-ink-dim">{t("hero.trust.seats")}</dt>
-        <dd class="mt-1 text-2xl font-semibold tracking-tight">{facts.seats} + 2</dd>
-      </div>
-    </dl>
   </div>
 </section>

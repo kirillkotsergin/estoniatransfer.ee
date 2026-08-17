@@ -41,6 +41,11 @@
 
   --radius-card: 20px;
   --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* Общая длительность для всех утилит transition-* Tailwind. По умолчанию
+     150 мс; 120 мс ощущается отзывчивее и всё ещё не выглядит рывком.
+     Задаётся один раз здесь — руками по классам ходить не нужно. */
+  --default-transition-duration: 120ms;
 }
 
 /* ---------- база ----------
@@ -154,10 +159,13 @@
 .js .reveal.is-in {
   opacity: 1;
   translate: 0 0;
+  /* Было 0.6s и 70ms на шаг. На длинных страницах блоков до пятнадцати, и
+     лестница задержек складывалась в заметное ожидание — появление догоняло
+     палец, который уже прокрутил дальше. */
   transition:
-    opacity 0.6s var(--ease-out),
-    translate 0.6s var(--ease-out);
-  transition-delay: calc(var(--d, 0) * 70ms);
+    opacity 0.3s var(--ease-out),
+    translate 0.3s var(--ease-out);
+  transition-delay: calc(var(--d, 0) * 40ms);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -202,9 +210,9 @@
     0 10px 24px -8px rgb(255 106 0 / 0.55),
     0 0 38px -6px rgb(255 106 0 / 0.45);
   transition:
-    transform 0.25s var(--ease-out),
-    box-shadow 0.25s var(--ease-out),
-    opacity 0.3s var(--ease-out);
+    transform 0.15s var(--ease-out),
+    box-shadow 0.15s var(--ease-out),
+    opacity 0.2s var(--ease-out);
 }
 
 .fab:hover {
@@ -222,7 +230,7 @@
   inset: 0;
   border-radius: 999px;
   border: 2px solid var(--color-brand);
-  animation: fab-pulse 2.6s var(--ease-out) infinite;
+  animation: fab-pulse 2s var(--ease-out) infinite;
   pointer-events: none;
 }
 
@@ -271,7 +279,7 @@
 }
 
 .order-modal[open] {
-  animation: modal-in 0.25s var(--ease-out);
+  animation: modal-in 0.16s var(--ease-out);
 }
 
 .order-modal__card {
@@ -293,7 +301,7 @@
   background: transparent;
   color: var(--color-ink-dim);
   cursor: pointer;
-  transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out);
+  transition: background-color 0.12s var(--ease-out), color 0.12s var(--ease-out);
 }
 
 .order-modal__close:hover {

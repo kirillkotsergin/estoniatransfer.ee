@@ -88,5 +88,10 @@ const t = useTranslations(lang);
     </div>
 
     <p class="reveal mt-6 text-[0.95rem] text-ink-muted" style="--d:5">{t("routes.other")}</p>
+
+    {/* Написания на втором алфавите — видимой строкой, а не скрытым текстом:
+        скрытые ключевые слова Google считает нарушением и снимает страницу.
+        Строка полезна и людям: на билетах и указателях названия латиницей. */}
+    <p class="reveal mt-3 text-[0.9rem] text-ink-dim" style="--d:6">{t("routes.latin")}</p>
   </div>
 </section>

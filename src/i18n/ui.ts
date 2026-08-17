@@ -106,10 +106,6 @@ export const ui = {
       "Пассажирские перевозки из Таллинна к пунктам пропуска Нарва, Койдула и Лухамаа. Забираем от двери и довозим прямо к шлагбауму: без пересадок, без ожидания на автовокзале и без счётчика, который набегает в пробке.",
     "hero.cta": "Рассчитать поездку",
     "hero.secondary": "Написать в WhatsApp",
-    "hero.trust.price": "за автомобиль",
-    "hero.trust.time": "выезд в любое время",
-    "hero.trust.seats": "места и багаж",
-
     "perks.title": "Что входит в цену",
     "perks.1": "Стоимость фиксируется до поездки: ни пробки, ни ночной выезд её не меняют",
     "perks.2": "Встреча в аэропорту и круизном порту — водитель ждёт с табличкой",
@@ -138,6 +134,8 @@ export const ui = {
     "routes.other": "Другое направление, поездка в аэропорт или обратный путь от границы — напишите, назовём цену.",
     "routes.km.short": "км",
     "routes.more": "Подробнее о маршруте",
+    "routes.latin":
+      "Те же маршруты в латинице, как их пишут в билетах и картах: Tallinn — Narva, Tallinn — Koidula, Tallinn — Luhamaa. Из Тарту — Tartu — Koidula и Tartu — Luhamaa.",
 
     // Общий каркас посадочных страниц маршрутов. Сами тексты — в src/data/routes.ts
     "bc.home": "Главная",
@@ -283,10 +281,6 @@ export const ui = {
       "Passenger transport from Tallinn to the Narva, Koidula and Luhamaa checkpoints. We pick you up at the door and drive you right to the barrier — no changes, no waiting at a bus station, no meter ticking in traffic.",
     "hero.cta": "Get a price",
     "hero.secondary": "Message on WhatsApp",
-    "hero.trust.price": "per car",
-    "hero.trust.time": "any hour",
-    "hero.trust.seats": "seats and luggage",
-
     "perks.title": "What the price covers",
     "perks.1": "The fare is fixed before departure: traffic and night trips do not change it",
     "perks.2": "Pickup at the airport and cruise port — the driver waits with a name board",
@@ -315,6 +309,8 @@ export const ui = {
     "routes.other": "Another destination, an airport run or the return trip from the border — message us for a price.",
     "routes.km.short": "km",
     "routes.more": "Route details",
+    "routes.latin":
+      "The same routes in Cyrillic, the way Russian-speaking passengers search for them: Таллинн — Нарва, Таллинн — Койдула, Таллинн — Лухамаа.",
 
     "bc.home": "Home",
     "route.badge": "Route",

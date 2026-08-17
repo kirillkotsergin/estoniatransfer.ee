@@ -16,13 +16,17 @@ const home = localePath(lang, "/");
 <header
   class="sticky top-0 z-40 border-b border-line/80 bg-page/80 backdrop-blur-xl backdrop-saturate-150"
 >
-  <div class="mx-auto flex max-w-6xl items-center gap-4 px-5 py-3.5">
+  {/* min-h фиксирует высоту строки. Без него высота шапки складывалась из
+      самого высокого ребёнка, а состав детей меняется: кнопка с телефоном
+      появляется только с sm, переключатель языков растёт при открытии. Любая
+      такая перемена смещала содержимое страницы вниз. */}
+  <div class="mx-auto flex min-h-[4.25rem] max-w-6xl items-center gap-4 px-5 py-3.5">
     <a href={home} class="flex items-center gap-2.5 font-semibold tracking-tight">
       <span
         class="grid size-9 place-items-center rounded-xl bg-brand text-ink"
         aria-hidden="true"
       >
-        <svg viewBox="0 0 24 24" fill="none" class="size-5">
+        <svg viewBox="0 0 24 24" fill="none" width="20" height="20" class="size-5">
           <path
             d="M3 15.5h18M6 15.5v2.2M18 15.5v2.2M4.2 15.5l1.9-6.1A2.5 2.5 0 0 1 8.5 7.6h7a2.5 2.5 0 0 1 2.4 1.8l1.9 6.1"
             stroke="currentColor"
