@@ -60,7 +60,7 @@ const photos = Object.entries(modules)
       </p>
     </div>
   ) : (
-    <figure class="relative" data-gallery>
+    <div class="relative" data-gallery>
       {/* Дорожка на scroll-snap: на телефоне это родной свайп с инерцией,
           без единой строки JS. Стрелки и точки — надстройка для мыши. */}
       <div
@@ -130,14 +130,11 @@ const photos = Object.entries(modules)
         </>
       )}
 
-      <figcaption data-gallery-caption class="mt-3 text-[0.88rem] text-ink-dim">
-        {photos[0].alt}
-      </figcaption>
-    </figure>
+    </div>
   )
 }
 
-<script is:inline define:vars={{ captionsList: photos.map((p) => p.alt) }}>
+<script is:inline>
   (function () {
     "use strict";
     var box = document.querySelector("[data-gallery]");
@@ -145,7 +142,6 @@ const photos = Object.entries(modules)
     var track = box.querySelector("[data-gallery-track]");
     var slides = track.children;
     var dots = box.querySelectorAll("[data-gallery-dot]");
-    var caption = box.querySelector("[data-gallery-caption]");
     var prev = box.querySelector("[data-gallery-prev]");
     var next = box.querySelector("[data-gallery-next]");
     if (!slides.length) return;
@@ -163,7 +159,6 @@ const photos = Object.entries(modules)
         dots[i].style.background = active ? "var(--color-brand)" : "";
         dots[i].setAttribute("aria-current", active ? "true" : "false");
       }
-      if (caption && captionsList[index]) caption.textContent = captionsList[index];
       if (prev) prev.disabled = index === 0;
       if (next) next.disabled = index === slides.length - 1;
     }
