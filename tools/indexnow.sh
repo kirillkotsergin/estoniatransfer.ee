@@ -22,16 +22,16 @@ KEY="8f832852ef7447b79a893e449784ffe2"
 HOST="estoniatransfer.ee"
 BASE="https://$HOST"
 
+URLS=()
 if [ "$#" -gt 0 ]; then
-  PATHS=("$@")
+  # Явно переданные пути: bash tools/indexnow.sh /transfer-tallinn-narva/
+  for p in "$@"; do URLS+=("$BASE$p"); done
 else
-  # Берём адреса из живой карты сайта — тогда список не разъезжается с сайтом
-  mapfile -t URLS < <(curl -fsS "$BASE/sitemap.xml" | grep -o '<loc>[^<]*</loc>' | sed -e 's|<loc>||' -e 's|</loc>||')
-fi
-
-if [ "${#PATHS[@]:-0}" -gt 0 ]; then
-  URLS=()
-  for p in "${PATHS[@]}"; do URLS+=("$BASE$p"); done
+  # Иначе берём адреса из живой карты сайта — тогда список не разъезжается
+  # с сайтом: карта генерируется из тех же данных, что и страницы.
+  while IFS= read -r u; do URLS+=("$u"); done < <(
+    curl -fsS "$BASE/sitemap.xml" | grep -o '<loc>[^<]*</loc>' | sed -e 's|<loc>||' -e 's|</loc>||'
+  )
 fi
 
 if [ "${#URLS[@]}" -eq 0 ]; then
