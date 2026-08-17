@@ -32,6 +32,9 @@ export const facts = {
   email: "info@estoniatransfer.ee",
   car: "Toyota Corolla",
   seats: 4,
+  driver: "Кирилл",
+  /** Место в очереди на границе — доплата к маршруту Нарва (как на ridego.ee). */
+  queueSlot: { price: 50, route: "narva" as const },
   routes: [
     { id: "narva", price: 130, km: 210, hours: "2 ч 30 мин", hoursEn: "2 h 30 min" },
     { id: "koidula", price: 160, km: 270, hours: "3 ч 5 мин", hoursEn: "3 h 5 min" },
@@ -84,6 +87,9 @@ export const ui = {
       "Самый южный переход, на шоссе Рига — Псков. Рейсовый транспорт до него не доходит, поэтому сюда едут либо на своей машине, либо трансфером.",
     "routes.km": "километров",
     "routes.time": "в пути",
+    "addon.title": "Место в очереди на границе",
+    "addon.text":
+      "Займём для вас время в очереди заранее — переходите в назначенный час, а не стоите вместе со всеми. Доплата к маршруту в Нарву.",
     "routes.other": "Другое направление, поездка в аэропорт или обратный путь от границы — напишите, назовём цену.",
 
     "how.eyebrow": "Как это работает",
@@ -127,6 +133,11 @@ export const ui = {
     "car.f5": "Встреча с табличкой в аэропорту и порту",
     "car.f6": "Оплата наличными или переводом",
 
+    "driver.role": "Ваш водитель",
+    "driver.text":
+      "За рулём всегда один человек — он же отвечает на сообщения и звонки. Вы заранее знаете, кто вас повезёт, и обсуждаете детали напрямую, без диспетчера. Говорит по-русски.",
+    "driver.photoAlt": "Кирилл — водитель EstoniaTransfer",
+
     "order.eyebrow": "Заявка",
     "order.title": "Оставьте заявку",
     "order.or": "или сразу в мессенджер",
@@ -158,7 +169,7 @@ export const ui = {
     "faq.title": "Коротко о главном",
     "faq.q1": "Сколько стоит трансфер и что входит в эту сумму?",
     "faq.a1":
-      "До Нарвы — 130 €, до Койдулы и Лухамаа — 160 € за автомобиль целиком. В сумму уже входят встреча с табличкой, помощь с багажом, детское кресло и ожидание рейса. Доплат за ночное время и количество чемоданов нет.",
+      "До Нарвы — 130 €, до Койдулы и Лухамаа — 160 € за автомобиль целиком. В сумму уже входят встреча с табличкой, помощь с багажом, детское кресло и ожидание рейса. Доплат за ночное время и количество чемоданов нет. Отдельно оплачивается только место в очереди на границе, если оно нужно: плюс 50 € к маршруту в Нарву.",
     "faq.q2": "Сколько занимает дорога?",
     "faq.a2":
       "До Нарвы около 2 часов 30 минут, до Койдулы примерно 3 часа, до Лухамаа — 3 часа 10 минут. В снегопад и в плотном движении дольше, поэтому к открытию перехода выезжаем с запасом.",
@@ -228,6 +239,9 @@ export const ui = {
       "The southernmost crossing, on the Riga — Pskov road. No scheduled transport reaches it, so people arrive either by their own car or by transfer.",
     "routes.km": "kilometres",
     "routes.time": "on the road",
+    "addon.title": "A booked slot in the border queue",
+    "addon.text":
+      "We reserve your place in the queue in advance, so you cross at an agreed hour instead of waiting with everyone else. Charged on top of the Narva route.",
     "routes.other": "Another destination, an airport run or the return trip from the border — message us for a price.",
 
     "how.eyebrow": "How it works",
@@ -271,6 +285,11 @@ export const ui = {
     "car.f5": "Name-board pickup at the airport and port",
     "car.f6": "Payment in cash or by transfer",
 
+    "driver.role": "Your driver",
+    "driver.text":
+      "The same person is always behind the wheel and answers your messages and calls. You know in advance who will drive you and settle the details directly, with no dispatcher. Speaks Russian.",
+    "driver.photoAlt": "Kirill — the EstoniaTransfer driver",
+
     "order.eyebrow": "Request",
     "order.title": "Send a request",
     "order.or": "or message us directly",
@@ -302,7 +321,7 @@ export const ui = {
     "faq.title": "The short answers",
     "faq.q1": "What does the transfer cost and what is included?",
     "faq.a1":
-      "Narva is €130; Koidula and Luhamaa are €160 for the whole car. The fare already covers the name-board pickup, help with luggage, a child seat and waiting for your flight. There is no surcharge for night trips or extra suitcases.",
+      "Narva is €130; Koidula and Luhamaa are €160 for the whole car. The fare already covers the name-board pickup, help with luggage, a child seat and waiting for your flight. There is no surcharge for night trips or extra suitcases. The only extra is a booked slot in the border queue, if you want one: €50 on top of the Narva route.",
     "faq.q2": "How long is the drive?",
     "faq.a2":
       "About 2 hours 30 minutes to Narva, roughly 3 hours to Koidula and 3 hours 10 minutes to Luhamaa. Snow and heavy traffic make it longer, so we leave with time in hand when the crossing opens.",

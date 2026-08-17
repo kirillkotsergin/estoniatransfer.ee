@@ -1,7 +1,9 @@
 ---
 import OrderForm from "./OrderForm.astro";
 import CarGallery from "./CarGallery.astro";
-import { useTranslations, type Lang } from "../i18n/ui";
+import { Image } from "astro:assets";
+import driverPhoto from "../assets/driver/driver.jpg";
+import { useTranslations, facts, type Lang } from "../i18n/ui";
 
 interface Props {
   lang: Lang;
@@ -46,6 +48,28 @@ const features = ["car.f1", "car.f2", "car.f3", "car.f4", "car.f5", "car.f6"] as
 
       <div class="reveal mt-8" style="--d:4">
         <CarGallery lang={lang} />
+      </div>
+
+      {/* Карточка водителя: имя и лицо снимают часть недоверия к частному
+          трансферу лучше любого абзаца про качество сервиса. */}
+      <div class="reveal glass mt-5 flex items-center gap-5 rounded-[--radius-card] p-5" style="--d:5">
+        <Image
+          src={driverPhoto}
+          alt={t("driver.photoAlt")}
+          widths={[112, 224]}
+          sizes="112px"
+          format="webp"
+          loading="lazy"
+          decoding="async"
+          class="size-20 shrink-0 rounded-full object-cover sm:size-24"
+        />
+        <div>
+          <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-brand-ink">
+            {t("driver.role")}
+          </p>
+          <p class="mt-1 text-lg font-semibold tracking-tight">{facts.driver}</p>
+          <p class="mt-1.5 text-[0.93rem] leading-relaxed text-ink-muted">{t("driver.text")}</p>
+        </div>
       </div>
     </div>
 

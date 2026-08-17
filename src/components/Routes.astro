@@ -57,6 +57,21 @@ const t = useTranslations(lang);
       }
     </ul>
 
-    <p class="reveal mt-8 text-[0.95rem] text-ink-muted" style="--d:4">{t("routes.other")}</p>
+    {/* Доплата за место в очереди: отдельной полосой, а не строкой в карточке —
+        иначе её читают как часть цены маршрута. */}
+    <div
+      class="reveal mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[--radius-card] border border-brand/35 bg-brand-soft px-6 py-5"
+      style="--d:4"
+    >
+      <p class="text-2xl font-semibold tracking-tight text-brand-ink">
+        +{facts.queueSlot.price} €
+      </p>
+      <div class="min-w-56 flex-1">
+        <h3 class="font-semibold tracking-tight">{t("addon.title")}</h3>
+        <p class="mt-1 text-[0.93rem] leading-relaxed text-ink-muted">{t("addon.text")}</p>
+      </div>
+    </div>
+
+    <p class="reveal mt-6 text-[0.95rem] text-ink-muted" style="--d:5">{t("routes.other")}</p>
   </div>
 </section>
