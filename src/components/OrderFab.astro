@@ -1,0 +1,131 @@
+---
+import { useTranslations, facts, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const logo = {
+  wa: "https://cdn.simpleicons.org/whatsapp/25D366",
+  tg: "https://cdn.simpleicons.org/telegram/26A5E4",
+};
+---
+
+{/* Плавающая кнопка со свечением. Свечение — два слоя: постоянный ореол в
+    box-shadow и пульсирующее кольцо отдельным span, чтобы анимировать только
+    его и не перерисовывать саму кнопку. Блок prefers-reduced-motion в
+    global.css гасит пульсацию для тех, кому анимации мешают. */}
+<button type="button" class="fab" data-fab aria-haspopup="dialog">
+  <span class="fab__ring" aria-hidden="true"></span>
+  <svg viewBox="0 0 24 24" fill="none" class="size-5 shrink-0" aria-hidden="true">
+    <path
+      d="M6.6 3.5h2.9l1.5 3.7-2 1.3a11 11 0 0 0 5 5l1.3-2 3.7 1.5v2.9a1.6 1.6 0 0 1-1.8 1.6A15.6 15.6 0 0 1 5 5.3 1.6 1.6 0 0 1 6.6 3.5Z"
+      fill="currentColor"></path>
+  </svg>
+  <span class="relative">{t("fab.label")}</span>
+</button>
+
+{/* Нативный <dialog>: фокус запирается внутри сам, Escape закрывает,
+    возврат фокуса на кнопку тоже штатный. Своя реализация на div потребовала
+    бы всего этого руками и всё равно вышла бы хуже. */}
+<dialog class="order-modal" data-fab-dialog aria-labelledby="fab-title">
+  <div class="glass order-modal__card">
+    <button type="button" class="order-modal__close" data-fab-close aria-label={t("fab.close")}>
+      <svg viewBox="0 0 24 24" fill="none" class="size-5" aria-hidden="true">
+        <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        ></path>
+      </svg>
+    </button>
+
+    <p class="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+      {t("order.eyebrow")}
+    </p>
+    <h2 id="fab-title" class="mt-2 text-2xl font-semibold tracking-tight">{t("fab.title")}</h2>
+    <p class="mt-3 text-[0.97rem] leading-relaxed text-ink-muted">
+      <a class="font-semibold text-ink hover:text-brand-ink" href={facts.phoneHref}>
+        {facts.phone}
+      </a>. {t("fab.text")}
+    </p>
+
+    <div class="mt-6 grid gap-2.5">
+      <a
+        href={facts.whatsapp}
+        target="_blank"
+        rel="noopener"
+        class="flex items-center justify-center gap-2.5 rounded-2xl bg-brand px-5 py-3.5 font-semibold text-ink transition-colors hover:bg-brand-hover"
+      >
+        <img src={logo.wa} alt="" width="22" height="22" loading="lazy" decoding="async" class="size-5.5" />
+        {t("fab.wa")}
+      </a>
+      <a
+        href={facts.telegram}
+        target="_blank"
+        rel="noopener"
+        class="flex items-center justify-center gap-2.5 rounded-2xl border border-line-strong/60 bg-page px-5 py-3.5 font-semibold transition-colors hover:bg-surface"
+      >
+        <img src={logo.tg} alt="" width="22" height="22" loading="lazy" decoding="async" class="size-5.5" />
+        {t("fab.tg")}
+      </a>
+      <a
+        href={facts.phoneHref}
+        class="flex items-center justify-center gap-2.5 rounded-2xl border border-line-strong/60 bg-page px-5 py-3.5 font-semibold transition-colors hover:bg-surface"
+      >
+        <svg viewBox="0 0 24 24" fill="none" class="size-5 text-brand-ink" aria-hidden="true">
+          <path
+            d="M6.6 3.5h2.9l1.5 3.7-2 1.3a11 11 0 0 0 5 5l1.3-2 3.7 1.5v2.9a1.6 1.6 0 0 1-1.8 1.6A15.6 15.6 0 0 1 5 5.3 1.6 1.6 0 0 1 6.6 3.5Z"
+            fill="currentColor"></path>
+        </svg>
+        {t("fab.call")}
+      </a>
+    </div>
+  </div>
+</dialog>
+
+<script is:inline>
+  (function () {
+    "use strict";
+    var fab = document.querySelector("[data-fab]");
+    var dlg = document.querySelector("[data-fab-dialog]");
+    if (!fab || !dlg) return;
+
+    // Без showModal (очень старый браузер) кнопка не должна быть тупиком:
+    // уводим человека к форме на странице.
+    if (typeof dlg.showModal !== "function") {
+      fab.addEventListener("click", function () {
+        location.hash = "#order";
+      });
+      return;
+    }
+
+    fab.addEventListener("click", function () {
+      dlg.showModal();
+    });
+    var close = dlg.querySelector("[data-fab-close]");
+    if (close) close.addEventListener("click", function () { dlg.close(); });
+    // Клик по затемнению вне карточки
+    dlg.addEventListener("click", function (e) {
+      if (e.target === dlg) dlg.close();
+    });
+    // Ушли в мессенджер — модалку за собой закрываем
+    dlg.querySelectorAll("a[href]").forEach(function (a) {
+      a.addEventListener("click", function () { dlg.close(); });
+    });
+
+    // Прячем кнопку, когда блок заявки сам на экране: перекрывать форму,
+    // к которой она ведёт, незачем.
+    var order = document.getElementById("order");
+    if (order && "IntersectionObserver" in window) {
+      var io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (e) {
+            fab.classList.toggle("fab--hidden", e.isIntersecting);
+          });
+        },
+        { threshold: 0.12 }
+      );
+      io.observe(order);
+    }
+  })();
+</script>

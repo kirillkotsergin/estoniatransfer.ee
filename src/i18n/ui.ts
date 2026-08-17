@@ -142,6 +142,14 @@ export const ui = {
     "order.title": "Оставьте заявку",
     "order.or": "или сразу в мессенджер",
 
+    "fab.label": "Заказать",
+    "fab.title": "Заказ трансфера",
+    "fab.text": "Выберите удобный способ связи:",
+    "fab.wa": "Написать в WhatsApp",
+    "fab.tg": "Написать в Telegram",
+    "fab.call": "Позвонить",
+    "fab.close": "Закрыть",
+
     "form.from": "Поездка из",
     "form.to": "Едем до",
     "form.date": "Дата поездки",
@@ -293,6 +301,14 @@ export const ui = {
     "order.eyebrow": "Request",
     "order.title": "Send a request",
     "order.or": "or message us directly",
+
+    "fab.label": "Book",
+    "fab.title": "Book a transfer",
+    "fab.text": "Choose how to reach us:",
+    "fab.wa": "Message on WhatsApp",
+    "fab.tg": "Message on Telegram",
+    "fab.call": "Call",
+    "fab.close": "Close",
 
     "form.from": "From",
     "form.to": "To",
