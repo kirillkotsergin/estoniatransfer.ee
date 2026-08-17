@@ -140,18 +140,24 @@ const canonical = new URL(localePath(lang, path), site).href;
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImageUrl} />
 
-    {/* Иконки. Без хотя бы одной такой ссылки браузер сам просит /favicon.ico —
-        и пока его не было, сайт оставался без иконки во всех браузерах, а SVG
-        рядом никто не открывал.
+    {/* Иконки. Порядок и размеры подогнаны под требования Google к иконке
+        в выдаче: она должна быть квадратной и **кратной 48 px** (48, 96, 192)
+        либо валидным SVG. Поэтому первыми идут SVG и PNG кратных размеров.
 
-        ico объявлен первым и с size: его берут старые браузеры и Google для
-        сниппета в выдаче. Браузеры, понимающие SVG, предпочтут второй — он
-        масштабируется без потерь и весит 341 байт.
+        Раньше здесь первым стоял <link rel="icon" href="/favicon.ico"
+        sizes="32x32"> — то есть Google прямым текстом сообщали размер 32,
+        который его правилу не отвечает. Сам .ico остался для старых браузеров,
+        но уже без атрибута sizes: внутри три кадра (16, 32, 48), и врать про
+        один из них незачем.
+
         apple-touch-icon нужен отдельным файлом: iOS не читает ни SVG, ни
-        манифест. Файлы генерируются из favicon.svg скриптом tools/make-icons.mjs
-        — руками не правим, иначе они разойдутся между собой. */}
-    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        манифест. Файлы генерируются из favicon.svg скриптом
+        tools/make-icons.mjs — руками не правим, иначе разойдутся. */}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-192x192.png" type="image/png" sizes="192x192" />
+    <link rel="icon" href="/favicon-96x96.png" type="image/png" sizes="96x96" />
+    <link rel="icon" href="/favicon-48x48.png" type="image/png" sizes="48x48" />
+    <link rel="icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
