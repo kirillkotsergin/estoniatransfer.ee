@@ -140,6 +140,21 @@ const canonical = new URL(localePath(lang, path), site).href;
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImageUrl} />
 
+    {/* Иконки. Без хотя бы одной такой ссылки браузер сам просит /favicon.ico —
+        и пока его не было, сайт оставался без иконки во всех браузерах, а SVG
+        рядом никто не открывал.
+
+        ico объявлен первым и с size: его берут старые браузеры и Google для
+        сниппета в выдаче. Браузеры, понимающие SVG, предпочтут второй — он
+        масштабируется без потерь и весит 341 байт.
+        apple-touch-icon нужен отдельным файлом: iOS не читает ни SVG, ни
+        манифест. Файлы генерируются из favicon.svg скриптом tools/make-icons.mjs
+        — руками не правим, иначе они разойдутся между собой. */}
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
     <meta name="theme-color" content="#ffffff" />
 
     {/* Метка до отрисовки: анимации появления включаются только с JS,
