@@ -1,0 +1,43 @@
+---
+import Base from "../layouts/Base.astro";
+import { facts } from "../i18n/ui";
+
+const lang = "ru" as const;
+---
+
+<Base
+  lang={lang}
+  path="/"
+  title="Страница не найдена — EstoniaTransfer"
+  description="Такой страницы нет. Вернитесь на главную: направления, цены и заказ поездки."
+>
+  <section class="relative overflow-hidden">
+    <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div class="blob left-[10%] top-[-10%] size-[22rem] bg-brand/30"></div>
+    </div>
+    <div class="relative mx-auto max-w-2xl px-5 py-24 text-center">
+      <p class="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">404</p>
+      <h1 class="mt-4 text-[clamp(2rem,5vw,3.2rem)] font-semibold tracking-[-0.02em]">
+        Такой страницы нет
+      </h1>
+      <p class="mt-4 text-ink-muted">
+        Возможно, ссылка устарела или в адресе опечатка. На главной — направления,
+        цены и способы связаться.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <a
+          href="/"
+          class="rounded-2xl bg-brand px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-brand-hover"
+          >На главную</a
+        >
+        <a
+          href={facts.whatsapp}
+          target="_blank"
+          rel="noopener"
+          class="rounded-2xl border border-line-strong/60 px-6 py-3.5 font-semibold transition-colors hover:bg-surface"
+          >Написать в WhatsApp</a
+        >
+      </div>
+    </div>
+  </section>
+</Base>

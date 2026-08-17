@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Токены светлой темы.
+
+   Главная ловушка светлой темы — оранжевый. Считал контраст по WCAG,
+   и цифры такие:
+     белый текст на #ff6a00        → 2.87  (норма 4.5) — не годится
+     #ff6a00 текстом на белом      → 2.87  — тоже не годится
+     почти чёрный текст на #ff6a00 → 6.85  — годится
+     #c44a00 текстом на белом      → 4.85  — годится
+
+   Отсюда решение: в палитре ДВА оранжевых с разными ролями.
+   --color-brand      — только заливки и крупная графика, текст поверх тёмный
+   --color-brand-ink  — только буквы: ссылки, акценты в тексте
+   Белого текста на оранжевом в проекте нет нигде. Это не вкусовщина,
+   а единственный способ сохранить яркий бренд и пройти AA.
+   ============================================================ */
+
+@theme {
+  --color-page: #ffffff;
+  --color-surface: #f5f6f8;
+
+  /* Текст. Проверено на обоих фонах: белом и #f5f6f8 */
+  --color-ink: #0b0b0c; /* 19.7 / 18.2 */
+  --color-ink-muted: #4a4f57; /* 8.2 / 7.6 */
+  --color-ink-dim: #686e79; /* 5.1 / 4.7 — светлее нельзя, #6b7280 уже проваливается на подложке */
+
+  /* Оранжевый: две роли, не путать */
+  --color-brand: #ff6a00; /* заливка, под тёмный текст */
+  --color-brand-hover: #f26100;
+  --color-brand-ink: #c44a00; /* текст и ссылки на белом */
+  --color-brand-soft: #fff3ea; /* нежная подложка под бейджи */
+
+  --color-line: #e5e7eb; /* декоративные разделители */
+  --color-line-strong: #8b929d; /* рамки полей ввода: 3.14, порог для UI 3.0 */
+
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+
+  --radius-card: 20px;
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ---------- база ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Фокус виден всегда и на белом, и на оранжевом: тёмное кольцо с отступом */
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------- стекломорфизм ---------- */
+/* Стеклу нужен фон, иначе на белом оно не читается вообще. Поэтому под
+   glass-карточками лежат мягкие цветовые пятна (.blob), а сам текст внутри
+   остаётся --color-ink: контраст не зависит от того, что просвечивает. */
+
+.glass {
+  background: color-mix(in oklab, #ffffff 72%, transparent);
+  backdrop-filter: blur(16px) saturate(1.08);
+  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+  border: 1px solid rgb(255 255 255 / 0.65);
+  box-shadow:
+    0 1px 2px rgb(11 11 12 / 0.04),
+    0 18px 40px -18px rgb(11 11 12 / 0.16);
+}
+
+/* Браузеру без backdrop-filter отдаём плотный белый — контраст сохраняется */
+@supports not (backdrop-filter: blur(4px)) {
+  .glass {
+    background: #ffffff;
+  }
+}
+
+.blob {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(64px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* ---------- появление при скролле ---------- */
+/* Класс js ставится в <head>. Без JS контент виден целиком — правило
+   действует только когда скрипт работает. */
+
+.js .reveal {
+  opacity: 0;
+  translate: 0 14px;
+}
+
+.js .reveal.is-in {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 0.6s var(--ease-out),
+    translate 0.6s var(--ease-out);
+  transition-delay: calc(var(--d, 0) * 70ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .js .reveal {
+    opacity: 1;
+    translate: 0 0;
+  }
+}

@@ -1,0 +1,101 @@
+---
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { useTranslations, languages, defaultLang, localePath, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+  path?: string;
+  title?: string;
+  description?: string;
+}
+
+const { lang, path = "/", title, description } = Astro.props;
+const t = useTranslations(lang);
+const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
+const pageTitle = title ?? t("meta.title");
+const pageDesc = description ?? t("meta.description");
+const canonical = new URL(localePath(lang, path), site).href;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDesc} />
+    <link rel="canonical" href={canonical} />
+    <meta
+      name="robots"
+      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+    />
+
+    {/* Каждый язык — отдельный URL, плюс x-default. Без этого поисковик
+        считает версии дублями, а не переводами. */}
+    {
+      (Object.keys(languages) as Lang[]).map((l) => (
+        <link rel="alternate" hreflang={l} href={new URL(localePath(l, path), site).href} />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={new URL(localePath(defaultLang, path), site).href} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="EstoniaTransfer" />
+    <meta property="og:locale" content={lang === "ru" ? "ru_RU" : "en_US"} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <meta name="theme-color" content="#ffffff" />
+
+    {/* Метка до отрисовки: анимации появления включаются только с JS,
+        без него контент виден целиком. */}
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
+  </head>
+
+  <body class="bg-page text-ink antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-white"
+      >{lang === "ru" ? "Перейти к содержанию" : "Skip to content"}</a
+    >
+
+    <Header lang={lang} path={path} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+
+    <script is:inline>
+      // Появление при скролле. Ванильно и дешёво: ~600 байт, без библиотек.
+      // Если IntersectionObserver недоступен — показываем всё сразу.
+      (function () {
+        "use strict";
+        var items = document.querySelectorAll(".reveal");
+        if (!("IntersectionObserver" in window)) {
+          for (var i = 0; i < items.length; i++) items[i].classList.add("is-in");
+          return;
+        }
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) {
+                e.target.classList.add("is-in");
+                io.unobserve(e.target);
+              }
+            });
+          },
+          { rootMargin: "0px 0px -10% 0px", threshold: 0.06 }
+        );
+        items.forEach(function (el) {
+          io.observe(el);
+        });
+      })();
+    </script>
+  </body>
+</html>

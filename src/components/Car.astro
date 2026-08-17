@@ -1,0 +1,58 @@
+---
+import OrderForm from "./OrderForm.astro";
+import { useTranslations, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const features = ["car.f1", "car.f2", "car.f3", "car.f4", "car.f5", "car.f6"] as const;
+---
+
+<section id="car" class="relative scroll-mt-24 overflow-hidden py-16 sm:py-24">
+  <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+    <div class="blob right-[-10%] top-[10%] size-[24rem] bg-brand/25"></div>
+  </div>
+
+  <div class="relative mx-auto grid max-w-6xl gap-10 px-5 lg:grid-cols-2 lg:gap-14">
+    <div>
+      <p class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+        {t("car.eyebrow")}
+      </p>
+      <h2
+        class="reveal mt-4 text-[clamp(1.9rem,3.6vw,2.9rem)] font-semibold leading-tight tracking-[-0.02em]"
+        style="--d:1"
+      >
+        {t("car.title")}
+      </h2>
+      <p class="reveal mt-4 max-w-lg text-ink-muted" style="--d:2">{t("car.lead")}</p>
+
+      <ul class="reveal mt-8 grid gap-3 sm:grid-cols-2" style="--d:3">
+        {
+          features.map((k) => (
+            <li class="flex items-start gap-2.5 text-[0.95rem]">
+              <span class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-ink" aria-hidden="true">
+                <svg viewBox="0 0 20 20" fill="none" class="size-3.5">
+                  <path d="M4.5 10.5l3.2 3.2 7.8-7.8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="text-ink-muted">{t(k)}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      {/* ПРОВЕРЬ: заменить на реальное фото машины, когда будет снимок.
+          Пока намеренно не ставлю фото с чужого сайта. */}
+      <div
+        class="reveal mt-8 grid aspect-[16/9] place-items-center rounded-[--radius-card] border border-dashed border-line-strong/50 bg-surface text-[0.9rem] text-ink-dim"
+        style="--d:4"
+      >
+        {lang === "ru" ? "Здесь будет фото автомобиля" : "Vehicle photo goes here"}
+      </div>
+    </div>
+
+    <OrderForm lang={lang} />
+  </div>
+</section>

@@ -1,17 +1,19 @@
-# Выкладка статики на zone.ee.
+# Сборка Astro и выкладка на zone.ee.
 #
-# ВАЖНО про триггер. Сейчас workflow запускается ТОЛЬКО вручную, и это сделано
-# намеренно: на домене пока живёт старый WordPress, а rsync --delete делает
-# хостинг точной копией public/. Пока сайт не готов, автоматический запуск по
-# push снёс бы работающий сайт. После первого успешного выката раскомментируйте
-# блок push ниже.
+# ВАЖНО про триггер. Пока запуск ТОЛЬКО вручную: на домене живёт старый
+# WordPress, а rsync --delete делает хостинг точной копией dist/. Один запуск
+# с недособранным сайтом удалил бы работающий. После первого успешного выката
+# раскомментируйте блок push.
+#
+# Node нужен только здесь, на сборке. На сервере его нет и не требуется:
+# Astro отдаёт готовые HTML-файлы.
 name: deploy
 
 on:
   workflow_dispatch:
   # push:
   #   branches: [main]
-  #   paths: ['public/**', '.github/workflows/deploy.yml']
+  #   paths: ['src/**', 'public/**', 'package*.json', 'astro.config.mjs', '.github/workflows/deploy.yml']
 
 concurrency:
   group: deploy
@@ -19,13 +21,16 @@ concurrency:
 
 jobs:
   deploy:
-    name: rsync public/ -> htdocs
+    name: build + rsync dist/ -> htdocs
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      # ---------- проверки до того, как что-то менять на сервере ----------
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
 
       - name: Проверить, что заданы все секреты
         env:
@@ -46,25 +51,31 @@ jobs:
           fi
           echo "Все четыре секрета на месте."
 
-      # Тот самый предохранитель. Без него один запуск по недоразумению
-      # удаляет живой сайт и оставляет пустой каталог.
-      - name: Проверить, что public/ действительно содержит сайт
+      - name: Установить зависимости
+        run: npm ci
+
+      - name: Собрать сайт
+        run: npm run build
+
+      # Предохранитель. Без него один запуск по недоразумению удаляет живой
+      # сайт и оставляет пустой каталог.
+      - name: Проверить, что dist/ действительно содержит сайт
         run: |
-          if [ ! -s public/index.html ]; then
-            echo "::error::public/index.html отсутствует или пуст — деплой остановлен."
+          if [ ! -s dist/index.html ]; then
+            echo "::error::dist/index.html отсутствует или пуст — деплой остановлен."
             echo "rsync --delete сделал бы htdocs копией пустого каталога."
             exit 1
           fi
-          files=$(find public -type f | wc -l)
-          echo "Файлов в public/: $files"
-          if [ "$files" -lt 5 ]; then
-            echo "::error::В public/ всего $files файлов — это похоже на заготовку, а не на сайт."
+          files=$(find dist -type f | wc -l)
+          echo "Файлов в dist/: $files"
+          if [ "$files" -lt 3 ]; then
+            echo "::error::В dist/ всего $files файлов — это похоже на сломанную сборку."
             exit 1
           fi
-          if ! grep -qi "estoniatransfer" public/index.html; then
-            echo "::error::В public/index.html нет упоминания estoniatransfer — это не тот сайт."
-            exit 1
-          fi
+          grep -qi "estoniatransfer" dist/index.html \
+            || { echo "::error::В dist/index.html нет упоминания estoniatransfer."; exit 1; }
+          test -s dist/en/index.html \
+            || { echo "::error::Английская версия не собралась."; exit 1; }
 
       - name: Подготовить SSH
         env:
@@ -94,8 +105,6 @@ jobs:
             "$USER@$HOST" "test -d '$PATH_REMOTE' && test -w '$PATH_REMOTE' && command -v rsync >/dev/null" \
             || { echo "::error::Вход не удался, нет каталога, нет права записи или нет rsync."; exit 1; }
 
-      # ---------- собственно выкладка ----------
-
       - name: rsync
         env:
           USER: ${{ secrets.ZONE_SSH_USER }}
@@ -106,16 +115,17 @@ jobs:
             --exclude='.well-known/' \
             --exclude='.git*' \
             -e "ssh -i ~/.ssh/deploy_key -o BatchMode=yes" \
-            public/ "$USER@$HOST:$PATH_REMOTE/"
+            dist/ "$USER@$HOST:$PATH_REMOTE/"
 
-      # Проверяем не «rsync не упал», а что сайт реально отдаётся.
       - name: Smoke-check
         env:
           HOST: ${{ secrets.ZONE_SSH_HOST }}
         run: |
           sleep 3
-          code=$(curl -s -o /tmp/page.html -w '%{http_code}' "https://$HOST/")
-          echo "Код ответа: $code"
-          [ "$code" = "200" ] || { echo "::error::Главная отдала $code вместо 200."; exit 1; }
-          grep -qi "transfer" /tmp/page.html || { echo "::error::В ответе нет ожидаемого текста."; exit 1; }
-          echo "Сайт отвечает и отдаёт нужную страницу."
+          for p in "/" "/en/"; do
+            code=$(curl -s -o /tmp/page.html -w '%{http_code}' "https://$HOST$p")
+            echo "$p → $code"
+            [ "$code" = "200" ] || { echo "::error::$p отдал $code вместо 200."; exit 1; }
+            grep -qi "transfer" /tmp/page.html || { echo "::error::В ответе $p нет ожидаемого текста."; exit 1; }
+          done
+          echo "Оба языка отвечают."

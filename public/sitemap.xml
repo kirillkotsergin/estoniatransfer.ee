@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Заполняется руками: страниц пока две. Добавил страницу — допиши сюда,
+     иначе поисковик узнает о ней только по внутренним ссылкам.
+     xhtml:link — связка языковых версий, чтобы их не считали дублями. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://estoniatransfer.ee/</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://estoniatransfer.ee/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://estoniatransfer.ee/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://estoniatransfer.ee/"/>
+  </url>
+  <url>
+    <loc>https://estoniatransfer.ee/en/</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://estoniatransfer.ee/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://estoniatransfer.ee/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://estoniatransfer.ee/"/>
+  </url>
+</urlset>

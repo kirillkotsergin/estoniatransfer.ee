@@ -1,0 +1,32 @@
+---
+import { languages, localePath, useTranslations, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+  path?: string;
+}
+const { lang, path = "/" } = Astro.props;
+const t = useTranslations(lang);
+const codes = Object.keys(languages) as Lang[];
+---
+
+{/* Простые ссылки, а не выпадающий список на JS: переключатель должен
+    работать и быть виден краулеру как обычная ссылка на другой язык. */}
+<nav class="ml-auto flex items-center gap-1 md:ml-0" aria-label={t("lang.label")}>
+  {
+    codes.map((code) => (
+      <a
+        href={localePath(code, path)}
+        hreflang={code}
+        lang={code}
+        aria-current={code === lang ? "true" : undefined}
+        class:list={[
+          "rounded-lg px-2.5 py-1.5 text-[0.8rem] font-semibold uppercase tracking-wide transition-colors",
+          code === lang ? "bg-ink text-white" : "text-ink-dim hover:text-ink",
+        ]}
+      >
+        {code}
+      </a>
+    ))
+  }
+</nav>

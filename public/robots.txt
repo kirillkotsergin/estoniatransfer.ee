@@ -1,0 +1,31 @@
+# Сайт открыт целиком: закрывать нечего.
+User-agent: *
+Allow: /
+
+# ИИ-ассистенты и их поисковые краулеры — разрешены явно, чтобы намерение
+# читалось однозначно и было куда поставить Disallow, если передумаем.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://estoniatransfer.ee/sitemap.xml

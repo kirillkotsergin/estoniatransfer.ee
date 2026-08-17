@@ -1,0 +1,71 @@
+---
+import { useTranslations, facts, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const minPrice = Math.min(...facts.routes.map((r) => r.price));
+---
+
+<section class="relative overflow-hidden">
+  {/* Цветные пятна: они и есть фон, из-за которого стекло вообще читается */}
+  <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+    <div class="blob left-[-8%] top-[-18%] size-[26rem] bg-brand/35"></div>
+    <div class="blob right-[-6%] top-[8%] size-[22rem] bg-[#7aa2ff]/25"></div>
+    <div class="blob bottom-[-30%] left-[35%] size-[24rem] bg-brand/20"></div>
+  </div>
+
+  <div class="relative mx-auto max-w-6xl px-5 pb-16 pt-14 sm:pb-24 sm:pt-20">
+    <p class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+      {t("hero.eyebrow")}
+    </p>
+
+    <h1
+      class="reveal mt-5 max-w-3xl text-balance text-[clamp(2.4rem,6.2vw,4.6rem)] font-semibold leading-[1.02] tracking-[-0.03em]"
+      style="--d:1"
+    >
+      {t("hero.title.1")}<br />
+      <span class="text-brand-ink">{t("hero.title.2")}</span>
+    </h1>
+
+    <p class="reveal mt-6 max-w-2xl text-[1.06rem] leading-relaxed text-ink-muted" style="--d:2">
+      {t("hero.lead")}
+    </p>
+
+    <div class="reveal mt-9 flex flex-wrap items-center gap-3" style="--d:3">
+      <a
+        href="#order"
+        class="rounded-2xl bg-brand px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-brand-hover"
+      >
+        {t("hero.cta")}
+      </a>
+      <a
+        href={facts.whatsapp}
+        target="_blank"
+        rel="noopener"
+        class="rounded-2xl border border-line-strong/60 px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-surface"
+      >
+        {t("hero.secondary")}
+      </a>
+    </div>
+
+    <dl class="reveal mt-12 grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3" style="--d:4">
+      <div class="glass rounded-[--radius-card] px-5 py-4">
+        <dt class="text-[0.82rem] text-ink-dim">{t("hero.trust.price")}</dt>
+        <dd class="mt-1 text-2xl font-semibold tracking-tight">
+          {t("common.from")} {minPrice} €
+        </dd>
+      </div>
+      <div class="glass rounded-[--radius-card] px-5 py-4">
+        <dt class="text-[0.82rem] text-ink-dim">{t("hero.trust.time")}</dt>
+        <dd class="mt-1 text-2xl font-semibold tracking-tight">24/7</dd>
+      </div>
+      <div class="glass rounded-[--radius-card] px-5 py-4">
+        <dt class="text-[0.82rem] text-ink-dim">{t("hero.trust.seats")}</dt>
+        <dd class="mt-1 text-2xl font-semibold tracking-tight">{facts.seats} + 2</dd>
+      </div>
+    </dl>
+  </div>
+</section>
