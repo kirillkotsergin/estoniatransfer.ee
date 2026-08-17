@@ -76,9 +76,12 @@ $phone = clean($_POST['phone'] ?? '', 40);
 $email = clean($_POST['email'] ?? '', 120);
 $lang  = clean($_POST['lang'] ?? 'ru', 5);
 
-$allowedCities = ['tallinn', 'narva', 'koidula', 'luhamaa'];
+// Список городов продублирован в src/i18n/ui.ts (cities). Расходиться им нельзя:
+// форма отдаст id, которого здесь нет, и заявка вернётся с 422.
+$allowedCities = ['tallinn', 'tartu', 'narva', 'koidula', 'luhamaa'];
 $cityNames = [
     'tallinn' => 'Таллинн',
+    'tartu' => 'Тарту',
     'narva' => 'Нарва',
     'koidula' => 'Койдула',
     'luhamaa' => 'Лухамаа',

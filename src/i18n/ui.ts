@@ -390,6 +390,7 @@ export const ui = {
 /** Города для формы. value — язык-независимый id, подпись переводится. */
 export const cities = {
   tallinn: { ru: "Таллинн", en: "Tallinn" },
+  tartu: { ru: "Тарту", en: "Tartu" },
   narva: { ru: "Нарва", en: "Narva" },
   koidula: { ru: "Койдула", en: "Koidula" },
   luhamaa: { ru: "Лухамаа", en: "Luhamaa" },
@@ -397,8 +398,12 @@ export const cities = {
 
 export type CityId = keyof typeof cities;
 
-export const fromOrder: CityId[] = ["tallinn", "narva", "koidula", "luhamaa"];
-export const toOrder: CityId[] = ["narva", "koidula", "luhamaa", "tallinn"];
+// Тарту появился вместе со страницей /transfer-tartu-koidula-luhamaa/: если
+// страница обещает выезд из Тарту, форма обязана его принимать.
+// ВАЖНО: тот же список продублирован в public/send.php ($allowedCities) —
+// добавляете город здесь, добавляйте и там, иначе заявка вернёт 422.
+export const fromOrder: CityId[] = ["tallinn", "tartu", "narva", "koidula", "luhamaa"];
+export const toOrder: CityId[] = ["narva", "koidula", "luhamaa", "tallinn", "tartu"];
 
 /** Месяцы и дни недели для своего календаря: Intl не тянем. */
 export const calendar = {

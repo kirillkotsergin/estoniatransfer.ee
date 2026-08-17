@@ -29,13 +29,25 @@ const t = useTranslations(lang);
 
 // Текст на этом языке гарантирован: getStaticPaths отдаёт только такие маршруты
 const c = route.copy[lang]!;
-const f = facts.routes.find((r) => r.id === route.routeId)!;
+
+// У обычной страницы маршрута цифры берутся из facts, у сборной (несколько
+// направлений на одной странице) единой цены нет — тогда всё описано в copy.
+const f = route.routeId ? facts.routes.find((r) => r.id === route.routeId) : undefined;
+const hours = f ? (lang === "ru" ? f.hours : f.hoursEn) : "";
+const badge = c.badge ?? `${t("route.badge")} · ${f?.price} €`;
+const stats =
+  c.stats ??
+  [
+    { value: `${f?.price} €`, label: t("common.perCar") },
+    { value: hours, label: t("routes.time") },
+    { value: `${f?.km} ${t("routes.km.short")}`, label: c.kmNote ?? t("routes.km") },
+  ];
+const form = route.form ?? { from: "tallinn" as const, to: "narva" as const };
 
 const path = `/${route.slug}/`;
 const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
 const url = new URL(localePath(lang, path), site).href;
 const home = localePath(lang, "/");
-const hours = lang === "ru" ? f.hours : f.hoursEn;
 
 /** Готовое сообщение в мессенджер: пассажиру остаётся нажать «отправить» */
 const wa = (text: string) => `${facts.whatsapp}?text=${encodeURIComponent(text)}`;
@@ -58,16 +70,34 @@ const plain = (s: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const offers: Record<string, unknown>[] = [
-  {
-    "@type": "Offer",
-    name: c.schema.name,
-    price: String(f.price),
-    priceCurrency: "EUR",
-    url,
-    availability: "https://schema.org/InStock",
-  },
-];
+/**
+ * Офферы для Service. Правило простое: в разметку попадает только та цена,
+ * которая названа на странице. Нет подтверждённой цены (сборная страница
+ * с расчётом по запросу) — нет и оффера: выдуманная цифра в микроразметке
+ * хуже её отсутствия.
+ */
+const offers: Record<string, unknown>[] = c.offers
+  ? c.offers.map((o) => ({
+      "@type": "Offer",
+      name: o.name,
+      price: o.price,
+      priceCurrency: o.currency ?? "EUR",
+      url,
+      availability: "https://schema.org/InStock",
+    }))
+  : f
+    ? [
+        {
+          "@type": "Offer",
+          name: c.schema.name,
+          price: String(f.price),
+          priceCurrency: "EUR",
+          url,
+          availability: "https://schema.org/InStock",
+        },
+      ]
+    : [];
+
 // Доплата за место в очереди есть не на всех маршрутах — только там, где заявлена
 if (route.routeId === facts.queueSlot.route) {
   offers.push({
@@ -109,7 +139,7 @@ const schema = {
         url: new URL(home, site).href,
       },
       areaServed: c.schema.areaServed.map((a) => ({ "@type": a.type, name: a.name })),
-      offers,
+      ...(offers.length ? { offers } : {}),
     },
     {
       "@type": "FAQPage",
@@ -161,7 +191,7 @@ const td = "px-4 py-3.5 align-top";
     </div>
 
     <div class={`relative ${wrap} pb-14 pt-8 sm:pb-20 sm:pt-10`}>
-      <p class={eyebrow}>{t("route.badge")} · {f.price} €</p>
+      <p class={eyebrow}>{badge}</p>
 
       <h1
         class="reveal mt-4 max-w-3xl text-balance text-[clamp(2.1rem,5.2vw,3.9rem)] font-semibold leading-[1.05] tracking-[-0.03em]"
@@ -194,20 +224,16 @@ const td = "px-4 py-3.5 align-top";
         </a>
       </div>
 
-      {/* Цифры маршрута: значения из facts, подпись под километрами — своя у каждого */}
+      {/* Цифры маршрута: по умолчанию цена, время и километры из facts */}
       <dl class="reveal mt-11 grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3" style="--d:4">
-        <div class="glass rounded-[--radius-card] px-5 py-4">
-          <dt class="text-[0.82rem] text-ink-dim">{t("common.perCar")}</dt>
-          <dd class="mt-1 text-2xl font-semibold tracking-tight">{f.price} €</dd>
-        </div>
-        <div class="glass rounded-[--radius-card] px-5 py-4">
-          <dt class="text-[0.82rem] text-ink-dim">{t("routes.time")}</dt>
-          <dd class="mt-1 text-2xl font-semibold tracking-tight">{hours}</dd>
-        </div>
-        <div class="glass rounded-[--radius-card] px-5 py-4">
-          <dt class="text-[0.82rem] text-ink-dim">{c.kmNote}</dt>
-          <dd class="mt-1 text-2xl font-semibold tracking-tight">{f.km} {t("routes.km.short")}</dd>
-        </div>
+        {
+          stats.map((s) => (
+            <div class="glass rounded-[--radius-card] px-5 py-4">
+              <dt class="text-[0.82rem] text-ink-dim">{s.label}</dt>
+              <dd class="mt-1 text-2xl font-semibold tracking-tight">{s.value}</dd>
+            </div>
+          ))
+        }
       </dl>
 
       {/* Что входит в цену — блок общий для всех маршрутов, как и подвал */}
@@ -381,11 +407,16 @@ const td = "px-4 py-3.5 align-top";
               <tbody>
                 {c.compare.rows.map((row) => (
                   <tr class="border-b border-line">
+                    {/* Последняя колонка — пояснение: она длинная и переносится,
+                        остальные держим в одну строку. Столбцов может быть
+                        и четыре, и пять, поэтому считаем от конца строки. */}
                     {row.map((cell, i) =>
                       i === 0 ? (
                         <th scope="row" class={`${td} font-semibold`}>{cell}</th>
                       ) : (
-                        <td class={`${td} ${i === 3 ? "text-ink-muted" : "whitespace-nowrap"}`}>
+                        <td
+                          class={`${td} ${i === row.length - 1 ? "text-ink-muted" : "whitespace-nowrap"}`}
+                        >
                           {cell}
                         </td>
                       )
@@ -486,7 +517,7 @@ const td = "px-4 py-3.5 align-top";
         </div>
       </div>
 
-      <OrderForm lang={lang} from={route.form.from} to={route.form.to} offset={false} />
+      <OrderForm lang={lang} from={form.from} to={form.to} offset={false} />
     </div>
   </section>
 
