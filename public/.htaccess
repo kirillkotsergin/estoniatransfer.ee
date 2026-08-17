@@ -53,7 +53,8 @@ ErrorDocument 404 /404.html
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set X-Frame-Options "SAMEORIGIN"
 
-  # Сайт не грузит ничего извне: ни шрифтов, ни аналитики, ни CDN.
+  # Единственный внешний источник — cdn.simpleicons.org: оттуда берутся
+  # официальные логотипы WhatsApp и Telegram. Всё остальное со своего домена.
   # 'unsafe-inline' нужен из-за встроенного <script> в head (метка js).
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.simpleicons.org; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'"
 </IfModule>

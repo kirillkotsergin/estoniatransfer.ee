@@ -1,4 +1,5 @@
 ---
+import Messengers from "./Messengers.astro";
 import { useTranslations, facts, localePath, type Lang, type UIKey } from "../i18n/ui";
 
 interface Props {
@@ -26,18 +27,11 @@ const year = new Date().getFullYear();
       </h2>
       <ul class="mt-4 grid gap-2 text-[0.95rem]">
         <li><a class="hover:text-brand-ink" href={facts.phoneHref}>{facts.phone}</a></li>
-        <li>
-          <a class="hover:text-brand-ink" href={facts.whatsapp} target="_blank" rel="noopener"
-            >WhatsApp</a
-          >
-        </li>
-        <li>
-          <a class="hover:text-brand-ink" href={facts.telegram} target="_blank" rel="noopener"
-            >Telegram</a
-          >
-        </li>
         <li><a class="hover:text-brand-ink" href={`mailto:${facts.email}`}>{facts.email}</a></li>
       </ul>
+      <div class="mt-3">
+        <Messengers lang={lang} variant="compact" />
+      </div>
     </div>
 
     <div>
