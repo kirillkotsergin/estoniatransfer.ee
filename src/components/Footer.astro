@@ -1,6 +1,7 @@
 ---
 import Messengers from "./Messengers.astro";
 import { useTranslations, facts, localePath, type Lang, type UIKey } from "../i18n/ui";
+import { landingHref } from "../data/routes";
 
 interface Props {
   lang: Lang;
@@ -39,10 +40,15 @@ const year = new Date().getFullYear();
         {t("footer.routes")}
       </h2>
       <ul class="mt-4 grid gap-2 text-[0.95rem]">
+        {/* Есть страница маршрута — ведём на неё: подвал стоит на каждой
+            странице, и это основная перелинковка сайта. Нет — на блок цен. */}
         {
           facts.routes.map((r) => (
             <li>
-              <a class="hover:text-brand-ink" href={`${localePath(lang, "/")}#routes`}>
+              <a
+                class="hover:text-brand-ink"
+                href={landingHref(lang, r.id) ?? `${localePath(lang, "/")}#routes`}
+              >
                 {t(`routes.${r.id}` as UIKey)} — {r.price} €
               </a>
             </li>

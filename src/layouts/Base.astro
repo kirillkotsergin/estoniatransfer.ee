@@ -10,9 +10,25 @@ interface Props {
   path?: string;
   title?: string;
   description?: string;
+  /** описание для соцсетей, если оно должно отличаться от meta description */
+  ogDescription?: string;
+  /**
+   * Языки, на которых ЭТА страница существует. По умолчанию все: главная
+   * переведена целиком. У посадочных страниц маршрутов список приходит из
+   * данных — hreflang не должен ссылаться на перевод, которого нет.
+   */
+  langs?: Lang[];
 }
 
-const { lang, path = "/", title, description } = Astro.props;
+const allLangs = Object.keys(languages) as Lang[];
+const {
+  lang,
+  path = "/",
+  title,
+  description,
+  ogDescription,
+  langs = allLangs,
+} = Astro.props;
 const t = useTranslations(lang);
 const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
 const pageTitle = title ?? t("meta.title");
@@ -34,20 +50,29 @@ const canonical = new URL(localePath(lang, path), site).href;
     />
 
     {/* Каждый язык — отдельный URL, плюс x-default. Без этого поисковик
-        считает версии дублями, а не переводами. */}
+        считает версии дублями, а не переводами. Список — только реально
+        существующие переводы этой страницы. */}
     {
-      (Object.keys(languages) as Lang[]).map((l) => (
+      langs.map((l) => (
         <link rel="alternate" hreflang={l} href={new URL(localePath(l, path), site).href} />
       ))
     }
-    <link rel="alternate" hreflang="x-default" href={new URL(localePath(defaultLang, path), site).href} />
+    {
+      langs.includes(defaultLang) && (
+        <link
+          rel="alternate"
+          hreflang="x-default"
+          href={new URL(localePath(defaultLang, path), site).href}
+        />
+      )
+    }
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="EstoniaTransfer" />
     <meta property="og:locale" content={lang === "ru" ? "ru_RU" : "en_US"} />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={pageDesc} />
+    <meta property="og:description" content={ogDescription ?? pageDesc} />
     <meta name="twitter:card" content="summary_large_image" />
 
     <meta name="theme-color" content="#ffffff" />
@@ -66,7 +91,7 @@ const canonical = new URL(localePath(lang, path), site).href;
       >{lang === "ru" ? "Перейти к содержанию" : "Skip to content"}</a
     >
 
-    <Header lang={lang} path={path} />
+    <Header lang={lang} path={path} langs={langs} />
     <main id="main">
       <slot />
     </main>

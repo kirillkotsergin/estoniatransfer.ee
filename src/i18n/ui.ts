@@ -91,6 +91,18 @@ export const ui = {
     "addon.text":
       "Займём для вас время в очереди заранее — переходите в назначенный час, а не стоите вместе со всеми. Доплата к маршруту в Нарву.",
     "routes.other": "Другое направление, поездка в аэропорт или обратный путь от границы — напишите, назовём цену.",
+    "routes.km.short": "км",
+    "routes.more": "Подробнее о маршруте",
+
+    // Общий каркас посадочных страниц маршрутов. Сами тексты — в src/data/routes.ts
+    "bc.home": "Главная",
+    "route.badge": "Маршрут",
+    "route.wa": "Заказать в WhatsApp",
+    "route.order": "Оставить заявку",
+    "route.more": "Куда ещё возим",
+    "table.service": "Услуга",
+    "table.price": "Цена",
+    "table.details": "Подробности",
 
     "how.eyebrow": "Как это работает",
     "how.title": "Четыре шага от заявки до границы",
@@ -251,6 +263,17 @@ export const ui = {
     "addon.text":
       "We reserve your place in the queue in advance, so you cross at an agreed hour instead of waiting with everyone else. Charged on top of the Narva route.",
     "routes.other": "Another destination, an airport run or the return trip from the border — message us for a price.",
+    "routes.km.short": "km",
+    "routes.more": "Route details",
+
+    "bc.home": "Home",
+    "route.badge": "Route",
+    "route.wa": "Order on WhatsApp",
+    "route.order": "Send a request",
+    "route.more": "Where else we drive",
+    "table.service": "Service",
+    "table.price": "Price",
+    "table.details": "Details",
 
     "how.eyebrow": "How it works",
     "how.title": "Four steps from request to border",

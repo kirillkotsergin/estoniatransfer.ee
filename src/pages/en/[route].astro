@@ -1,0 +1,24 @@
+---
+/**
+ * Английские версии тех же страниц: /en/transfer-tallinn-narva/.
+ *
+ * Пока в src/data/routes.ts нет блока copy.en, getStaticPaths возвращает
+ * пустой список и ни одной страницы не создаётся — это осознанно. Появится
+ * английский текст у маршрута, появится и страница, без правок здесь.
+ * hreflang собирается из тех же данных (landingLangs), поэтому ссылок на
+ * несуществующие переводы не будет.
+ */
+import RouteLanding from "../../layouts/RouteLanding.astro";
+import { landingsFor } from "../../data/routes";
+
+export function getStaticPaths() {
+  return landingsFor("en").map((route) => ({
+    params: { route: route.slug },
+    props: { route },
+  }));
+}
+
+const { route } = Astro.props;
+---
+
+<RouteLanding lang="en" route={route} />

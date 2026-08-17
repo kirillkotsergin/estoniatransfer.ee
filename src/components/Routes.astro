@@ -1,5 +1,6 @@
 ---
 import { useTranslations, facts, type Lang, type UIKey } from "../i18n/ui";
+import { landingHref } from "../data/routes";
 
 interface Props {
   lang: Lang;
@@ -52,6 +53,20 @@ const t = useTranslations(lang);
                 <dd class="font-semibold">{lang === "ru" ? r.hours : r.hoursEn}</dd>
               </div>
             </dl>
+
+            {/* Ссылка на страницу маршрута. Пока такой страницы нет — ссылки
+                тоже нет: landingHref вернёт null, а не битый адрес. */}
+            {
+              landingHref(lang, r.id) && (
+                <a
+                  href={landingHref(lang, r.id)}
+                  class="mt-4 inline-flex items-center gap-1.5 text-[0.93rem] font-semibold text-brand-ink hover:underline"
+                >
+                  {t("routes.more")}
+                  <span aria-hidden="true">→</span>
+                </a>
+              )
+            }
           </li>
         ))
       }

@@ -5,8 +5,10 @@ import { useTranslations, facts, localePath, type Lang } from "../i18n/ui";
 interface Props {
   lang: Lang;
   path?: string;
+  /** языки, на которых существует текущая страница — для переключателя */
+  langs?: Lang[];
 }
-const { lang, path = "/" } = Astro.props;
+const { lang, path = "/", langs } = Astro.props;
 const t = useTranslations(lang);
 const home = localePath(lang, "/");
 ---
@@ -37,7 +39,7 @@ const home = localePath(lang, "/");
       <a class="transition-colors hover:text-ink" href={`${home}#order`}>{t("nav.order")}</a>
     </nav>
 
-    <LangSwitcher lang={lang} path={path} />
+    <LangSwitcher lang={lang} path={path} langs={langs} />
 
     <a
       href={facts.phoneHref}

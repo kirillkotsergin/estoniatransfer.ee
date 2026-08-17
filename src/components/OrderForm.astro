@@ -7,13 +7,23 @@ import {
   fromOrder,
   toOrder,
   calendar,
+  type CityId,
   type Lang,
 } from "../i18n/ui";
 
 interface Props {
   lang: Lang;
+  /** заранее выбранный маршрут: на странице направления его не надо искать */
+  from?: CityId;
+  to?: CityId;
+  /**
+   * Верхний отступ на широких экранах. На главной форма стоит рядом с длинной
+   * колонкой про машину и специально сдвинута вниз; на посадочной странице
+   * она первая в своей колонке, и сдвиг там выглядит ошибкой вёрстки.
+   */
+  offset?: boolean;
 }
-const { lang } = Astro.props;
+const { lang, from = "tallinn", to = "narva", offset = true } = Astro.props;
 const t = useTranslations(lang);
 
 // Максимум пассажиров = число мест в машине. Предлагать больше — значит
@@ -26,7 +36,7 @@ const field =
 const label = "block text-[0.85rem] font-semibold text-ink-muted";
 ---
 
-<aside id="order" class="scroll-mt-24 lg:pt-14">
+<aside id="order" class:list={["scroll-mt-24", offset && "lg:pt-14"]}>
   <div class="glass rounded-[--radius-card] p-6 sm:p-8">
     <p class="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
       {t("order.eyebrow")}
@@ -50,13 +60,25 @@ const label = "block text-[0.85rem] font-semibold text-ink-muted";
         <div>
           <label class={label} for="of-from">{t("form.from")}</label>
           <select id="of-from" name="from" class={`mt-1.5 ${field}`} required>
-            {fromOrder.map((id) => <option value={id}>{cities[id][lang]}</option>)}
+            {
+              fromOrder.map((id) => (
+                <option value={id} selected={id === from}>
+                  {cities[id][lang]}
+                </option>
+              ))
+            }
           </select>
         </div>
         <div>
           <label class={label} for="of-to">{t("form.to")}</label>
           <select id="of-to" name="to" class={`mt-1.5 ${field}`} required>
-            {toOrder.map((id) => <option value={id}>{cities[id][lang]}</option>)}
+            {
+              toOrder.map((id) => (
+                <option value={id} selected={id === to}>
+                  {cities[id][lang]}
+                </option>
+              ))
+            }
           </select>
         </div>
       </div>

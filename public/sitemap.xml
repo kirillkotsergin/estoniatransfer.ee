@@ -22,4 +22,19 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://estoniatransfer.ee/en/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://estoniatransfer.ee/"/>
   </url>
+  <!-- Посадочные страницы маршрутов. Пока только русские: английского текста
+       у них нет, поэтому xhtml:link здесь не ставим — иначе сослались бы на
+       страницу, которой не существует. -->
+  <url>
+    <loc>https://estoniatransfer.ee/transfer-tallinn-narva/</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://estoniatransfer.ee/transfer-tallinn-koidula/</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>

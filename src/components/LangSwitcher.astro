@@ -4,10 +4,18 @@ import { languages, localePath, useTranslations, type Lang } from "../i18n/ui";
 interface Props {
   lang: Lang;
   path?: string;
+  /**
+   * Языки, на которых текущая страница существует. Остальные в списке
+   * остаются, но ведут на главную своего языка: у посадочной страницы
+   * маршрута перевода может ещё не быть, а увести посетителя в 404 нельзя.
+   * hreflang в <head> при этом перечисляет только существующие версии.
+   */
+  langs?: Lang[];
 }
-const { lang, path = "/" } = Astro.props;
+const { lang, path = "/", langs } = Astro.props;
 const t = useTranslations(lang);
 const codes = Object.keys(languages) as Lang[];
+const available = langs ?? codes;
 ---
 
 {/* Выпадающий список на <details>: открывается по клику и работает БЕЗ JS —
@@ -39,7 +47,7 @@ const codes = Object.keys(languages) as Lang[];
       codes.map((code) => (
         <li>
           <a
-            href={localePath(code, path)}
+            href={localePath(code, available.includes(code) ? path : "/")}
             hreflang={code}
             lang={code}
             aria-current={code === lang ? "true" : undefined}

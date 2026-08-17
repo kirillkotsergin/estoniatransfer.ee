@@ -1,0 +1,27 @@
+---
+/**
+ * Русские посадочные страницы маршрутов: /transfer-tallinn-narva/ и так далее.
+ *
+ * Адрес = поле slug в src/data/routes.ts, без вложенных каталогов вроде
+ * /routes/… и без .html: format: "directory" в astro.config.mjs кладёт каждую
+ * страницу в свой каталог с index.html, а trailingSlash: "always" делает
+ * канонический адрес со слэшем на конце. Ссылка /transfer-tallinn-narva
+ * без слэша тоже работает — Apache отдаёт индекс каталога.
+ *
+ * Страница генерируется только для тех маршрутов, у которых есть русский
+ * текст: пустых шаблонов с подменёнными словами в индексе быть не должно.
+ */
+import RouteLanding from "../layouts/RouteLanding.astro";
+import { landingsFor } from "../data/routes";
+
+export function getStaticPaths() {
+  return landingsFor("ru").map((route) => ({
+    params: { route: route.slug },
+    props: { route },
+  }));
+}
+
+const { route } = Astro.props;
+---
+
+<RouteLanding lang="ru" route={route} />
