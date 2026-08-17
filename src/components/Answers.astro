@@ -28,18 +28,16 @@ const items = answers[lang];
 
 <section id="answers" class="scroll-mt-24 border-t border-line py-16 sm:py-24">
   <div class="mx-auto max-w-4xl px-5">
-    <p class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+    {/* Заголовком раздела служит сама надпись «Ответы коротко» — крупный H2 и
+        вводный абзац под ним убраны как лишние: вопросы ниже говорят за себя.
+        Тег h2 у надписи сохранён, иначе раздел остался бы вообще без заголовка
+        и выпал бы из структуры документа. Отступ у списка уменьшен с mt-10 до
+        mt-8: mt-10 отсчитывался от абзаца, которого больше нет. */}
+    <h2 class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
       {t("answers.eyebrow")}
-    </p>
-    <h2
-      class="reveal mt-4 text-[clamp(1.9rem,3.6vw,2.9rem)] font-semibold leading-tight tracking-[-0.02em]"
-      style="--d:1"
-    >
-      {t("answers.title")}
     </h2>
-    <p class="reveal mt-4 max-w-2xl text-ink-muted" style="--d:2">{t("answers.lead")}</p>
 
-    <dl class="mt-10 grid gap-6 sm:grid-cols-2">
+    <dl class="mt-8 grid gap-6 sm:grid-cols-2">
       {
         items.map((item, i) => (
           <div class="reveal border-t border-line pt-5" style={`--d:${i + 1}`}>
