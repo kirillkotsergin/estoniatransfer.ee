@@ -1,5 +1,6 @@
 ---
 import OrderForm from "./OrderForm.astro";
+import CarGallery from "./CarGallery.astro";
 import { useTranslations, type Lang } from "../i18n/ui";
 
 interface Props {
@@ -43,13 +44,8 @@ const features = ["car.f1", "car.f2", "car.f3", "car.f4", "car.f5", "car.f6"] as
         }
       </ul>
 
-      {/* ПРОВЕРЬ: заменить на реальное фото машины, когда будет снимок.
-          Пока намеренно не ставлю фото с чужого сайта. */}
-      <div
-        class="reveal mt-8 grid aspect-[16/9] place-items-center rounded-[--radius-card] border border-dashed border-line-strong/50 bg-surface text-[0.9rem] text-ink-dim"
-        style="--d:4"
-      >
-        {lang === "ru" ? "Здесь будет фото автомобиля" : "Vehicle photo goes here"}
+      <div class="reveal mt-8" style="--d:4">
+        <CarGallery lang={lang} />
       </div>
     </div>
 

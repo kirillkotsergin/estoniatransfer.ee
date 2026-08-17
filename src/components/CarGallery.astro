@@ -1,0 +1,204 @@
+---
+import { Picture } from "astro:assets";
+import { useTranslations, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+/**
+ * Фото берутся из src/assets/car/ — их достаточно положить туда, порядок
+ * задаётся именем файла (car-1, car-2, car-3…). Astro сам пережмёт их в AVIF
+ * и WebP, подставит width/height и не даст поехать вёрстке при загрузке.
+ *
+ * Подписи — по имени файла, из словаря ниже. Для неизвестного имени берётся
+ * общая подпись: галерея не сломается, если добавить четвёртое фото.
+ */
+const modules = import.meta.glob<{ default: ImageMetadata }>(
+  "../assets/car/*.{jpg,jpeg,png,webp,avif}",
+  { eager: true }
+);
+
+const captions: Record<string, { ru: string; en: string }> = {
+  "car-1": {
+    ru: "Toyota Corolla Hybrid — вид спереди",
+    en: "Toyota Corolla Hybrid — front view",
+  },
+  "car-2": {
+    ru: "Toyota Corolla Hybrid — вид сзади",
+    en: "Toyota Corolla Hybrid — rear view",
+  },
+  "car-3": {
+    ru: "Задний ряд: два больших чемодана и четыре места",
+    en: "Rear seats: four seats and room for two large suitcases",
+  },
+};
+
+const photos = Object.entries(modules)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([path, mod]) => {
+    const name = path.split("/").pop()!.replace(/\.\w+$/, "");
+    const cap = captions[name] ?? {
+      ru: "Toyota Corolla Hybrid — автомобиль трансфера",
+      en: "Toyota Corolla Hybrid — the transfer car",
+    };
+    return { src: mod.default, alt: cap[lang], name };
+  });
+---
+
+{
+  photos.length === 0 ? (
+    <div
+      class="grid aspect-[16/9] place-items-center rounded-[--radius-card] border border-dashed border-line-strong/50 bg-surface text-center text-[0.9rem] text-ink-dim"
+    >
+      <p>
+        {lang === "ru" ? "Положите фото в src/assets/car/" : "Drop photos into src/assets/car/"}
+        <br />
+        <span class="text-[0.8rem]">car-1.jpg, car-2.jpg, car-3.jpg</span>
+      </p>
+    </div>
+  ) : (
+    <figure class="relative" data-gallery>
+      {/* Дорожка на scroll-snap: на телефоне это родной свайп с инерцией,
+          без единой строки JS. Стрелки и точки — надстройка для мыши. */}
+      <div
+        data-gallery-track
+        class="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth rounded-[--radius-card] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        tabindex="0"
+        role="group"
+        aria-roledescription={lang === "ru" ? "галерея" : "carousel"}
+        aria-label={lang === "ru" ? "Фотографии автомобиля" : "Vehicle photos"}
+      >
+        {photos.map((p, i) => (
+          <div class="relative w-full shrink-0 grow-0 basis-full snap-center overflow-hidden rounded-[--radius-card] bg-surface">
+            {/* Picture, а не Image: только он отдаёт несколько форматов сразу.
+                AVIF первым, WebP вторым, JPEG как запас для старых браузеров. */}
+            <Picture
+              src={p.src}
+              alt={p.alt}
+              widths={[640, 960, 1280]}
+              sizes="(min-width: 1024px) 46vw, 100vw"
+              formats={["avif", "webp"]}
+              fallbackFormat="jpg"
+              loading={i === 0 ? "eager" : "lazy"}
+              decoding="async"
+              class="aspect-[16/9] w-full object-cover"
+            />
+          </div>
+        ))}
+      </div>
+
+      {photos.length > 1 && (
+        <>
+          <button
+            type="button"
+            data-gallery-prev
+            aria-label={lang === "ru" ? "Предыдущее фото" : "Previous photo"}
+            class="glass absolute left-3 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full text-ink transition-transform hover:scale-105 disabled:opacity-40"
+          >
+            <svg viewBox="0 0 20 20" fill="none" class="size-4.5" aria-hidden="true">
+              <path d="M12 5l-5 5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            data-gallery-next
+            aria-label={lang === "ru" ? "Следующее фото" : "Next photo"}
+            class="glass absolute right-3 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full text-ink transition-transform hover:scale-105 disabled:opacity-40"
+          >
+            <svg viewBox="0 0 20 20" fill="none" class="size-4.5" aria-hidden="true">
+              <path d="M8 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+
+          <div
+            data-gallery-dots
+            class="glass absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full px-2.5 py-2"
+          >
+            {photos.map((p, i) => (
+              <button
+                type="button"
+                data-gallery-dot={i}
+                aria-label={`${lang === "ru" ? "Фото" : "Photo"} ${i + 1}`}
+                class="h-1.5 rounded-full bg-ink/25 transition-all"
+                style={i === 0 ? "width:1.5rem;background:var(--color-brand)" : "width:0.375rem"}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      <figcaption data-gallery-caption class="mt-3 text-[0.88rem] text-ink-dim">
+        {photos[0].alt}
+      </figcaption>
+    </figure>
+  )
+}
+
+<script is:inline define:vars={{ captionsList: photos.map((p) => p.alt) }}>
+  (function () {
+    "use strict";
+    var box = document.querySelector("[data-gallery]");
+    if (!box) return;
+    var track = box.querySelector("[data-gallery-track]");
+    var slides = track.children;
+    var dots = box.querySelectorAll("[data-gallery-dot]");
+    var caption = box.querySelector("[data-gallery-caption]");
+    var prev = box.querySelector("[data-gallery-prev]");
+    var next = box.querySelector("[data-gallery-next]");
+    if (!slides.length) return;
+    var index = 0;
+
+    function go(i) {
+      index = Math.max(0, Math.min(slides.length - 1, i));
+      track.scrollTo({ left: slides[index].offsetLeft - track.offsetLeft, behavior: "smooth" });
+    }
+
+    function paint() {
+      for (var i = 0; i < dots.length; i++) {
+        var active = i === index;
+        dots[i].style.width = active ? "1.5rem" : "0.375rem";
+        dots[i].style.background = active ? "var(--color-brand)" : "";
+        dots[i].setAttribute("aria-current", active ? "true" : "false");
+      }
+      if (caption && captionsList[index]) caption.textContent = captionsList[index];
+      if (prev) prev.disabled = index === 0;
+      if (next) next.disabled = index === slides.length - 1;
+    }
+
+    // Индекс считаем по фактическому скроллу: тогда свайп, стрелки и точки
+    // всегда согласованы между собой.
+    var timer = null;
+    track.addEventListener("scroll", function () {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(function () {
+        var mid = track.scrollLeft + track.clientWidth / 2;
+        for (var i = 0; i < slides.length; i++) {
+          var s = slides[i];
+          var left = s.offsetLeft - track.offsetLeft;
+          if (mid >= left && mid < left + s.clientWidth) {
+            index = i;
+            break;
+          }
+        }
+        paint();
+      }, 90);
+    });
+
+    if (prev) prev.addEventListener("click", function () { go(index - 1); });
+    if (next) next.addEventListener("click", function () { go(index + 1); });
+    for (var i = 0; i < dots.length; i++) {
+      (function (n) {
+        dots[n].addEventListener("click", function () { go(n); });
+      })(i);
+    }
+    track.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight") { e.preventDefault(); go(index + 1); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); go(index - 1); }
+    });
+
+    paint();
+  })();
+</script>
