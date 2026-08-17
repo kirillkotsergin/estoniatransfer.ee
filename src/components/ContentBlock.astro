@@ -1,0 +1,76 @@
+---
+/**
+ * Свободный блок посадочной страницы: заголовок, вводка, список пунктов и
+ * примечание. Два вида верстки одного и того же содержимого:
+ *
+ *   accordion — пунктов немного, но каждый длинный (разбор перевозчиков:
+ *               расписание, цена, оговорки). Свёрнутые details не пугают
+ *               длиной, а текст всё равно есть в HTML для поисковика.
+ *   cards     — короткие пункты, которые просматривают глазами и сравнивают
+ *               (гостиницы: название, адрес, две строки описания).
+ *
+ * Используется в RouteLanding дважды — до блока цен и после блока про
+ * погранпереходы, поэтому вынесен отдельным компонентом, а не оставлен
+ * в шаблоне на месте.
+ */
+import Accordion from "./Accordion.astro";
+import type { RouteCopy } from "../data/routes";
+
+interface Props {
+  block: NonNullable<RouteCopy["blocks"]>[number];
+  /** тёмная подложка: секции на странице чередуются */
+  surface?: boolean;
+}
+const { block, surface = false } = Astro.props;
+
+const prose = "[&_a]:font-semibold [&_a]:text-brand-ink [&_a:hover]:underline";
+---
+
+<section class:list={["py-16 sm:py-20", surface && "border-t border-line bg-surface"]}>
+  <div class:list={["mx-auto px-5", block.layout === "cards" ? "max-w-6xl" : "max-w-3xl"]}>
+    <p class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+      {block.eyebrow}
+    </p>
+    <h2
+      class="reveal mt-4 text-[clamp(1.75rem,3.2vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em]"
+      style="--d:1"
+    >
+      {block.title}
+    </h2>
+    {block.lead && <p class="reveal mt-4 max-w-2xl text-ink-muted" style="--d:2">{block.lead}</p>}
+
+    <div class="mt-8">
+      {
+        block.layout === "cards" ? (
+          <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {block.items.map((it, i) => (
+              <li
+                class="reveal glass flex flex-col rounded-[--radius-card] p-5"
+                style={`--d:${i + 1}`}
+              >
+                <h3 class="text-[1.05rem] font-semibold tracking-tight">{it.title}</h3>
+                {it.specs?.map(([label, value]) => (
+                  <p class="mt-1 text-[0.85rem] text-ink-dim">
+                    {label}: <span class="text-ink-muted">{value}</span>
+                  </p>
+                ))}
+                <p class="mt-2.5 text-[0.93rem] leading-relaxed text-ink-muted">{it.text}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <Accordion items={block.items} open={0} />
+        )
+      }
+    </div>
+
+    {
+      block.note && (
+        <p
+          class={`reveal mt-6 max-w-3xl text-[0.95rem] leading-relaxed text-ink-muted ${prose}`}
+          set:html={block.note}
+        />
+      )
+    }
+  </div>
+</section>

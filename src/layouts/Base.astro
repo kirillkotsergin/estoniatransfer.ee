@@ -13,6 +13,12 @@ interface Props {
   /** описание для соцсетей, если оно должно отличаться от meta description */
   ogDescription?: string;
   /**
+   * Страница не должна попадать в индекс. Нужно 404-й: она отдаётся по любому
+   * несуществующему адресу, и без noindex поисковик заводит в индексе столько
+   * «страниц не найдено», сколько битых ссылок на сайт нашлось.
+   */
+  noindex?: boolean;
+  /**
    * Языки, на которых ЭТА страница существует. По умолчанию все: главная
    * переведена целиком. У посадочных страниц маршрутов список приходит из
    * данных — hreflang не должен ссылаться на перевод, которого нет.
@@ -27,6 +33,7 @@ const {
   title,
   description,
   ogDescription,
+  noindex = false,
   langs = allLangs,
 } = Astro.props;
 const t = useTranslations(lang);
@@ -46,7 +53,11 @@ const canonical = new URL(localePath(lang, path), site).href;
     <link rel="canonical" href={canonical} />
     <meta
       name="robots"
-      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+      content={
+        noindex
+          ? "noindex, follow"
+          : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+      }
     />
 
     {/* Каждый язык — отдельный URL, плюс x-default. Без этого поисковик

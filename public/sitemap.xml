@@ -49,4 +49,12 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <!-- Гид: цены перевозчиков и часы работы переходов меняются чаще, чем
+       наши тарифы, поэтому changefreq здесь weekly. -->
+  <url>
+    <loc>https://estoniatransfer.ee/kak-dobratsya-do-granicy/</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

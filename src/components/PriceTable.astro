@@ -1,0 +1,81 @@
+---
+/**
+ * Блок «цена и что в неё входит»: заголовок, таблица услуг и врезка про оплату.
+ *
+ * Вынесен из RouteLanding отдельным компонентом не ради красоты, а из-за
+ * порядка блоков. На странице маршрута цена идёт сразу после героя — это
+ * коммерческая страница, и цену человек ищет первым делом. В гиде она обязана
+ * стоять после разбора всех способов: иначе информационная страница начинается
+ * с рекламы, а такую не цитируют и не ставят ссылкой.
+ */
+import { useTranslations, type Lang } from "../i18n/ui";
+import type { RouteCopy } from "../data/routes";
+
+interface Props {
+  lang: Lang;
+  price: NonNullable<RouteCopy["price"]>;
+}
+const { lang, price } = Astro.props;
+const t = useTranslations(lang);
+
+const th = "px-4 py-3 text-[0.78rem] font-semibold uppercase tracking-wide text-ink-dim";
+const td = "px-4 py-3.5 align-top";
+const prose = "[&_a]:font-semibold [&_a]:text-brand-ink [&_a:hover]:underline";
+---
+
+<section id="price" class="scroll-mt-24 border-t border-line bg-surface py-16 sm:py-20">
+  <div class="mx-auto max-w-6xl px-5">
+    <p class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+      {price.eyebrow}
+    </p>
+    <h2
+      class="reveal mt-4 text-[clamp(1.75rem,3.2vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em]"
+      style="--d:1"
+    >
+      {price.title}
+    </h2>
+    <p class="reveal mt-4 max-w-2xl text-ink-muted" style="--d:2">{price.lead}</p>
+
+    <div class="reveal mt-8 overflow-x-auto" style="--d:3">
+      <table class="w-full min-w-[36rem] border-collapse text-left text-[0.95rem]">
+        <caption class="pb-3 text-left text-[0.85rem] text-ink-dim">{price.caption}</caption>
+        <thead>
+          <tr class="border-b border-line-strong/40">
+            <th scope="col" class={th}>{t("table.service")}</th>
+            <th scope="col" class={th}>{t("table.price")}</th>
+            <th scope="col" class={th}>{t("table.details")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            price.rows.map(([service, sum, note]) => (
+              <tr class="border-b border-line">
+                <th scope="row" class={`${td} font-semibold`}>{service}</th>
+                <td class={`${td} whitespace-nowrap font-semibold`}>{sum}</td>
+                <td class={`${td} text-ink-muted`}>{note}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <p
+      class={`reveal mt-6 max-w-3xl rounded-[--radius-card] border border-brand/35 bg-brand-soft px-6 py-5 text-[0.95rem] leading-relaxed text-ink-muted ${prose}`}
+      style="--d:4"
+      set:html={price.note}
+    />
+
+    {
+      price.extra?.map((b, i) => (
+        <div class="reveal mt-8 max-w-3xl border-t border-line pt-6" style={`--d:${i + 5}`}>
+          <h3 class="text-[1.15rem] font-semibold tracking-tight">{b.title}</h3>
+          <p
+            class={`mt-2.5 text-[0.97rem] leading-relaxed text-ink-muted ${prose}`}
+            set:html={b.text}
+          />
+        </div>
+      ))
+    }
+  </div>
+</section>

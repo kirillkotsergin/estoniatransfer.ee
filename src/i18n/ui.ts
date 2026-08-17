@@ -45,8 +45,9 @@ export const facts = {
 export const ui = {
   ru: {
     "meta.title": "Индивидуальный трансфер Таллинн — граница | EstoniaTransfer",
+    // 157 знаков: описание длиннее ~160 в выдаче обрезается на полуслове
     "meta.description":
-      "Частный трансфер из Таллинна к погранпереходам Нарва, Койдула и Лухамаа: 130–160 € за автомобиль целиком. Встречаем в аэропорту и порту, выезжаем в любое время суток.",
+      "Частный трансфер из Таллинна к погранпереходам Нарва, Койдула и Лухамаа: 130–160 € за автомобиль целиком. Встречаем в аэропорту и порту, выезд круглосуточно.",
 
     "nav.routes": "Направления",
     "nav.car": "Автомобиль",
@@ -100,6 +101,7 @@ export const ui = {
     "route.wa": "Заказать в WhatsApp",
     "route.order": "Оставить заявку",
     "route.more": "Куда ещё возим",
+    "route.sources": "Источники",
     "table.service": "Услуга",
     "table.price": "Цена",
     "table.details": "Подробности",
@@ -216,7 +218,8 @@ export const ui = {
   },
 
   en: {
-    "meta.title": "Private Transfer Tallinn — Border Crossings | EstoniaTransfer",
+    // было 61 знак — Google обрезал хвост вместе с брендом
+    "meta.title": "Private Transfer Tallinn to the Border | EstoniaTransfer",
     "meta.description":
       "Private transfer from Tallinn to the Narva, Koidula and Luhamaa border crossings: €130–160 for the whole car. Airport and port pickup, departures at any hour.",
 
@@ -271,6 +274,7 @@ export const ui = {
     "route.wa": "Order on WhatsApp",
     "route.order": "Send a request",
     "route.more": "Where else we drive",
+    "route.sources": "Sources",
     "table.service": "Service",
     "table.price": "Price",
     "table.details": "Details",

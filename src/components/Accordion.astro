@@ -2,14 +2,21 @@
 /**
  * Раскрывающиеся блоки на нативном <details>: работают без JS, с клавиатуры
  * и доступны для чтения краулером — текст внутри есть в HTML, а не появляется
- * по клику. Используется на посадочных страницах дважды: блок про погранпереход
- * и блок частых вопросов.
+ * по клику. Используется на посадочных страницах для блока про погранпереход,
+ * для FAQ и для разбора способов доехать в гиде.
  *
  * Текст приходит с разметкой (ссылки, <strong>), поэтому вставляется через
  * set:html. Источник — свои же файлы в src/data, не пользовательский ввод.
  */
 interface Props {
-  items: { title: string; text: string }[];
+  items: {
+    title: string;
+    text: string;
+    /** короткие пары «что — сколько»: расписание, цена, расстояние */
+    specs?: [string, string][];
+    /** ссылка на первоисточник: сайт перевозчика, система бронирования */
+    link?: { label: string; href: string };
+  }[];
   /** какой пункт открыт при загрузке; по умолчанию все закрыты */
   open?: number;
 }
@@ -39,7 +46,31 @@ const prose =
             </svg>
           </span>
         </summary>
+
+        {it.specs && (
+          <dl class="mt-4 grid gap-x-6 gap-y-2 border-t border-line pt-4 text-[0.9rem] sm:grid-cols-2">
+            {it.specs.map(([label, value]) => (
+              <div class="flex flex-wrap items-baseline gap-x-2">
+                <dt class="text-ink-dim">{label}</dt>
+                <dd class="font-semibold">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
         <div class={prose} set:html={it.text} />
+
+        {it.link && (
+          <a
+            href={it.link.href}
+            target="_blank"
+            rel="noopener nofollow"
+            class="mt-3 inline-flex items-center gap-1.5 text-[0.9rem] font-semibold text-brand-ink hover:underline"
+          >
+            {it.link.label}
+            <span aria-hidden="true">↗</span>
+          </a>
+        )}
       </details>
     ))
   }

@@ -11,12 +11,20 @@
  * цитируют ИИ-поисковики и показывает Google в сниппете) → цена → аэропорт →
  * как проходит поездка → сравнение с автобусом и такси → машина → погранпереход
  * → FAQ → заявка → перелинковка. Дальше от начала — тем менее коммерческий блок.
+ *
+ * Почти все блоки необязательные: страница живёт и без таблицы цен, и без
+ * шагов, и без машины. Это нужно двум видам страниц — сборной (несколько
+ * направлений сразу, единой цены нет) и гиду (kind: "guide"), где вместо
+ * Service в разметку идёт Article, коммерческий блок «что входит в цену»
+ * убран, а таблица наших цен перенесена ниже разбора чужих способов.
  */
 import { Picture } from "astro:assets";
 import Base from "./Base.astro";
 import Accordion from "../components/Accordion.astro";
 import OrderForm from "../components/OrderForm.astro";
 import Messengers from "../components/Messengers.astro";
+import PriceTable from "../components/PriceTable.astro";
+import ContentBlock from "../components/ContentBlock.astro";
 import { useTranslations, facts, localePath, type Lang, type UIKey } from "../i18n/ui";
 import { landingLangs, type LandingRoute } from "../data/routes";
 
@@ -26,6 +34,7 @@ interface Props {
 }
 const { lang, route } = Astro.props;
 const t = useTranslations(lang);
+const isGuide = route.kind === "guide";
 
 // Текст на этом языке гарантирован: getStaticPaths отдаёт только такие маршруты
 const c = route.copy[lang]!;
@@ -43,6 +52,12 @@ const stats =
     { value: `${f?.km} ${t("routes.km.short")}`, label: c.kmNote ?? t("routes.km") },
   ];
 const form = route.form ?? { from: "tallinn" as const, to: "narva" as const };
+
+// Свободные блоки идут в двух местах: до таблицы наших цен и после блока про
+// погранпереходы. Так у гида сначала разбор чужих способов, потом наша цена,
+// а побочные темы вроде ночлега в Нарве уходят в конец.
+const topBlocks = c.blocks?.filter((b) => b.place !== "bottom") ?? [];
+const bottomBlocks = c.blocks?.filter((b) => b.place === "bottom") ?? [];
 
 const path = `/${route.slug}/`;
 const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
@@ -109,6 +124,44 @@ if (route.routeId === facts.queueSlot.route) {
   });
 }
 
+const org = {
+  "@type": "TaxiService",
+  name: "EstoniaTransfer",
+  telephone: facts.phoneHref.replace("tel:", ""),
+  email: facts.email,
+  url: new URL(home, site).href,
+};
+
+/**
+ * Гид — не услуга: Service с оффером на информационной странице был бы
+ * неправдой, поэтому там Article с датой обновления. У страниц маршрутов
+ * наоборот: Service с ценой и зоной обслуживания.
+ */
+const main =
+  isGuide
+    ? {
+        "@type": "Article",
+        "@id": `${url}#article`,
+        headline: c.h1,
+        description: c.schema.description,
+        inLanguage: lang,
+        ...(route.updated ? { dateModified: route.updated, datePublished: route.updated } : {}),
+        author: org,
+        publisher: org,
+        mainEntityOfPage: url,
+      }
+    : {
+        "@type": "Service",
+        "@id": `${url}#service`,
+        name: c.schema.name,
+        ...(c.schema.alternateName ? { alternateName: c.schema.alternateName } : {}),
+        serviceType: c.schema.serviceType,
+        description: c.schema.description,
+        provider: org,
+        areaServed: c.schema.areaServed.map((a) => ({ "@type": a.type, name: a.name })),
+        ...(offers.length ? { offers } : {}),
+      };
+
 const schema = {
   "@context": "https://schema.org",
   "@graph": [
@@ -124,23 +177,7 @@ const schema = {
         { "@type": "ListItem", position: 2, name: c.breadcrumb, item: url },
       ],
     },
-    {
-      "@type": "Service",
-      "@id": `${url}#service`,
-      name: c.schema.name,
-      ...(c.schema.alternateName ? { alternateName: c.schema.alternateName } : {}),
-      serviceType: c.schema.serviceType,
-      description: c.schema.description,
-      provider: {
-        "@type": "TaxiService",
-        name: "EstoniaTransfer",
-        telephone: facts.phoneHref.replace("tel:", ""),
-        email: facts.email,
-        url: new URL(home, site).href,
-      },
-      areaServed: c.schema.areaServed.map((a) => ({ "@type": a.type, name: a.name })),
-      ...(offers.length ? { offers } : {}),
-    },
+    main,
     {
       "@type": "FAQPage",
       "@id": `${url}#faq`,
@@ -236,35 +273,38 @@ const td = "px-4 py-3.5 align-top";
         }
       </dl>
 
-      {/* Что входит в цену — блок общий для всех маршрутов, как и подвал */}
-      <div class="reveal mt-8 max-w-3xl" style="--d:5">
-        <h2 class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
-          {t("perks.title")}
-        </h2>
-        <ul class="mt-3 grid gap-2.5 sm:grid-cols-2">
-          {
-            perks.map((k) => (
-              <li class="flex items-start gap-2.5 text-[0.95rem]">
-                <span
-                  class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-ink"
-                  aria-hidden="true"
-                >
-                  <svg viewBox="0 0 20 20" fill="none" class="size-3.5">
-                    <path
-                      d="M4.5 10.5l3.2 3.2 7.8-7.8"
-                      stroke="currentColor"
-                      stroke-width="2.2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </span>
-                <span class="text-ink-muted">{t(k as UIKey)}</span>
-              </li>
-            ))
-          }
-        </ul>
-      </div>
+      {/* Что входит в цену — блок общий для всех маршрутов, как и подвал.
+          На гиде его нет: там речь не только про нашу услугу. */}
+      {
+        !isGuide && (
+          <div class="reveal mt-8 max-w-3xl" style="--d:5">
+            <h2 class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
+              {t("perks.title")}
+            </h2>
+            <ul class="mt-3 grid gap-2.5 sm:grid-cols-2">
+              {perks.map((k) => (
+                <li class="flex items-start gap-2.5 text-[0.95rem]">
+                  <span
+                    class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-ink"
+                    aria-hidden="true"
+                  >
+                    <svg viewBox="0 0 20 20" fill="none" class="size-3.5">
+                      <path
+                        d="M4.5 10.5l3.2 3.2 7.8-7.8"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <span class="text-ink-muted">{t(k as UIKey)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
 
       {/* Короткий ответ: первым экраном после героя, отдельной карточкой */}
       <div class="reveal glass mt-10 max-w-3xl rounded-[--radius-card] p-6 sm:p-7" style="--d:6">
@@ -275,56 +315,8 @@ const td = "px-4 py-3.5 align-top";
     </div>
   </section>
 
-  {/* ─────────────── цена ─────────────── */}
-  <section id="price" class="scroll-mt-24 border-t border-line bg-surface py-16 sm:py-20">
-    <div class={wrap}>
-      <p class={eyebrow}>{c.price.eyebrow}</p>
-      <h2 class={h2} style="--d:1">{c.price.title}</h2>
-      <p class={lead} style="--d:2">{c.price.lead}</p>
-
-      <div class="reveal mt-8 overflow-x-auto" style="--d:3">
-        <table class="w-full min-w-[36rem] border-collapse text-left text-[0.95rem]">
-          <caption class="pb-3 text-left text-[0.85rem] text-ink-dim">{c.price.caption}</caption>
-          <thead>
-            <tr class="border-b border-line-strong/40">
-              <th scope="col" class={th}>{t("table.service")}</th>
-              <th scope="col" class={th}>{t("table.price")}</th>
-              <th scope="col" class={th}>{t("table.details")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              c.price.rows.map(([service, price, note]) => (
-                <tr class="border-b border-line">
-                  <th scope="row" class={`${td} font-semibold`}>{service}</th>
-                  <td class={`${td} whitespace-nowrap font-semibold`}>{price}</td>
-                  <td class={`${td} text-ink-muted`}>{note}</td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <p
-        class={`reveal mt-6 max-w-3xl rounded-[--radius-card] border border-brand/35 bg-brand-soft px-6 py-5 text-[0.95rem] leading-relaxed text-ink-muted ${prose}`}
-        style="--d:4"
-        set:html={c.price.note}
-      />
-
-      {
-        c.price.extra?.map((b, i) => (
-          <div class="reveal mt-8 max-w-3xl border-t border-line pt-6" style={`--d:${i + 5}`}>
-            <h3 class="text-[1.15rem] font-semibold tracking-tight">{b.title}</h3>
-            <p
-              class={`mt-2.5 text-[0.97rem] leading-relaxed text-ink-muted ${prose}`}
-              set:html={b.text}
-            />
-          </div>
-        ))
-      }
-    </div>
-  </section>
+  {/* ─────────────── цена: на маршруте сразу после героя ─────────────── */}
+  {c.price && !isGuide && <PriceTable lang={lang} price={c.price} />}
 
   {/* ─────────────── аэропорт: есть не у всех маршрутов ─────────────── */}
   {
@@ -362,26 +354,31 @@ const td = "px-4 py-3.5 align-top";
   }
 
   {/* ─────────────── как проходит поездка ─────────────── */}
-  <section class="border-t border-line bg-surface py-16 sm:py-20">
-    <div class={wrap}>
-      <p class={eyebrow}>{c.steps.eyebrow}</p>
-      <h2 class={h2} style="--d:1">{c.steps.title}</h2>
+  {
+    c.steps && (
+      <section class="border-t border-line bg-surface py-16 sm:py-20">
+        <div class={wrap}>
+          <p class={eyebrow}>{c.steps.eyebrow}</p>
+          <h2 class={h2} style="--d:1">{c.steps.title}</h2>
 
-      <ol class="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {
-          c.steps.items.map((s, i) => (
-            <li class="reveal glass flex flex-col rounded-[--radius-card] p-6" style={`--d:${i + 1}`}>
-              <span class="text-[2rem] font-semibold leading-none tracking-tight text-brand">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h3 class="mt-4 text-[1.05rem] font-semibold tracking-tight">{s.title}</h3>
-              <p class="mt-2.5 text-[0.95rem] leading-relaxed text-ink-muted">{s.text}</p>
-            </li>
-          ))
-        }
-      </ol>
-    </div>
-  </section>
+          <ol class="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {c.steps.items.map((s, i) => (
+              <li
+                class="reveal glass flex flex-col rounded-[--radius-card] p-6"
+                style={`--d:${i + 1}`}
+              >
+                <span class="text-[2rem] font-semibold leading-none tracking-tight text-brand">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 class="mt-4 text-[1.05rem] font-semibold tracking-tight">{s.title}</h3>
+                <p class="mt-2.5 text-[0.95rem] leading-relaxed text-ink-muted">{s.text}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    )
+  }
 
   {/* ─────────────── сравнение способов ─────────────── */}
   {
@@ -415,7 +412,13 @@ const td = "px-4 py-3.5 align-top";
                         <th scope="row" class={`${td} font-semibold`}>{cell}</th>
                       ) : (
                         <td
-                          class={`${td} ${i === row.length - 1 ? "text-ink-muted" : "whitespace-nowrap"}`}
+                          class={`${td} ${
+                            i === row.length - 1
+                              ? "text-ink-muted"
+                              : cell.length <= 18
+                                ? "whitespace-nowrap"
+                                : ""
+                          }`}
                         >
                           {cell}
                         </td>
@@ -437,51 +440,66 @@ const td = "px-4 py-3.5 align-top";
     )
   }
 
-  {/* ─────────────── машина и водитель ─────────────── */}
-  <section
-    id="car"
-    class="scroll-mt-24 border-t border-line bg-surface py-16 sm:py-20"
-  >
-    <div class={`${wrap} grid items-start gap-10 lg:grid-cols-2 lg:gap-14`}>
-      <div>
-        <p class={eyebrow}>{c.car.eyebrow}</p>
-        <h2 class={h2} style="--d:1">{c.car.title}</h2>
-        <div class="reveal mt-5 grid gap-3.5 text-[0.98rem] leading-relaxed text-ink-muted" style="--d:2">
-          {c.car.text.map((p) => <p>{p}</p>)}
-        </div>
-      </div>
+  {/* ─────────────── свободные блоки, верхние: разбор чужих способов ─────────────── */}
+  {topBlocks.map((b, i) => <ContentBlock block={b} surface={i % 2 === 0} />)}
 
-      {
-        carPhoto && (
-          <figure class="reveal" style="--d:3">
-            <Picture
-              src={carPhoto}
-              alt={`${c.car.caption} — ${c.h1}`}
-              widths={[640, 960, 1280]}
-              sizes="(min-width: 1024px) 46vw, 100vw"
-              formats={["avif", "webp"]}
-              fallbackFormat="jpg"
-              loading="lazy"
-              decoding="async"
-              class="aspect-[16/10] w-full rounded-[--radius-card] object-cover"
-            />
-            <figcaption class="mt-3 text-[0.85rem] text-ink-dim">{c.car.caption}</figcaption>
-          </figure>
-        )
-      }
-    </div>
-  </section>
+  {/* ─────────────── цена: в гиде — после разбора всех способов ─────────────── */}
+  {c.price && isGuide && <PriceTable lang={lang} price={c.price} />}
+
+  {/* ─────────────── машина и водитель ─────────────── */}
+  {
+    c.car && (
+      <section id="car" class="scroll-mt-24 border-t border-line bg-surface py-16 sm:py-20">
+        <div class={`${wrap} grid items-start gap-10 lg:grid-cols-2 lg:gap-14`}>
+          <div>
+            <p class={eyebrow}>{c.car.eyebrow}</p>
+            <h2 class={h2} style="--d:1">{c.car.title}</h2>
+            <div
+              class="reveal mt-5 grid gap-3.5 text-[0.98rem] leading-relaxed text-ink-muted"
+              style="--d:2"
+            >
+              {c.car.text.map((p) => <p>{p}</p>)}
+            </div>
+          </div>
+
+          {carPhoto && (
+            <figure class="reveal" style="--d:3">
+              <Picture
+                src={carPhoto}
+                alt={`${c.car.caption} — ${c.h1}`}
+                widths={[640, 960, 1280]}
+                sizes="(min-width: 1024px) 46vw, 100vw"
+                formats={["avif", "webp"]}
+                fallbackFormat="jpg"
+                loading="lazy"
+                decoding="async"
+                class="aspect-[16/10] w-full rounded-[--radius-card] object-cover"
+              />
+              <figcaption class="mt-3 text-[0.85rem] text-ink-dim">{c.car.caption}</figcaption>
+            </figure>
+          )}
+        </div>
+      </section>
+    )
+  }
 
   {/* ─────────────── погранпереход ─────────────── */}
-  <section class="py-16 sm:py-20">
-    <div class={`${wrap} max-w-3xl`}>
-      <p class={eyebrow}>{c.crossing.eyebrow}</p>
-      <h2 class={h2} style="--d:1">{c.crossing.title}</h2>
-      <div class="mt-8">
-        <Accordion items={c.crossing.items} open={0} />
-      </div>
-    </div>
-  </section>
+  {
+    c.crossing && (
+      <section class="py-16 sm:py-20">
+        <div class={`${wrap} max-w-3xl`}>
+          <p class={eyebrow}>{c.crossing.eyebrow}</p>
+          <h2 class={h2} style="--d:1">{c.crossing.title}</h2>
+          <div class="mt-8">
+            <Accordion items={c.crossing.items} open={0} />
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {/* ─────────────── свободные блоки, нижние: побочные темы вроде ночлега ─────────────── */}
+  {bottomBlocks.map((b, i) => <ContentBlock block={b} surface={i % 2 === 0} />)}
 
   {/* ─────────────── FAQ: формулировки совпадают с FAQPage дословно ─────────────── */}
   <section id="faq" class="scroll-mt-24 border-t border-line bg-surface py-16 sm:py-20">
@@ -520,6 +538,33 @@ const td = "px-4 py-3.5 align-top";
       <OrderForm lang={lang} from={form.from} to={form.to} offset={false} />
     </div>
   </section>
+
+  {/* ─────────────── источники: на гиде с ценами и расписаниями они обязательны ─────────────── */}
+  {
+    c.sources && (
+      <section class="border-t border-line py-10">
+        <div class={wrap}>
+          <h2 class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
+            {t("route.sources")}
+          </h2>
+          <ul class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-[0.9rem]">
+            {c.sources.map((s) => (
+              <li>
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener nofollow"
+                  class="text-brand-ink hover:underline"
+                >
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
 
   {/* ─────────────── перелинковка ─────────────── */}
   <section class="border-t border-line bg-surface py-14">
