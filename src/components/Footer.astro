@@ -92,10 +92,60 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
 
   <div class="border-t border-line">
     <div
-      class="mx-auto flex max-w-6xl flex-wrap justify-between gap-2 px-5 py-5 text-[0.85rem] text-ink-dim"
+      class="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-2 px-5 py-5 text-[0.85rem] text-ink-dim"
     >
-      <p>© {year} EstoniaTransfer · {t("footer.rights")}</p>
+      <div class="grid gap-2">
+        <p>© {year} EstoniaTransfer · {t("footer.rights")}</p>
+
+        {/* Счётчик посещений: слева внизу, под копирайтом. Число подставляет
+            скрипт ниже из /hits.php — без JS или без PHP строка остаётся
+            скрытой, пустого «Посещений: —» посетитель не увидит.
+
+            Про [&[hidden]]:hidden рядом с inline-flex. Скрывать элемент
+            атрибутом hidden и задавать ему display утилитой — обычно конфликт:
+            правило браузера для [hidden] слабее классов. Здесь его хватает,
+            потому что preflight Tailwind 4 ставит [hidden]{display:none
+            !important}, но полагаться на чужой !important не хочется — свой
+            селектор по атрибуту специфичнее любой утилиты и не зависит от
+            того, что там в preflight следующей версии. */}
+        <p
+          data-hits
+          hidden
+          class="inline-flex items-center gap-2 self-start rounded-full border border-line bg-page px-2.5 py-1 text-[0.72rem] tracking-wide [&[hidden]]:hidden"
+        >
+          <span class="size-1.5 rounded-full bg-brand" aria-hidden="true"></span>
+          {t("footer.hits")}
+          <span data-hits-value class="font-semibold text-ink-muted tabular-nums">—</span>
+        </p>
+      </div>
+
       <p>{t("footer.city")}</p>
     </div>
   </div>
+
+  <script is:inline>
+    // Считает сервер (hits.php), браузер только показывает число. Запрос идёт
+    // отсюда, а не из разметки, — значит краулеры, не исполняющие JS, счётчик
+    // не накручивают. Если PHP недоступен или запрос не удался, пилюля так и
+    // остаётся скрытой.
+    (function () {
+      "use strict";
+      var box = document.querySelector("[data-hits]");
+      if (!box || !window.fetch) return;
+
+      fetch("/hits.php", { credentials: "omit" })
+        .then(function (res) {
+          return res.ok ? res.json() : null;
+        })
+        .then(function (data) {
+          if (!data || typeof data.total !== "number" || data.total < 1) return;
+          var value = box.querySelector("[data-hits-value]");
+          if (value) value.textContent = data.total.toLocaleString("ru-RU");
+          box.hidden = false;
+        })
+        .catch(function () {
+          /* молча: счётчик не та вещь, из-за которой стоит шуметь в консоли */
+        });
+    })();
+  </script>
 </footer>

@@ -48,11 +48,22 @@ AddType image/x-icon .ico
   # заменишь логотип — у вернувшихся посетителей останется старый. Месяц.
   ExpiresByType image/x-icon "access plus 1 month"
   ExpiresByType application/manifest+json "access plus 1 month"
+  # Ответ hits.php — это application/json. Без обнуления число посещений
+  # застыло бы в кеше браузера на месяц.
+  ExpiresByType application/json "access plus 0 seconds"
 </IfModule>
 
 <IfModule mod_headers.c>
   <FilesMatch "\.(html|xml|txt)$">
     Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+
+  # PHP кешировать нельзя ни в каком виде: hits.php при кеше ответа перестал бы
+  # считать посещения, а число в подвале застыло бы у посетителя в браузере.
+  # Expires снимаем отдельно — ExpiresDefault ниже иначе выдаёт .php месяц.
+  <FilesMatch "\.php$">
+    Header set Cache-Control "no-store"
+    Header unset Expires
   </FilesMatch>
 
   # Astro кладёт статику в _astro/ с хешем в имени — можно кешировать навсегда

@@ -13,16 +13,15 @@
 # Astro отдаёт готовые HTML-файлы.
 name: deploy
 
+# Запуск ТОЛЬКО вручную. Триггер по push включали 17.08 и сразу выключили:
+# прогон падает на шаге «Подготовить SSH» (в секрете ZONE_SSH_PRIVATE_KEY не
+# весь ключ), то есть пуш до сайта не доходит, зато каждый даёт красный прогон
+# и письмо о сбое. Основной способ выкладки сейчас — bash tools/deploy.sh по SSH.
+#
+# Включать push обратно только после того, как ручной запуск отсюда пройдёт
+# зелёным: значит секрет наконец верный.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'package*.json'
-      - 'astro.config.mjs'
-      - '.github/workflows/deploy.yml'
 
 concurrency:
   group: deploy

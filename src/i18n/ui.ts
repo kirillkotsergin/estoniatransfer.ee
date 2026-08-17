@@ -256,6 +256,7 @@ export const ui = {
     "footer.allRoutes": "Все направления и цены",
     "footer.useful": "Полезное",
     "footer.rights": "Все права защищены",
+    "footer.hits": "Посещений:",
     "footer.city": "Таллинн, Эстония",
 
     "common.from": "от",
@@ -431,6 +432,7 @@ export const ui = {
     "footer.allRoutes": "All routes and prices",
     "footer.useful": "Useful",
     "footer.rights": "All rights reserved",
+    "footer.hits": "Visits:",
     "footer.city": "Tallinn, Estonia",
 
     "common.from": "from",
