@@ -1,30 +1,177 @@
 ---
-import { useTranslations, facts, type Lang } from "../i18n/ui";
+import {
+  useTranslations,
+  facts,
+  cities,
+  fromOrder,
+  toOrder,
+  calendar,
+  type Lang,
+} from "../i18n/ui";
 
 interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
+
+// Максимум пассажиров = число мест в машине. Предлагать больше — значит
+// собирать заявки, которые нечем выполнить.
+const paxOptions = Array.from({ length: facts.seats }, (_, i) => i + 1);
+const cal = calendar[lang];
+
+const field =
+  "w-full rounded-xl border border-line-strong/60 bg-page px-4 py-3 text-[0.97rem] text-ink transition-colors placeholder:text-ink-dim focus:border-ink focus:outline-none";
+const label = "block text-[0.85rem] font-semibold text-ink-muted";
 ---
 
-{/* Заглушка формы: поля согласуются отдельно. Специально не выдумываю состав —
-    форма без бэкенда, которая делает вид, что отправляет, хуже её отсутствия.
-    Каркас, отступы и рамки готовы: останется вставить поля и эндпоинт на PHP. */}
 <aside id="order" class="scroll-mt-24 lg:pt-14">
   <div class="glass rounded-[--radius-card] p-6 sm:p-8">
     <p class="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
       {t("order.eyebrow")}
     </p>
     <h2 class="mt-3 text-2xl font-semibold tracking-tight">{t("order.title")}</h2>
-    <p class="mt-3 text-[0.95rem] leading-relaxed text-ink-muted">{t("order.lead")}</p>
 
-    <div
-      class="mt-6 grid min-h-44 place-items-center rounded-2xl border border-dashed border-line-strong/60 bg-page/60 px-5 py-8 text-center"
+    {/* Заявка уходит письмом на info@estoniatransfer.ee через public/send.php.
+        В базе ничего не хранится. Форма — обычный POST, поэтому работает и без
+        JS; со скриптом отправка идёт через fetch, без перезагрузки страницы. */}
+    <form
+      data-order-form
+      class="mt-6 grid gap-4"
+      method="post"
+      action="/send.php"
+      novalidate
     >
-      <p class="font-semibold">{t("order.placeholder")}</p>
-      <p class="mt-2 max-w-sm text-[0.88rem] text-ink-dim">{t("order.placeholderNote")}</p>
-    </div>
+      {/* honeypot: человек поля не видит, боты заполняют */}
+      <input type="text" name="company" tabindex="-1" autocomplete="off" class="sr-only" aria-hidden="true" />
+      <input type="hidden" name="lang" value={lang} />
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class={label} for="of-from">{t("form.from")}</label>
+          <select id="of-from" name="from" class={`mt-1.5 ${field}`} required>
+            {fromOrder.map((id) => <option value={id}>{cities[id][lang]}</option>)}
+          </select>
+        </div>
+        <div>
+          <label class={label} for="of-to">{t("form.to")}</label>
+          <select id="of-to" name="to" class={`mt-1.5 ${field}`} required>
+            {toOrder.map((id) => <option value={id}>{cities[id][lang]}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {/* Дата: в разметке нативный input[type=date] — он работает без скрипта и
+          на телефоне даёт родной удобный выбор. Скрипт ниже надстраивает над ним
+          свой календарь: оформленный, с русскими и английскими месяцами. */}
+      <div data-datepicker class="relative">
+        <label class={label} for="of-date">{t("form.date")}</label>
+        <input
+          id="of-date"
+          name="date"
+          type="date"
+          class={`mt-1.5 ${field}`}
+          required
+          data-date-input
+        />
+        <button
+          type="button"
+          data-date-trigger
+          hidden
+          class={`mt-1.5 flex w-full items-center justify-between rounded-xl border border-line-strong/60 bg-page px-4 py-3 text-left text-[0.97rem] transition-colors hover:border-ink focus:border-ink focus:outline-none`}
+        >
+          <span data-date-label class="text-ink-dim">{t("form.pickDate")}</span>
+          <svg viewBox="0 0 20 20" fill="none" class="size-5 text-brand-ink" aria-hidden="true">
+            <rect x="2.75" y="4.25" width="14.5" height="13" rx="2.5" stroke="currentColor" stroke-width="1.6"></rect>
+            <path d="M2.75 8.25h14.5M7 2.75v3M13 2.75v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+          </svg>
+        </button>
+
+        <div
+          data-date-pop
+          hidden
+          class="glass absolute left-0 right-0 z-50 mt-2 rounded-2xl p-3 sm:w-[19rem]"
+        >
+          <div class="flex items-center justify-between px-1">
+            <button
+              type="button"
+              data-cal-prev
+              aria-label={t("form.prevMonth")}
+              class="grid size-8 place-items-center rounded-lg text-ink-muted transition-colors hover:bg-surface hover:text-ink"
+            >
+              <svg viewBox="0 0 20 20" fill="none" class="size-4"><path d="M12 5l-5 5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <p data-cal-title class="text-[0.95rem] font-semibold tracking-tight"></p>
+            <button
+              type="button"
+              data-cal-next
+              aria-label={t("form.nextMonth")}
+              class="grid size-8 place-items-center rounded-lg text-ink-muted transition-colors hover:bg-surface hover:text-ink"
+            >
+              <svg viewBox="0 0 20 20" fill="none" class="size-4"><path d="M8 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+          </div>
+
+          <div data-cal-days class="mt-3 grid grid-cols-7 gap-1 px-1 text-center text-[0.72rem] font-semibold uppercase tracking-wide text-ink-dim"></div>
+          <div data-cal-grid class="mt-1 grid grid-cols-7 gap-1 px-1"></div>
+
+          <div class="mt-3 flex items-center justify-between border-t border-line pt-2.5">
+            <button type="button" data-cal-today class="rounded-lg px-2.5 py-1.5 text-[0.85rem] font-semibold text-brand-ink transition-colors hover:bg-brand-soft">
+              {t("form.today")}
+            </button>
+            <button type="button" data-cal-clear class="rounded-lg px-2.5 py-1.5 text-[0.85rem] text-ink-dim transition-colors hover:text-ink">
+              {t("form.clear")}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class={label} for="of-pax">{t("form.pax")}</label>
+          <select id="of-pax" name="pax" class={`mt-1.5 ${field}`} required>
+            {paxOptions.map((n) => <option value={n} selected={n === 1}>{n}</option>)}
+          </select>
+        </div>
+        <div>
+          <label class={label} for="of-name">{t("form.name")}</label>
+          <input id="of-name" name="name" type="text" autocomplete="name" class={`mt-1.5 ${field}`} required />
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class={label} for="of-phone">{t("form.phone")}</label>
+          <input
+            id="of-phone"
+            name="phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            placeholder="+372 …"
+            class={`mt-1.5 ${field}`}
+            required
+          />
+        </div>
+        <div>
+          <label class={label} for="of-email">
+            {t("form.email")}
+            <span class="font-normal text-ink-dim"> — {t("form.optional")}</span>
+          </label>
+          <input id="of-email" name="email" type="email" autocomplete="email" class={`mt-1.5 ${field}`} />
+        </div>
+      </div>
+
+      <p data-form-error hidden class="rounded-xl bg-brand-soft px-4 py-3 text-[0.9rem] font-semibold text-brand-ink"></p>
+
+      <button
+        type="submit"
+        class="mt-1 rounded-2xl bg-brand px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-brand-hover"
+      >
+        {t("form.submit")}
+      </button>
+
+      <p class="text-[0.85rem] leading-relaxed text-ink-dim">{t("form.note")}</p>
+    </form>
 
     <p class="mt-6 text-[0.82rem] uppercase tracking-[0.14em] text-ink-dim">{t("order.or")}</p>
     <div class="mt-3 grid gap-2.5 sm:grid-cols-2">
@@ -53,3 +200,236 @@ const t = useTranslations(lang);
     </a>
   </div>
 </aside>
+
+<script
+  is:inline
+  define:vars={{
+    months: cal.months,
+    dayNames: cal.days,
+    waBase: facts.whatsapp,
+    labels: {
+      pick: t("form.pickDate"),
+      errSame: t("form.errSame"),
+      errRequired: t("form.errRequired"),
+      sending: t("form.sending"),
+      ok: t("form.ok"),
+      fail: t("form.fail"),
+      submit: t("form.submit"),
+      from: t("form.from"),
+      to: t("form.to"),
+      date: t("form.date"),
+      pax: t("form.pax"),
+      name: t("form.name"),
+      phone: t("form.phone"),
+      email: t("form.email"),
+    },
+    cityNames: Object.fromEntries(Object.entries(cities).map(([id, v]) => [id, v[lang]])),
+    locale: lang,
+  }}
+>
+  (function () {
+    "use strict";
+    var form = document.querySelector("[data-order-form]");
+    if (!form) return;
+
+    var wrap = form.querySelector("[data-datepicker]");
+    var input = form.querySelector("[data-date-input]");
+    var trigger = form.querySelector("[data-date-trigger]");
+    var pop = form.querySelector("[data-date-pop]");
+    var titleEl = form.querySelector("[data-cal-title]");
+    var daysEl = form.querySelector("[data-cal-days]");
+    var gridEl = form.querySelector("[data-cal-grid]");
+    var errEl = form.querySelector("[data-form-error]");
+    var labelEl = form.querySelector("[data-date-label]");
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var view = new Date(today.getFullYear(), today.getMonth(), 1);
+    var selected = null;
+
+    // Скрипт работает — прячем нативный input и показываем свой триггер.
+    input.classList.add("sr-only");
+    input.setAttribute("tabindex", "-1");
+    trigger.hidden = false;
+
+    function iso(d) {
+      var m = String(d.getMonth() + 1).padStart(2, "0");
+      var day = String(d.getDate()).padStart(2, "0");
+      return d.getFullYear() + "-" + m + "-" + day;
+    }
+    function human(d) {
+      return d.getDate() + " " + months[d.getMonth()].toLowerCase() + " " + d.getFullYear();
+    }
+
+    function renderDayNames() {
+      daysEl.innerHTML = "";
+      dayNames.forEach(function (n) {
+        var s = document.createElement("span");
+        s.textContent = n;
+        daysEl.appendChild(s);
+      });
+    }
+
+    function render() {
+      titleEl.textContent = months[view.getMonth()] + " " + view.getFullYear();
+      gridEl.innerHTML = "";
+      var first = new Date(view.getFullYear(), view.getMonth(), 1);
+      // Неделя с понедельника: сдвигаем воскресенье в конец
+      var shift = (first.getDay() + 6) % 7;
+      var total = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+      for (var i = 0; i < shift; i++) gridEl.appendChild(document.createElement("span"));
+      for (var d = 1; d <= total; d++) {
+        var date = new Date(view.getFullYear(), view.getMonth(), d);
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = String(d);
+        b.className =
+          "grid size-9 place-items-center rounded-lg text-[0.9rem] transition-colors";
+        var past = date < today;
+        if (past) {
+          b.disabled = true;
+          b.className += " text-ink-dim/40 cursor-not-allowed";
+        } else if (selected && iso(date) === iso(selected)) {
+          b.className += " bg-brand font-semibold text-ink";
+        } else if (iso(date) === iso(today)) {
+          b.className += " font-semibold text-brand-ink hover:bg-brand-soft";
+        } else {
+          b.className += " text-ink hover:bg-surface";
+        }
+        if (!past) {
+          b.addEventListener("click", pickDate(date));
+        }
+        gridEl.appendChild(b);
+      }
+    }
+
+    function pickDate(date) {
+      return function () {
+        selected = date;
+        input.value = iso(date);
+        labelEl.textContent = human(date);
+        labelEl.classList.remove("text-ink-dim");
+        close();
+      };
+    }
+
+    function open() {
+      pop.hidden = false;
+      render();
+    }
+    function close() {
+      pop.hidden = true;
+    }
+
+    trigger.addEventListener("click", function () {
+      pop.hidden ? open() : close();
+    });
+    form.querySelector("[data-cal-prev]").addEventListener("click", function () {
+      view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+      render();
+    });
+    form.querySelector("[data-cal-next]").addEventListener("click", function () {
+      view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
+      render();
+    });
+    form.querySelector("[data-cal-today]").addEventListener("click", pickDate(today));
+    form.querySelector("[data-cal-clear]").addEventListener("click", function () {
+      selected = null;
+      input.value = "";
+      labelEl.textContent = labels.pick;
+      labelEl.classList.add("text-ink-dim");
+      close();
+    });
+    document.addEventListener("click", function (e) {
+      if (!pop.hidden && !wrap.contains(e.target)) close();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !pop.hidden) {
+        close();
+        trigger.focus();
+      }
+    });
+
+    // Один и тот же город с двух сторон — бессмысленная заявка, гасим сразу.
+    var fromSel = form.querySelector("#of-from");
+    var toSel = form.querySelector("#of-to");
+    function syncCities() {
+      Array.prototype.forEach.call(toSel.options, function (o) {
+        o.disabled = o.value === fromSel.value;
+      });
+      if (toSel.value === fromSel.value) {
+        var free = Array.prototype.filter.call(toSel.options, function (o) {
+          return !o.disabled;
+        })[0];
+        if (free) toSel.value = free.value;
+      }
+    }
+    fromSel.addEventListener("change", syncCities);
+
+    function showError(msg) {
+      errEl.textContent = msg;
+      errEl.hidden = false;
+    }
+
+    var btn = form.querySelector('button[type="submit"]');
+
+    function showMsg(msg, ok) {
+      errEl.textContent = msg;
+      errEl.hidden = false;
+      errEl.className = ok
+        ? "rounded-xl bg-surface px-4 py-3 text-[0.9rem] font-semibold text-ink"
+        : "rounded-xl bg-brand-soft px-4 py-3 text-[0.9rem] font-semibold text-brand-ink";
+    }
+
+    // Отправка через fetch: страница не перезагружается. Если скрипт не
+    // выполнится, форма уйдёт обычным POST на /send.php и вернёт страницу
+    // с подтверждением — поэтому action и method стоят в разметке.
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      errEl.hidden = true;
+      var f = new FormData(form);
+      var required = ["from", "to", "date", "pax", "name", "phone"];
+      for (var i = 0; i < required.length; i++) {
+        if (!String(f.get(required[i]) || "").trim()) return showMsg(labels.errRequired, false);
+      }
+      if (f.get("from") === f.get("to")) return showMsg(labels.errSame, false);
+
+      btn.disabled = true;
+      btn.textContent = labels.sending;
+
+      fetch(form.action, {
+        method: "POST",
+        body: f,
+        headers: { Accept: "application/json" },
+      })
+        .then(function (r) {
+          return r.json().catch(function () {
+            return { ok: r.ok, message: r.ok ? labels.ok : labels.fail };
+          });
+        })
+        .then(function (data) {
+          if (data && data.ok) {
+            form.reset();
+            if (labelEl) {
+              labelEl.textContent = labels.pick;
+              labelEl.classList.add("text-ink-dim");
+            }
+            selected = null;
+            showMsg(data.message || labels.ok, true);
+          } else {
+            showMsg((data && data.message) || labels.fail, false);
+          }
+        })
+        .catch(function () {
+          showMsg(labels.fail, false);
+        })
+        .finally(function () {
+          btn.disabled = false;
+          btn.textContent = labels.submit;
+        });
+    });
+
+    renderDayNames();
+    syncCities();
+  })();
+</script>

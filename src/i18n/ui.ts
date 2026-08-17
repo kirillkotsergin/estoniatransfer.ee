@@ -87,6 +87,28 @@ export const ui = {
     "order.placeholderNote":
       "Состав полей согласуем: дата, время, маршрут, число пассажиров, контакты.",
     "order.or": "или сразу в мессенджер",
+    "form.from": "Поездка из",
+    "form.to": "Едем до",
+    "form.date": "Дата поездки",
+    "form.pax": "Количество пассажиров",
+    "form.name": "Ваше имя",
+    "form.phone": "Номер телефона",
+    "form.email": "Электронная почта",
+    "form.optional": "необязательно",
+    "form.choose": "Выберите",
+    "form.pickDate": "Выберите дату",
+    "form.submit": "Отправить заявку",
+    "form.sending": "Отправляем…",
+    "form.note":
+      "Заявка уходит письмом на info@estoniatransfer.ee. Данные нужны только для ответа и нигде не хранятся.",
+    "form.ok": "Спасибо! Заявка отправлена, скоро свяжемся.",
+    "form.fail": "Не удалось отправить. Напишите в WhatsApp — ответим сразу.",
+    "form.errSame": "Города отправления и назначения совпадают",
+    "form.errRequired": "Заполните обязательные поля",
+    "form.today": "Сегодня",
+    "form.clear": "Сбросить",
+    "form.prevMonth": "Предыдущий месяц",
+    "form.nextMonth": "Следующий месяц",
     "footer.tagline":
       "Индивидуальный трансфер и пассажирские перевозки по Эстонии: аэропорт, порт, погранпереходы.",
     "footer.contacts": "Контакты",
@@ -149,6 +171,28 @@ export const ui = {
     "order.placeholderNote":
       "Fields to be agreed: date, time, route, number of passengers, contacts.",
     "order.or": "or message us directly",
+    "form.from": "From",
+    "form.to": "To",
+    "form.date": "Travel date",
+    "form.pax": "Passengers",
+    "form.name": "Your name",
+    "form.phone": "Phone number",
+    "form.email": "Email",
+    "form.optional": "optional",
+    "form.choose": "Select",
+    "form.pickDate": "Pick a date",
+    "form.submit": "Send request",
+    "form.sending": "Sending…",
+    "form.note":
+      "The request is emailed to info@estoniatransfer.ee. We use the details only to reply and store nothing.",
+    "form.ok": "Thank you! The request has been sent, we will get back to you shortly.",
+    "form.fail": "Could not send. Message us on WhatsApp — we reply straight away.",
+    "form.errSame": "Pick-up and drop-off are the same",
+    "form.errRequired": "Please fill the required fields",
+    "form.today": "Today",
+    "form.clear": "Clear",
+    "form.prevMonth": "Previous month",
+    "form.nextMonth": "Next month",
     "footer.tagline":
       "Private transfer and passenger transport across Estonia: airport, port, border crossings.",
     "footer.contacts": "Contacts",
@@ -158,6 +202,40 @@ export const ui = {
     "common.from": "from",
     "common.perCar": "per car",
     "lang.label": "Language",
+  },
+} as const;
+
+/** Города для формы. value — язык-независимый id, подпись переводится. */
+export const cities = {
+  tallinn: { ru: "Таллинн", en: "Tallinn" },
+  narva: { ru: "Нарва", en: "Narva" },
+  koidula: { ru: "Койдула", en: "Koidula" },
+  luhamaa: { ru: "Лухамаа", en: "Luhamaa" },
+} as const;
+
+export type CityId = keyof typeof cities;
+
+/** Порядок в списках — как просил заказчик: свой для «откуда» и «куда». */
+export const fromOrder: CityId[] = ["tallinn", "narva", "koidula", "luhamaa"];
+export const toOrder: CityId[] = ["narva", "koidula", "luhamaa", "tallinn"];
+
+/** Названия месяцев и дней для своего календаря: Intl не тянем, чтобы не
+    зависеть от локалей в браузере и не грузить ничего лишнего. */
+export const calendar = {
+  ru: {
+    months: [
+      "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+      "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
+    ],
+    // Неделя начинается с понедельника
+    days: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+  },
+  en: {
+    months: [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December",
+    ],
+    days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
   },
 } as const;
 
