@@ -229,6 +229,11 @@ export const ui = {
     "form.prevMonth": "Предыдущий месяц",
     "form.nextMonth": "Следующий месяц",
 
+    "answers.eyebrow": "Ответы коротко",
+    "answers.title": "Главное одним абзацем",
+    "answers.lead":
+      "Цены, время в пути и правила переходов — сразу, без клика. Здесь собраны вопросы, которые обычно задают до заказа: сколько стоит, сколько ехать, где можно на машине, а где только пешком.",
+
     "faq.eyebrow": "Частые вопросы",
     "faq.title": "Трансфер до границы: частые вопросы",
     "faq.q1": "Сколько стоит трансфер и что входит в эту сумму?",
@@ -402,6 +407,11 @@ export const ui = {
     "form.clear": "Clear",
     "form.prevMonth": "Previous month",
     "form.nextMonth": "Next month",
+
+    "answers.eyebrow": "Short answers",
+    "answers.title": "The essentials in one paragraph",
+    "answers.lead":
+      "Prices, journey times and crossing rules straight away, without a click. These are the questions people ask before booking: what it costs, how long it takes, where you can drive and where you walk.",
 
     "faq.eyebrow": "FAQ",
     "faq.title": "Border transfer: common questions",

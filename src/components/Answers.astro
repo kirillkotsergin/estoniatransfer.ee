@@ -1,0 +1,53 @@
+---
+/**
+ * Блок «Ответы коротко»: вопрос — ответ, списком определений.
+ *
+ * Почему <dl>, а не набор <details> как в FAQ ниже. Во-первых, ответы здесь
+ * должны быть видны сразу, без клика: и человеку, который ищет цену, и модели,
+ * которая берёт первое предложение. Во-вторых, dt/dd — самая однозначная пара
+ * «вопрос — ответ» в HTML, разбирать её не нужно.
+ *
+ * id="answers" не декоративный: на него ссылается speakable в микроразметке
+ * главной, то есть именно этот блок помечен как пригодный для чтения вслух.
+ *
+ * Блок ВИДИМЫЙ. Пожелание «сделать невидимый FAQ для ботов» не выполняем:
+ * скрытый текст — это cloaking, за него Google снимает страницу целиком, а
+ * модели читают ровно ту же разметку, что и браузер, так что скрытие не даёт
+ * ничего, кроме риска.
+ */
+import { useTranslations, type Lang } from "../i18n/ui";
+import { answers } from "../data/answers";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const items = answers[lang];
+---
+
+<section id="answers" class="scroll-mt-24 border-t border-line py-16 sm:py-24">
+  <div class="mx-auto max-w-4xl px-5">
+    <p class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+      {t("answers.eyebrow")}
+    </p>
+    <h2
+      class="reveal mt-4 text-[clamp(1.9rem,3.6vw,2.9rem)] font-semibold leading-tight tracking-[-0.02em]"
+      style="--d:1"
+    >
+      {t("answers.title")}
+    </h2>
+    <p class="reveal mt-4 max-w-2xl text-ink-muted" style="--d:2">{t("answers.lead")}</p>
+
+    <dl class="mt-10 grid gap-6 sm:grid-cols-2">
+      {
+        items.map((item, i) => (
+          <div class="reveal border-t border-line pt-5" style={`--d:${i + 1}`}>
+            <dt class="text-[1.02rem] font-semibold tracking-tight">{item.q}</dt>
+            <dd class="mt-2 text-[0.95rem] leading-relaxed text-ink-muted">{item.a}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>

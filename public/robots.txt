@@ -102,4 +102,39 @@ Allow: /
 User-agent: Bytespider
 Allow: /
 
+# ─── Дополнительные агенты моделей и наборов данных ───
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-CloudVertexBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: cohere-training-data-crawler
+Allow: /
+
+User-agent: Diffbot
+Allow: /
+
+User-agent: omgili
+Allow: /
+
+User-agent: omgilibot
+Allow: /
+
+User-agent: Webzio-Extended
+Allow: /
+
+User-agent: ImagesiftBot
+Allow: /
+
+User-agent: TimpiBot
+Allow: /
+
 Sitemap: https://estoniatransfer.ee/sitemap.xml
+
+# Сводка для языковых моделей: цены, маршруты и условия одним файлом,
+# чтобы ассистенту не приходилось разбирать HTML тринадцати страниц.
+# LLM-Content: https://estoniatransfer.ee/llms.txt

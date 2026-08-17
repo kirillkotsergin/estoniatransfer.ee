@@ -2,22 +2,36 @@
 /**
  * Микроразметка главной страницы: один граф вместо россыпи отдельных блоков.
  *
- * Зачем: без него поисковик знает про сайт только из текста, а ИИ-поиску нечего
- * цитировать структурно. `TaxiService` — подтип LocalBusiness, из него берутся
- * телефон, зона обслуживания, цены и машина. `@id` у сущностей проставлены,
- * чтобы страницы маршрутов могли на них ссылаться, а не описывать заново.
+ * Расчёт не только на сниппеты Google, но и на языковые модели: ChatGPT, Claude
+ * и Gemini разбирают JSON-LD как готовые факты и цитируют их охотнее, чем
+ * абзацы. Поэтому здесь явно, полями, а не прозой: кто оказывает услугу, куда
+ * возит, сколько это стоит, сколько километров и часов, по какому телефону
+ * связаться и на каком языке ответят.
+ *
+ * Что важно в структуре:
+ * - у организации тип двойной, `["LocalBusiness","TaxiService"]`. TaxiService в
+ *   schema.org не наследник LocalBusiness, а отдельная ветка, поэтому один тип
+ *   пришлось бы выбирать: либо «локальный бизнес», либо «услуга такси».
+ *   Массив даёт и то, и другое.
+ * - `@id` проставлены всем сущностям, и страницы маршрутов ссылаются на бизнес
+ *   через `provider: { "@id": … }`, а не описывают его заново. Для модели это
+ *   один и тот же субъект на всём сайте, а не пять похожих.
+ * - у каждого оффера `itemOffered` — это Service с `departureLocation` и
+ *   `arrivalLocation`. Пара «откуда — куда» в отдельных полях читается
+ *   машиной однозначно, в отличие от строки «Таллинн — Нарва».
+ * - расстояние и время едут в `additionalProperty` как QuantitativeValue с
+ *   единицами: KMT (километры) и MIN (минуты). Это стандартный способ отдать
+ *   число, для которого в схеме нет своего поля.
  *
  * Чего здесь намеренно нет:
  * - `address` — точного адреса офиса у сервиса нет, а выдумывать его нельзя:
  *   несуществующий адрес в разметке хуже отсутствующего.
  * - `aggregateRating` — отзывов нет. Рейтинг без отзывов Google считает
  *   нарушением и снимает расширенные сниппеты со всего сайта.
- * - `openingHours` — работаем круглосуточно, это выражено через
- *   `availableLanguage` и текст, а не через график.
  *
- * ПРОВЕРЬ: `availableLanguage` указан только `ru`. Если водитель говорит
- * по-английски или по-эстонски — допишите `en`, `et`: по этому полю
- * ассистенты отвечают на вопрос «а по-английски с ними можно?».
+ * ПРОВЕРЬ: `availableLanguage` — ru и en. Если водитель говорит по-эстонски,
+ * допишите `et`: по этому полю ассистенты отвечают на вопрос «а на каком языке
+ * с ними можно?».
  */
 import { facts, localePath, type Lang } from "../i18n/ui";
 import { landingsFor } from "../data/routes";
@@ -29,47 +43,194 @@ const { lang } = Astro.props;
 const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
 const home = new URL(localePath(lang, "/"), site).href;
 const org = `${site}/#business`;
+const phone = facts.phoneHref.replace("tel:", "");
 
-const routeNames: Record<string, { ru: string; en: string }> = {
+/** Города и переходы на двух языках: в разметке имя должно быть на языке страницы. */
+const place = {
+  tallinn: { ru: "Таллинн", en: "Tallinn" },
+  tartu: { ru: "Тарту", en: "Tartu" },
+  narva: { ru: "Нарва", en: "Narva" },
+  koidula: { ru: "Койдула", en: "Koidula" },
+  luhamaa: { ru: "Лухамаа", en: "Luhamaa" },
+} as const;
+
+const routeName = {
   narva: { ru: "Трансфер Таллинн — Нарва", en: "Transfer Tallinn — Narva" },
   koidula: { ru: "Трансфер Таллинн — Койдула", en: "Transfer Tallinn — Koidula" },
   luhamaa: { ru: "Трансфер Таллинн — Лухамаа", en: "Transfer Tallinn — Luhamaa" },
+} as const;
+
+const t = {
+  ru: {
+    desc: "Индивидуальный трансфер из Таллинна к погранпереходам Нарва, Койдула и Лухамаа: фиксированная цена за автомобиль, встреча в аэропорту и круизном порту, выезд в любое время суток.",
+    catalog: "Направления и цены",
+    booking: "заказ трансфера",
+    payment: "Наличные, банковский перевод",
+    car: "трансфер к погранпереходу, до 4 пассажиров с багажом",
+    queue: "Место в очереди на границе",
+    queueDesc: "Бронирование времени в очереди на выезд, доплата к маршруту в Нарву",
+    fromTartu: "Трансфер из Тарту к погранпереходам Койдула и Лухамаа",
+    distance: "Расстояние",
+    duration: "Время в пути",
+  },
+  en: {
+    desc: "Private transfer from Tallinn to the Narva, Koidula and Luhamaa border crossings: a fixed price per car, airport and cruise port pickup, departures at any hour.",
+    catalog: "Routes and fares",
+    booking: "transfer booking",
+    payment: "Cash, bank transfer",
+    car: "transfer to a border crossing, up to 4 passengers with luggage",
+    queue: "A booked slot in the border queue",
+    queueDesc: "Reserving a place in the exit queue, charged on top of the Narva route",
+    fromTartu: "Transfer from Tartu to the Koidula and Luhamaa border crossings",
+    distance: "Distance",
+    duration: "Journey time",
+  },
+}[lang];
+
+/** Ссылка на страницу маршрута, если она на этом языке есть. */
+const routeUrl = (id: string) => {
+  const found = landingsFor(lang).find((r) => r.routeId === id);
+  return found ? new URL(localePath(lang, `/${found.slug}/`), site).href : `${home}#routes`;
 };
+
+const quantity = (name: string, value: number, unitCode: "KMT" | "MIN") => ({
+  "@type": "PropertyValue",
+  name,
+  value: { "@type": "QuantitativeValue", value, unitCode },
+});
+
+/** Минуты из строки «3 ч 5 мин» — для additionalProperty нужно число. */
+const minutes = (id: (typeof facts.routes)[number]["id"]) =>
+  ({ narva: 150, koidula: 185, luhamaa: 190 })[id];
+
+// Тип задан явно: без него TypeScript выводит из первого map узкий литерал и
+// потом не даёт дописать в массив оффер другой формы.
+const offers: Record<string, unknown>[] = facts.routes.map((r) => ({
+  "@type": "Offer",
+  "@id": `${routeUrl(r.id)}#offer`,
+  name: routeName[r.id][lang],
+  price: String(r.price),
+  priceCurrency: "EUR",
+  availability: "https://schema.org/InStock",
+  url: routeUrl(r.id),
+  priceSpecification: {
+    "@type": "PriceSpecification",
+    price: String(r.price),
+    priceCurrency: "EUR",
+    valueAddedTaxIncluded: true,
+    description: t.car,
+  },
+  itemOffered: {
+    "@type": "Service",
+    name: routeName[r.id][lang],
+    serviceType: "Private transfer",
+    provider: { "@id": org },
+    departureLocation: { "@type": "City", name: place.tallinn[lang] },
+    arrivalLocation: { "@type": "Place", name: place[r.id][lang] },
+    additionalProperty: [
+      quantity(t.distance, r.km, "KMT"),
+      quantity(t.duration, minutes(r.id), "MIN"),
+    ],
+  },
+}));
+
+// Доплата за очередь и маршрут из Тарту — отдельные офферы: у них своя цена,
+// и модели важно не смешать их с ценой основного маршрута.
+offers.push({
+  "@type": "Offer",
+  "@id": `${routeUrl("narva")}#queue-offer`,
+  name: t.queue,
+  price: String(facts.queueSlot.price),
+  priceCurrency: "EUR",
+  availability: "https://schema.org/InStock",
+  url: routeUrl("narva"),
+  priceSpecification: {
+    "@type": "PriceSpecification",
+    price: String(facts.queueSlot.price),
+    priceCurrency: "EUR",
+    valueAddedTaxIncluded: true,
+    description: t.queueDesc,
+  },
+});
+
+const tartuPage = landingsFor(lang).find((r) => r.slug === "transfer-tartu-koidula-luhamaa");
+if (tartuPage) {
+  const url = new URL(localePath(lang, `/${tartuPage.slug}/`), site).href;
+  offers.push({
+    "@type": "Offer",
+    "@id": `${url}#offer`,
+    name: t.fromTartu,
+    price: String(facts.fromTartu.price),
+    priceCurrency: "EUR",
+    availability: "https://schema.org/InStock",
+    url,
+    itemOffered: {
+      "@type": "Service",
+      name: t.fromTartu,
+      serviceType: "Private transfer",
+      provider: { "@id": org },
+      departureLocation: { "@type": "City", name: place.tartu[lang] },
+      arrivalLocation: { "@type": "Place", name: place.koidula[lang] },
+      additionalProperty: [
+        quantity(t.distance, facts.fromTartu.koidula.km, "KMT"),
+        quantity(t.duration, 60, "MIN"),
+      ],
+    },
+  });
+}
 
 const schema = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "TaxiService",
+      // Двойной тип: и локальный бизнес, и услуга такси — см. комментарий выше
+      "@type": ["LocalBusiness", "TaxiService"],
       "@id": org,
       name: "EstoniaTransfer",
       url: `${site}/`,
-      description:
-        lang === "ru"
-          ? "Индивидуальный трансфер из Таллинна к погранпереходам Нарва, Койдула и Лухамаа: фиксированная цена за автомобиль, встреча в аэропорту и круизном порту, выезд в любое время суток."
-          : "Private transfer from Tallinn to the Narva, Koidula and Luhamaa border crossings: a fixed price per car, airport and cruise port pickup, departures at any hour.",
-      telephone: facts.phoneHref.replace("tel:", ""),
+      description: t.desc,
+      telephone: phone,
       email: facts.email,
-      image: new URL("/favicon.svg", site).href,
-      priceRange: "80–160 €",
+      image: new URL("/favicon-192x192.png", site).href,
+      priceRange: `${facts.fromTartu.price}–${Math.max(...facts.routes.map((r) => r.price))} €`,
       currenciesAccepted: "EUR",
-      paymentAccepted: lang === "ru" ? "Наличные, банковский перевод" : "Cash, bank transfer",
+      paymentAccepted: t.payment,
       // Мессенджеры — это и есть профили сервиса на стороне: другого способа
       // связаться нет, поэтому они стоят в sameAs, а не только ссылками.
       sameAs: [facts.whatsapp, facts.telegram],
-      contactPoint: {
-        "@type": "ContactPoint",
-        telephone: facts.phoneHref.replace("tel:", ""),
-        contactType: lang === "ru" ? "заказ трансфера" : "transfer booking",
-        availableLanguage: ["ru"],
-        contactOption: "TollFree",
-      },
+      contactPoint: [
+        {
+          "@type": "ContactPoint",
+          telephone: phone,
+          contactType: t.booking,
+          availableLanguage: ["ru", "en"],
+        },
+      ],
+      // Работаем круглосуточно — для модели это отдельный проверяемый факт,
+      // а не оборот «выезд в любое время» внутри абзаца.
+      openingHoursSpecification: [
+        {
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: [
+            "https://schema.org/Monday",
+            "https://schema.org/Tuesday",
+            "https://schema.org/Wednesday",
+            "https://schema.org/Thursday",
+            "https://schema.org/Friday",
+            "https://schema.org/Saturday",
+            "https://schema.org/Sunday",
+          ],
+          opens: "00:00",
+          closes: "23:59",
+        },
+      ],
       areaServed: [
-        { "@type": "City", name: lang === "ru" ? "Таллинн" : "Tallinn" },
-        { "@type": "City", name: lang === "ru" ? "Тарту" : "Tartu" },
-        { "@type": "City", name: lang === "ru" ? "Нарва" : "Narva" },
-        { "@type": "Place", name: lang === "ru" ? "Койдула" : "Koidula" },
-        { "@type": "Place", name: lang === "ru" ? "Лухамаа" : "Luhamaa" },
+        { "@type": "City", name: place.tallinn[lang] },
+        { "@type": "City", name: place.tartu[lang] },
+        { "@type": "City", name: place.narva[lang] },
+        { "@type": "Place", name: place.koidula[lang] },
+        { "@type": "Place", name: place.luhamaa[lang] },
+        { "@type": "Country", name: lang === "ru" ? "Эстония" : "Estonia" },
       ],
       vehicle: {
         "@type": "Vehicle",
@@ -83,23 +244,11 @@ const schema = {
         jobTitle: lang === "ru" ? "Водитель" : "Driver",
         worksFor: { "@id": org },
       },
+      makesOffer: offers,
       hasOfferCatalog: {
         "@type": "OfferCatalog",
-        name: lang === "ru" ? "Направления и цены" : "Routes and fares",
-        itemListElement: facts.routes.map((r) => ({
-          "@type": "Offer",
-          name: routeNames[r.id][lang],
-          price: String(r.price),
-          priceCurrency: "EUR",
-          availability: "https://schema.org/InStock",
-          url:
-            landingsFor(lang).some((l) => l.routeId === r.id)
-              ? new URL(
-                  localePath(lang, `/${landingsFor(lang).find((l) => l.routeId === r.id)!.slug}/`),
-                  site
-                ).href
-              : `${home}#routes`,
-        })),
+        name: t.catalog,
+        itemListElement: offers,
       },
     },
     {
@@ -117,6 +266,12 @@ const schema = {
       isPartOf: { "@id": `${site}/#website` },
       about: { "@id": org },
       inLanguage: lang,
+      // Блок коротких ответов — то, что голосовым помощникам стоит читать
+      // вслух и что модели проще всего вытащить как факт.
+      speakable: {
+        "@type": "SpeakableSpecification",
+        cssSelector: ["#answers"],
+      },
     },
   ],
 };

@@ -1,5 +1,6 @@
 ---
 import { useTranslations, type Lang, type UIKey } from "../i18n/ui";
+import { answers } from "../data/answers";
 
 interface Props {
   lang: Lang;
@@ -8,17 +9,31 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 const items = [1, 2, 3, 4, 5];
 
-// Разметка FAQPage: текст вопросов и ответов берётся из тех же ключей, что и
-// видимый блок, поэтому они не могут разойтись. Расхождение Google считает
-// нарушением, а при ручном дублировании оно случается на первой же правке.
+/**
+ * Разметка FAQPage: текст вопросов и ответов берётся из тех же ключей, что и
+ * видимый блок, поэтому они не могут разойтись. Расхождение Google считает
+ * нарушением, а при ручном дублировании оно случается на первой же правке.
+ *
+ * В список входят и вопросы из блока «Ответы коротко» выше: он на этой же
+ * странице, значит разметка по-прежнему соответствует видимому тексту. Двух
+ * FAQPage на страницу быть не должно — вторую поисковик просто игнорирует,
+ * поэтому единственную собираем здесь, а компонент Answers разметки не даёт.
+ */
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: items.map((n) => ({
-    "@type": "Question",
-    name: t(`faq.q${n}` as UIKey),
-    acceptedAnswer: { "@type": "Answer", text: t(`faq.a${n}` as UIKey) },
-  })),
+  mainEntity: [
+    ...answers[lang].map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+    ...items.map((n) => ({
+      "@type": "Question",
+      name: t(`faq.q${n}` as UIKey),
+      acceptedAnswer: { "@type": "Answer", text: t(`faq.a${n}` as UIKey) },
+    })),
+  ],
 };
 ---
 
