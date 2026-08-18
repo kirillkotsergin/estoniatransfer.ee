@@ -18,7 +18,7 @@
  * Service в разметку идёт Article, коммерческий блок «что входит в цену»
  * убран, а таблица наших цен перенесена ниже разбора чужих способов.
  */
-import { Picture } from "astro:assets";
+import { Picture, getImage } from "astro:assets";
 import Base from "./Base.astro";
 import Accordion from "../components/Accordion.astro";
 import OrderForm from "../components/OrderForm.astro";
@@ -78,6 +78,24 @@ const carPhoto = Object.entries(carPhotos).find(([p]) =>
 
 const perks = ["perks.1", "perks.2", "perks.3", "perks.4", "perks.5"] as const;
 
+/**
+ * Картинки для Product в разметке. Google просит одно и то же изображение в
+ * трёх пропорциях — 1:1, 4:3 и 16:9, — потому что в разных местах выдачи
+ * карточка обрезается по-разному, и без нужной пропорции он обрежет сам,
+ * иногда по машине. Режется из того же фото, что стоит на странице.
+ */
+const productImages = carPhoto
+  ? await Promise.all(
+      [
+        [1200, 1200],
+        [1200, 900],
+        [1200, 675],
+      ].map(([width, height]) =>
+        getImage({ src: carPhoto, width, height, fit: "cover", position: "center", format: "jpeg" })
+      )
+    ).then((list) => list.map((img: { src: string }) => new URL(img.src, site).href))
+  : [];
+
 /** В разметку для поисковиков теги не отдаём: там нужен чистый текст */
 const plain = (s: string) =>
   s
@@ -86,10 +104,15 @@ const plain = (s: string) =>
     .trim();
 
 /**
- * Офферы для Service. Правило простое: в разметку попадает только та цена,
- * которая названа на странице. Нет подтверждённой цены (сборная страница
- * с расчётом по запросу) — нет и оффера: выдуманная цифра в микроразметке
- * хуже её отсутствия.
+ * Офферы. Правило простое: в разметку попадает только та цена, которая названа
+ * на странице. Нет подтверждённой цены (сборная страница с расчётом по
+ * запросу) — нет и оффера: выдуманная цифра в микроразметке хуже её
+ * отсутствия.
+ *
+ * Цены маршрута и доплаты держим раздельно. В Product.offers идут только
+ * маршрутные: если положить туда же доплату за очередь, выйдет, что у поездки
+ * две цены — 130 € и 50 €, — и Google покажет в сниппете меньшую. Доплата
+ * уезжает в isRelatedTo: она связана с услугой, но не является её ценой.
  */
 const offers: Record<string, unknown>[] = c.offers
   ? c.offers.map((o) => ({
@@ -114,18 +137,28 @@ const offers: Record<string, unknown>[] = c.offers
     : [];
 
 // Доплата за место в очереди есть не на всех маршрутах — только там, где заявлена
-if (route.routeId === facts.queueSlot.route) {
-  offers.push({
-    "@type": "Offer",
-    name: lang === "ru" ? "Место в очереди на границе" : "A booked slot in the border queue",
-    price: String(facts.queueSlot.price),
-    priceCurrency: "EUR",
-    url,
-  });
-}
+const addons: Record<string, unknown>[] =
+  route.routeId === facts.queueSlot.route
+    ? [
+        {
+          "@type": "Offer",
+          name: lang === "ru" ? "Место в очереди на границе" : "A booked slot in the border queue",
+          price: String(facts.queueSlot.price),
+          priceCurrency: "EUR",
+          url,
+          availability: "https://schema.org/InStock",
+        },
+      ]
+    : [];
 
+/**
+ * Один и тот же `@id`, что и у организации на главной. Без него каждая страница
+ * описывала бы отдельную безымянную компанию, и поисковик видел бы шесть
+ * похожих сущностей вместо одной.
+ */
 const org = {
-  "@type": "TaxiService",
+  "@type": ["LocalBusiness", "TaxiService"],
+  "@id": `${site}/#business`,
   name: "EstoniaTransfer",
   telephone: facts.phoneHref.replace("tel:", ""),
   email: facts.email,
@@ -151,15 +184,39 @@ const main =
         mainEntityOfPage: url,
       }
     : {
-        "@type": "Service",
+        /**
+         * Двойной тип. Service описывает суть — это перевозка, а не товар с
+         * полки, и для языковых моделей важно именно это. Product добавлен
+         * потому, что расширенный сниппет с ценой Google строит только для
+         * Product: формата выдачи для Service у него нет вообще. А у Product
+         * обязательно должно быть одно из трёх — offers, review или
+         * aggregateRating, иначе Search Console пишет «Either offers, review,
+         * or aggregateRating should be specified», и страница теряет право на
+         * расширенный сниппет.
+         *
+         * Ставим offers: цена за поездку фиксированная и настоящая.
+         * review и aggregateRating не ставим — отзывов у сервиса нет, а
+         * выдуманный рейтинг Google считает нарушением и снимает расширенные
+         * сниппеты со всего сайта.
+         *
+         * priceValidUntil намеренно нет: дата «до когда цена в силе» была бы
+         * выдумкой, а просроченная дата гасит сниппет так же надёжно, как её
+         * отсутствие.
+         */
+        "@type": ["Product", "Service"],
         "@id": `${url}#service`,
         name: c.schema.name,
         ...(c.schema.alternateName ? { alternateName: c.schema.alternateName } : {}),
         serviceType: c.schema.serviceType,
         description: c.schema.description,
+        ...(productImages.length ? { image: productImages } : {}),
+        brand: { "@type": "Brand", name: "EstoniaTransfer" },
         provider: org,
         areaServed: c.schema.areaServed.map((a) => ({ "@type": a.type, name: a.name })),
-        ...(offers.length ? { offers } : {}),
+        // Один оффер отдаём объектом, несколько — массивом: так требует Google
+        ...(offers.length ? { offers: offers.length === 1 ? offers[0] : offers } : {}),
+        // Доплаты связаны с услугой, но не являются её ценой
+        ...(addons.length ? { isRelatedTo: addons } : {}),
       };
 
 const schema = {
