@@ -17,7 +17,7 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
 ---
 
 <footer class="border-t border-line bg-surface">
-  <div class="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-5">
+  <div class="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-6">
     <div class="lg:col-span-2">
       <p class="text-[1.05rem] font-semibold tracking-tight">
         Estonia<span class="text-brand-ink">Transfer</span>
@@ -67,6 +67,29 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
         </li>
       </ul>
     </nav>
+
+    {/* Поездки по России — отдельной колонкой: там рубли, другая машина и
+        границу она не пересекает. В одном списке с евровыми маршрутами это
+        читалось бы как один прайс. */}
+    {
+      links.russia.length > 0 && (
+        <nav aria-label={t("footer.russia")}>
+          <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
+            {t("footer.russia")}
+          </p>
+          <ul class="mt-4 grid gap-2 text-[0.95rem]">
+            {links.russia.map((l) => (
+              <li>
+                <a class="hover:text-brand-ink" href={l.href}>
+                  {l.label}
+                  {l.note && <span class="text-ink-dim"> — {l.note}</span>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
 
     <nav aria-label={t("footer.useful")}>
       <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">

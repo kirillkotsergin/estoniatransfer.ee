@@ -78,13 +78,21 @@ $lang  = clean($_POST['lang'] ?? 'ru', 5);
 
 // Список городов продублирован в src/i18n/ui.ts (cities). Расходиться им нельзя:
 // форма отдаст id, которого здесь нет, и заявка вернётся с 422.
-$allowedCities = ['tallinn', 'tartu', 'narva', 'koidula', 'luhamaa'];
+$allowedCities = [
+    'tallinn', 'tartu', 'narva', 'koidula', 'luhamaa',
+    'ivangorod', 'kunichina', 'shumilkino', 'pskov', 'spb',
+];
 $cityNames = [
     'tallinn' => 'Таллинн',
     'tartu' => 'Тарту',
     'narva' => 'Нарва',
     'koidula' => 'Койдула',
     'luhamaa' => 'Лухамаа',
+    'ivangorod' => 'Ивангород',
+    'kunichina' => 'Куничина Гора',
+    'shumilkino' => 'Шумилкино',
+    'pskov' => 'Псков',
+    'spb' => 'Санкт-Петербург',
 ];
 
 $errors = [];

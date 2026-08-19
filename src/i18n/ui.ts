@@ -79,6 +79,25 @@ export const facts = {
     koidula: { km: 65, hours: "≈ 1 ч", hoursEn: "≈ 1 h" },
     luhamaa: { km: 95, hours: "≈ 1 ч 20 мин", hoursEn: "≈ 1 h 20 min" },
   },
+  /**
+   * Российская сторона границы. Цены названы владельцем 19.08.2026 и указаны
+   * **в рублях** — это отдельная услуга с отдельной валютой, поэтому лежит не
+   * в routes, а здесь. По routes строится блок цен на главной, и он про евро.
+   *
+   * ⚠️ Эстонская машина границу не пересекает: до пункта пропуска довозим мы,
+   * дальше по России едет отдельный автомобиль. ПРОВЕРЬ у владельца, кто
+   * именно его предоставляет и берётся ли предоплата в рублях, — на страницах
+   * это описано обтекаемо и цифрами не подкреплено.
+   *
+   * ПРОВЕРЬ также расстояния и время: проставлены приблизительно.
+   */
+  russia: {
+    currency: "₽",
+    ivangorodSpb: 6500,
+    kunichinaPskov: 3000,
+    shumilkinoPskov: 3000,
+    kunichinaShumilkinoSpb: 17000,
+  },
 } as const;
 
 export const ui = {
@@ -256,6 +275,7 @@ export const ui = {
     "footer.routes": "Направления",
     "footer.allRoutes": "Все направления и цены",
     "footer.useful": "Полезное",
+    "footer.russia": "Из России",
     "footer.rights": "Все права защищены",
     "footer.hits": "Посещений:",
     "footer.city": "Таллинн, Эстония",
@@ -431,6 +451,7 @@ export const ui = {
     "footer.routes": "Routes",
     "footer.allRoutes": "All routes and prices",
     "footer.useful": "Useful",
+    "footer.russia": "From Russia",
     "footer.rights": "All rights reserved",
     "footer.hits": "Visits:",
     "footer.city": "Tallinn, Estonia",
@@ -448,6 +469,12 @@ export const cities = {
   narva: { ru: "Нарва", en: "Narva" },
   koidula: { ru: "Койдула", en: "Koidula" },
   luhamaa: { ru: "Лухамаа", en: "Luhamaa" },
+  // Российская сторона: пункты пропуска и города, куда идут поездки оттуда
+  ivangorod: { ru: "Ивангород", en: "Ivangorod" },
+  kunichina: { ru: "Куничина Гора", en: "Kunichina Gora" },
+  shumilkino: { ru: "Шумилкино", en: "Shumilkino" },
+  pskov: { ru: "Псков", en: "Pskov" },
+  spb: { ru: "Санкт-Петербург", en: "Saint Petersburg" },
 } as const;
 
 export type CityId = keyof typeof cities;
@@ -456,8 +483,30 @@ export type CityId = keyof typeof cities;
 // страница обещает выезд из Тарту, форма обязана его принимать.
 // ВАЖНО: тот же список продублирован в public/send.php ($allowedCities) —
 // добавляете город здесь, добавляйте и там, иначе заявка вернёт 422.
-export const fromOrder: CityId[] = ["tallinn", "tartu", "narva", "koidula", "luhamaa"];
-export const toOrder: CityId[] = ["narva", "koidula", "luhamaa", "tallinn", "tartu"];
+export const fromOrder: CityId[] = [
+  "tallinn",
+  "tartu",
+  "narva",
+  "koidula",
+  "luhamaa",
+  "ivangorod",
+  "kunichina",
+  "shumilkino",
+  "pskov",
+  "spb",
+];
+export const toOrder: CityId[] = [
+  "narva",
+  "koidula",
+  "luhamaa",
+  "tallinn",
+  "tartu",
+  "pskov",
+  "spb",
+  "ivangorod",
+  "kunichina",
+  "shumilkino",
+];
 
 /** Месяцы и дни недели для своего календаря: Intl не тянем. */
 export const calendar = {

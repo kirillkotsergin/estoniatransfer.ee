@@ -25,6 +25,7 @@
 
 import { facts, localePath, type CityId, type Lang } from "../i18n/ui";
 import { en } from "./routes.en";
+import { russiaRoutes } from "./routes.russia";
 
 export type RouteId = (typeof facts.routes)[number]["id"];
 
@@ -152,6 +153,12 @@ export interface LandingRoute {
   /** дата последнего обновления фактов, ISO. Идёт в Article.dateModified */
   updated?: string;
   /**
+   * Куда страница попадает в подвале. estonia — выезд из Эстонии, russia —
+   * поездки по российской стороне за рублями. Разделены не для красоты: это
+   * разные услуги с разной валютой, и в одной колонке они путают.
+   */
+  group?: "estonia" | "russia";
+  /**
    * Связь с facts.routes: оттуда цена, километры и время в пути. У сборных
    * страниц, где направлений несколько, его нет — тогда цифры и офферы
    * задаются в copy.stats и copy.offers.
@@ -159,8 +166,12 @@ export interface LandingRoute {
   routeId?: RouteId;
   /** что подставить в форму заявки; по умолчанию Таллинн — Нарва */
   form?: { from: CityId; to: CityId };
-  /** имя файла в src/assets/car без расширения */
-  photo: string;
+  /**
+   * Имя файла в src/assets/car без расширения. Необязательно: у страниц
+   * российской стороны фото нашей машины быть не должно — границу она не
+   * пересекает, и по России едет другой автомобиль.
+   */
+  photo?: string;
   /** язык добавляется, когда для него написан текст. Нет текста — нет страницы */
   copy: Partial<Record<Lang, RouteCopy>>;
 }
@@ -1418,6 +1429,10 @@ export const landings: LandingRoute[] = [
   },
 ];
 
+// Страницы российской стороны лежат отдельным файлом: там другая валюта,
+// другая машина и свои правила у переходов. Подробности — в его шапке.
+landings.push(...russiaRoutes);
+
 /**
  * Английские тексты подмешиваются из отдельного файла: русские блоки выше и так
  * занимают почти всю длину файла, а перевод удобнее держать и править целиком.
@@ -1443,6 +1458,7 @@ export function landingsFor(lang: Lang): LandingRoute[] {
  * из словаря по routeId), для остальных — из copy.footer.
  */
 export function footerLinks(lang: Lang, label: (id: RouteId) => string) {
+  // Три группы вместо двух: маршруты из Эстонии, поездки по России и статьи.
   const link = (r: LandingRoute) => {
     const copy = r.copy[lang]!;
     if (r.routeId) {
@@ -1458,7 +1474,8 @@ export function footerLinks(lang: Lang, label: (id: RouteId) => string) {
 
   const pages = landingsFor(lang);
   return {
-    routes: pages.filter((r) => r.kind !== "guide").map(link),
+    routes: pages.filter((r) => r.kind !== "guide" && r.group !== "russia").map(link),
+    russia: pages.filter((r) => r.group === "russia").map(link),
     guides: pages.filter((r) => r.kind === "guide").map(link),
   };
 }
