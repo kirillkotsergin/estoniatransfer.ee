@@ -78,5 +78,10 @@ AddType image/x-icon .ico
   # Единственный внешний источник — cdn.simpleicons.org: оттуда берутся
   # официальные логотипы WhatsApp и Telegram. Всё остальное со своего домена.
   # 'unsafe-inline' нужен из-за встроенного <script> в head (метка js).
-  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.simpleicons.org; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'"
+  # analytics.ahrefs.com прописан дважды: в script-src — чтобы загрузился
+  # analytics.js, в connect-src — чтобы счётчик мог отправить туда события.
+  # Без второго скрипт загрузится, но данные не уйдут, и это никак не
+  # проявится: ни ошибки на странице, ни записи в логах сервера, только
+  # пустой отчёт в панели Ahrefs.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://analytics.ahrefs.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.simpleicons.org; font-src 'self'; connect-src 'self' https://analytics.ahrefs.com; form-action 'self'; frame-ancestors 'self'; base-uri 'self'"
 </IfModule>

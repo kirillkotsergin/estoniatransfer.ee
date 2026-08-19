@@ -169,6 +169,28 @@ const canonical = new URL(localePath(lang, path), site).href;
     <script is:inline>
       document.documentElement.classList.add("js");
     </script>
+
+    {/* Ahrefs Web Analytics.
+
+        is:inline обязателен: без него Astro попробует обработать тег как свой
+        модуль. async — чтобы сторонний скрипт не задерживал отрисовку.
+
+        Ключ data-key публичный, он и так виден в HTML каждому посетителю.
+
+        Cookie счётчик не ставит — в analytics.js нет ни одного обращения к
+        document.cookie, проверено. Поэтому баннер согласия сайту по-прежнему
+        не нужен, как и для нашего счётчика посещений. Добавите Google
+        Analytics — баннер понадобится.
+
+        ⚠️ Домен обязан быть прописан в CSP (script-src и connect-src в
+        public/.htaccess). При default-src 'self' браузер иначе блокирует
+        загрузку молча: ни ошибки на странице, ни записи в логах — только
+        пустой отчёт в Ahrefs. */}
+    <script
+      src="https://analytics.ahrefs.com/analytics.js"
+      data-key="S/fOM82aG8zzRinAm3OnqA"
+      async
+      is:inline></script>
   </head>
 
   <body class="bg-page text-ink antialiased">
