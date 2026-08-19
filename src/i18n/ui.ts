@@ -58,9 +58,9 @@ export const facts = {
   /** Место в очереди на границе — доплата к маршруту Нарва (как на ridego.ee). */
   queueSlot: { price: 50, route: "narva" as const },
   routes: [
-    { id: "narva", price: 130, km: 210, hours: "2 ч 30 мин", hoursEn: "2 h 30 min" },
-    { id: "koidula", price: 160, km: 270, hours: "3 ч 5 мин", hoursEn: "3 h 5 min" },
-    { id: "luhamaa", price: 160, km: 280, hours: "3 ч 10 мин", hoursEn: "3 h 10 min" },
+    { id: "narva", price: 130, km: 210, hours: "2 ч 30 мин", hoursEn: "2 h 30 min", popular: false },
+    { id: "koidula", price: 160, km: 270, hours: "3 ч 5 мин", hoursEn: "3 h 5 min", popular: true },
+    { id: "luhamaa", price: 160, km: 280, hours: "3 ч 10 мин", hoursEn: "3 h 10 min", popular: false },
   ],
   /**
    * Из Тарту до границы. Цена подтверждена владельцем 17.08.2026: 80 € за
@@ -154,7 +154,10 @@ export const ui = {
       "Займём для вас время в очереди заранее — переходите в назначенный час, а не стоите вместе со всеми. Доплата к маршруту в Нарву.",
     "routes.other": "Другое направление, поездка в аэропорт или обратный путь от границы — напишите, назовём цену.",
     "routes.km.short": "км",
-    "routes.more": "Подробнее о маршруте",
+    "routes.more": "Выбрать маршрут",
+    "routes.popular": "Часто выбирают",
+    "addon.toggle": "Добавить к заявке",
+    "addon.added": "Добавлено в заявку",
     "routes.latin":
       "Те же маршруты в латинице, как их пишут в билетах и картах: Tallinn — Narva, Tallinn — Koidula, Tallinn — Luhamaa. Из Тарту — Tartu — Koidula и Tartu — Luhamaa.",
 
@@ -235,6 +238,7 @@ export const ui = {
     "form.phone": "Номер телефона",
     "form.email": "Электронная почта",
     "form.optional": "необязательно",
+    "form.queue": "Место в очереди на границе",
     "form.choose": "Выберите",
     "form.pickDate": "Выберите дату",
     "form.submit": "Отправить заявку",
@@ -331,7 +335,10 @@ export const ui = {
       "We reserve your place in the queue in advance, so you cross at an agreed hour instead of waiting with everyone else. Charged on top of the Narva route.",
     "routes.other": "Another destination, an airport run or the return trip from the border — message us for a price.",
     "routes.km.short": "km",
-    "routes.more": "Route details",
+    "routes.more": "Choose this route",
+    "routes.popular": "Most chosen",
+    "addon.toggle": "Add to the request",
+    "addon.added": "Added to the request",
     "routes.latin":
       "The same routes in Cyrillic, the way Russian-speaking passengers search for them: Таллинн — Нарва, Таллинн — Койдула, Таллинн — Лухамаа.",
 
@@ -411,6 +418,7 @@ export const ui = {
     "form.phone": "Phone number",
     "form.email": "Email",
     "form.optional": "optional",
+    "form.queue": "A booked slot in the border queue",
     "form.choose": "Select",
     "form.pickDate": "Pick a date",
     "form.submit": "Send request",

@@ -184,6 +184,23 @@ const label = "block text-[0.85rem] font-semibold text-ink-muted";
         </div>
       </div>
 
+      {/* Доплата за место в очереди — отмечаемая опция, а не строчка в прайсе.
+          Переключатель в блоке направлений синхронизирован с этим чекбоксом:
+          включили там — отмечено здесь, и это уходит в письмо. */}
+      <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-brand/35 bg-brand-soft px-4 py-3">
+        <input
+          type="checkbox"
+          name="queue"
+          value="1"
+          data-order-queue
+          class="mt-0.5 size-4.5 shrink-0 accent-brand"
+        />
+        <span class="text-[0.93rem] leading-relaxed">
+          <span class="font-semibold">{t("form.queue")}</span>
+          <span class="text-ink-muted"> — +{facts.queueSlot.price} €</span>
+        </span>
+      </label>
+
       <p data-form-error hidden class="rounded-xl bg-brand-soft px-4 py-3 text-[0.9rem] font-semibold text-brand-ink"></p>
 
       <button
