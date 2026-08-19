@@ -126,6 +126,13 @@ const png = [
   ["favicon-192x192.png", 192, {}],
   // iOS: плотный фон, логотип чуть меньше поля — система скруглит сама
   ["apple-touch-icon.png", 180, { scale: 0.86, background: BRAND }],
+  /**
+   * Тот же файл под вторым именем. Старые iOS и часть версий Safari сами
+   * запрашивают /apple-touch-icon-precomposed.png в корне, не читая <head>, и
+   * без файла получают 404 — в логах он и обнаружился. Заодно это одно из
+   * значений rel, которые Google принимает как иконку для выдачи.
+   */
+  ["apple-touch-icon-precomposed.png", 180, { scale: 0.86, background: BRAND }],
   ["icon-512.png", 512, {}],
   // maskable: логотип внутри центральных 80 %, остальное заливка
   ["icon-maskable-512.png", 512, { scale: 0.62, background: BRAND }],
