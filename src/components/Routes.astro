@@ -134,15 +134,21 @@ const t = useTranslations(lang);
                 </div>
               </dl>
 
-              {/* Кнопка вместо текстовой ссылки. mt-auto прижимает её к низу,
-                  чтобы у карточек с разной длиной текста кнопки стояли в один
-                  ряд. Текст тёмный на оранжевом — см. комментарий в шапке. */}
+              {/* Кнопка приглушённая: заливка нежная, текст оранжевый. Ярким
+                  #ff6a00 на карточках она перетягивала внимание на себя — этих
+                  кнопок три в ряд, и рядом с ними теряются и цена, и главный
+                  призыв на странице. Насыщенный оранжевый остаётся у действий,
+                  которые ведут к заказу: кнопка в герое, плавающая кнопка,
+                  «Отправить заявку».
+
+                  Контраст проверен: оранжевый текст по нежной подложке 4.68,
+                  при наведении заливка становится яркой, а текст тёмным — 6.85.
+                  Белого текста на оранжевом здесь по-прежнему нет нигде. */}
               <a
                 href={href ?? "#order"}
-                class="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-brand px-4 py-3 text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-ink transition-colors hover:bg-brand-hover"
+                class="mt-6 flex items-center justify-center rounded-2xl border border-brand/40 bg-brand-soft px-4 py-3 text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-brand-ink-soft transition-colors hover:bg-brand hover:text-ink"
               >
                 {t("routes.more")}
-                <span aria-hidden="true">→</span>
               </a>
 
               {/* Декор: условная линия маршрута с двумя точками. Не карта и не
