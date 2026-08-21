@@ -244,7 +244,7 @@ export const en: Record<string, RouteCopy> = {
     description:
       "Transfer and taxi Tallinn — Koidula: €160 for the whole car, 270 km via Tartu, about 3 hours on the road. Pickup from your address, the airport or the port.",
     ogDescription:
-      "270 km to the Koidula border crossing, about 3 hours. A fixed price per car, departure timed to your GoSwift slot.",
+      "270 km to the Koidula border crossing, about 3 hours. A fixed price per car, pickup from any address in Tallinn.",
     breadcrumb: "Transfer Tallinn — Koidula",
     h1: "Transfer Tallinn — Koidula",
     lead:
@@ -252,7 +252,7 @@ export const en: Record<string, RouteCopy> = {
     kmNote: "via Tartu",
     answer: [
       `<strong>In short.</strong> The Tallinn to Koidula transfer costs <strong>${eur("koidula")}</strong> for the whole car — up to four passengers with luggage. The drive takes about <strong>3 hours 5 minutes</strong>, 270 km through Tartu.`,
-      "Unlike pedestrian-only Narva, Koidula is a road crossing: you cross without leaving the car. The exit queue is booked in the GoSwift system and the checkpoint works during the day, so we count the departure from Tallinn backwards from your slot rather than the other way round. <em>Hours and rules change — check them before you travel.</em>",
+      "Unlike pedestrian-only Narva, Koidula is a road crossing: you cross without leaving the car. The exit queue is booked in the GoSwift system and the checkpoint works during the day only. <em>Hours and rules change — check them before you travel.</em>",
       `Already in Tartu? The road from there is half as long and cheaper — <a href="/en/transfer-tartu-koidula-luhamaa/">${tartu} instead of ${eur("koidula")}</a>.`,
     ],
     price: {
@@ -290,8 +290,8 @@ export const en: Record<string, RouteCopy> = {
       title: "Three hours to the south-eastern border",
       items: [
         {
-          title: "We count back from your slot",
-          text: "Tell us the hour your GoSwift queue slot is booked for and we work the Tallinn departure back from it. No slot yet — we will suggest which time is easier to take.",
+          title: "We agree the departure time",
+          text: "Send the date and the hour you need to be at the border. The crossing works in daytime only, so we count the departure from Tallinn backwards from that, leaving room for the drive and for the control.",
         },
         {
           title: "Pickup in Tallinn",
@@ -319,7 +319,7 @@ export const en: Record<string, RouteCopy> = {
           "EstoniaTransfer private car",
           `${eur("koidula")} per car`,
           "≈ 3 h 5 min",
-          "door to the gates, departure timed to your GoSwift slot",
+          "door to the gates of the crossing, departure at the hour that suits you",
         ],
         [
           "Ecolines coach Tallinn — Pskov",
@@ -362,7 +362,7 @@ export const en: Record<string, RouteCopy> = {
         },
         {
           title: "The queue is booked in advance",
-          text: 'Leaving Estonia by car means booking a slot in the GoSwift system — <a href="https://www.eestipiir.ee/" target="_blank" rel="noopener">eestipiir.ee</a>. At weekends there is almost nothing left, so take the time early. We cannot make the booking for you, but we will time the Tallinn departure to the slot you have.',
+          text: 'Leaving Estonia by car means booking a slot in the GoSwift system — <a href="https://www.eestipiir.ee/" target="_blank" rel="noopener">eestipiir.ee</a>. At weekends there is almost nothing left, so take the time early. We cannot make the booking for you.',
         },
         {
           title: "On foot or by car",
@@ -392,7 +392,7 @@ export const en: Record<string, RouteCopy> = {
         },
         {
           q: "Do I need to book a slot in GoSwift?",
-          a: "If you cross the border by car, yes — the time is taken in advance in the GoSwift system, and weekend slots go quickly. We cannot book it for you, but we will fit the Tallinn departure to the slot you already have: tell us the hour and we count backwards.",
+          a: "If you cross the border by car, yes — the time is taken in advance in the GoSwift system, and weekend slots go quickly. We cannot book it for you: that is done yourself at eestipiir.ee.",
         },
         {
           q: "Can we stop in Tartu on the way?",
@@ -408,7 +408,7 @@ export const en: Record<string, RouteCopy> = {
     ],
     cta: {
       title: "Shall we drive to Koidula?",
-      text: "Send the date and the hour of your border slot — we will pick the departure time and confirm the price in one message.",
+      text: "Send the date and the hour you need to be at the border — we will confirm the car and the price in one message.",
     },
     waText: "Hello! I would like to book a transfer from Tallinn to Koidula.",
     schema: {
@@ -420,7 +420,7 @@ export const en: Record<string, RouteCopy> = {
       ],
       serviceType: "Private transfer to a border crossing",
       description:
-        "Private transfer from Tallinn to the Koidula border crossing: 270 km via Tartu, about 3 h 5 min, €160 for the whole car. Departure timed to your GoSwift slot.",
+        "Private transfer from Tallinn to the Koidula border crossing: 270 km via Tartu, about 3 h 5 min, €160 for the whole car. Pickup from any address in Tallinn.",
       areaServed: [
         { type: "City", name: "Tallinn" },
         { type: "Place", name: "Koidula" },
@@ -716,7 +716,7 @@ export const en: Record<string, RouteCopy> = {
           "EstoniaTransfer private car",
           `${tartu} per car`,
           "≈ 1 h to Koidula",
-          "door to the gates, departure timed to your GoSwift slot",
+          "door to the gates of the crossing, departure at the hour that suits you",
         ],
         [
           "Elron train, line R46",
