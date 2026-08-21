@@ -59,7 +59,7 @@ const prose = "[&_a]:font-semibold [&_a]:text-brand-ink [&_a:hover]:underline";
             ))}
           </ul>
         ) : (
-          <Accordion items={block.items} open={0} />
+          <Accordion items={block.items} open={0} headings={block.headings} />
         )
       }
     </div>

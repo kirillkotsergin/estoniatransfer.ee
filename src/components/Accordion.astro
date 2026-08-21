@@ -19,8 +19,14 @@ interface Props {
   }[];
   /** какой пункт открыт при загрузке; по умолчанию все закрыты */
   open?: number;
+  /**
+   * Обернуть заголовок пункта в h3. <summary> с заголовком внутри — валидная
+   * разметка, и для длинных содержательных разделов она правильнее: поисковик
+   * видит оглавление H2 → H3, а не безымянные раскрывашки. Для FAQ не нужно.
+   */
+  headings?: boolean;
 }
-const { items, open } = Astro.props;
+const { items, open, headings = false } = Astro.props;
 
 const prose =
   "mt-3 text-[0.95rem] leading-relaxed text-ink-muted [&_a]:font-semibold [&_a]:text-brand-ink [&_a:hover]:underline";
@@ -31,7 +37,7 @@ const prose =
     items.map((it, i) => (
       <details class="reveal glass group rounded-2xl px-5 py-4" style={`--d:${i + 1}`} open={i === open}>
         <summary class="flex items-start justify-between gap-4 text-[1.02rem] font-semibold tracking-tight">
-          <span>{it.title}</span>
+          {headings ? <h3 class="text-[1.02rem] font-semibold tracking-tight">{it.title}</h3> : <span>{it.title}</span>}
           <span
             class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-ink transition-transform group-open:rotate-45"
             aria-hidden="true"
