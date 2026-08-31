@@ -25,8 +25,10 @@ import OrderForm from "../components/OrderForm.astro";
 import Messengers from "../components/Messengers.astro";
 import PriceTable from "../components/PriceTable.astro";
 import ContentBlock from "../components/ContentBlock.astro";
+import Reviews from "../components/Reviews.astro";
 import { useTranslations, facts, localePath, type Lang, type UIKey } from "../i18n/ui";
 import { landingLangs, type LandingRoute } from "../data/routes";
+import { reviewsFor, ratingFor } from "../data/reviews";
 
 interface Props {
   lang: Lang;
@@ -136,6 +138,34 @@ const offers: Record<string, unknown>[] = c.offers
       ]
     : [];
 
+/**
+ * Отзывы и средняя оценка. Обе величины считаются из `src/data/reviews.ts` и
+ * не существуют, пока файл пуст: `aggregateRating` с выдуманной пятёркой — это
+ * ручные меры от Google на весь сайт и запрещённая практика по директиве
+ * Omnibus, а не заполненное поле в отчёте.
+ *
+ * Search Console пишет по этим страницам «Missing field aggregateRating», но
+ * это предупреждение: поле рекомендованное, а обязательное `offers` на месте.
+ * Закроется само, когда появится первый настоящий отзыв.
+ */
+const pageReviews = reviewsFor(route.slug);
+const rating = ratingFor(route.slug);
+
+/** Отзывы в разметке — те же самые, что видны в блоке ниже, иначе это cloaking */
+const schemaReviews = pageReviews.map((r) => ({
+  "@type": "Review",
+  author: { "@type": "Person", name: r.author },
+  datePublished: r.date,
+  inLanguage: r.lang,
+  reviewRating: {
+    "@type": "Rating",
+    ratingValue: String(r.rating),
+    bestRating: "5",
+    worstRating: "1",
+  },
+  reviewBody: r.text,
+}));
+
 // Доплата за место в очереди есть не на всех маршрутах — только там, где заявлена
 const addons: Record<string, unknown>[] =
   route.routeId === facts.queueSlot.route
@@ -215,6 +245,19 @@ const main =
         areaServed: c.schema.areaServed.map((a) => ({ "@type": a.type, name: a.name })),
         // Один оффер отдаём объектом, несколько — массивом: так требует Google
         ...(offers.length ? { offers: offers.length === 1 ? offers[0] : offers } : {}),
+        // Рейтинг и отзывы появляются только вместе с реальными отзывами
+        ...(rating
+          ? {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: rating.value,
+                reviewCount: rating.count,
+                bestRating: "5",
+                worstRating: "1",
+              },
+            }
+          : {}),
+        ...(schemaReviews.length ? { review: schemaReviews } : {}),
         // Доплаты связаны с услугой, но не являются её ценой
         ...(addons.length ? { isRelatedTo: addons } : {}),
       };
@@ -594,6 +637,9 @@ const td = "px-4 py-3.5 align-top";
 
   {/* ─────────────── свободные блоки, нижние: побочные темы вроде ночлега ─────────────── */}
   {bottomBlocks.map((b, i) => <ContentBlock block={b} surface={i % 2 === 0} />)}
+
+  {/* ─────────────── отзывы: блока нет, пока нет настоящих отзывов ─────────────── */}
+  {rating && <Reviews lang={lang} reviews={pageReviews} rating={rating} />}
 
   {/* ─────────────── FAQ: формулировки совпадают с FAQPage дословно ─────────────── */}
   <section id="faq" class="scroll-mt-24 border-t border-line bg-surface py-16 sm:py-20">

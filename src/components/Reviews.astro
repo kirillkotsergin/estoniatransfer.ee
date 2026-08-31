@@ -1,0 +1,100 @@
+---
+/**
+ * Блок отзывов на странице маршрута.
+ *
+ * Существует ради двух вещей сразу, и вторая важнее первой:
+ * - разметка `aggregateRating` и `review` собирается в RouteLanding из тех же
+ *   данных, что и этот блок;
+ * - Google требует, чтобы размеченные отзывы были **видны** на той же странице:
+ *   «The review content you mark up are readily available to users from the
+ *   marked-up page». Разметка без видимого блока — cloaking, за него снимают
+ *   страницу целиком. Поэтому блок не прячем и в `hidden` не убираем.
+ *
+ * Компонент вызывается только когда отзывы есть: пустой заголовок «Отзывы» без
+ * единого отзыва хуже отсутствия раздела.
+ *
+ * Строки здесь локальные, а не в ui.ts: их три, и они нужны только тут.
+ */
+import type { PassengerReview } from "../data/reviews";
+import type { Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+  reviews: PassengerReview[];
+  rating: { value: string; count: number };
+}
+const { lang, reviews, rating } = Astro.props;
+
+const s = {
+  eyebrow: { ru: "Отзывы", en: "Reviews" },
+  title: {
+    ru: "Что говорят пассажиры",
+    en: "What passengers say",
+  },
+  /** «12 отзывов» / «1 отзыв» — по-русски слово меняется от числа */
+  count: (n: number) =>
+    lang === "en"
+      ? `${n} ${n === 1 ? "review" : "reviews"}`
+      : `${n} ${n % 10 === 1 && n % 100 !== 11 ? "отзыв" : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? "отзыва" : "отзывов"}`,
+  of: { ru: "Оценка", en: "Rating" },
+} as const;
+
+const date = new Intl.DateTimeFormat(lang === "ru" ? "ru-RU" : "en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+/** Закрашенные звёзды до оценки, пустые после: пятёрка и тройка видны сразу */
+const stars = (n: number) => "★".repeat(n) + "☆".repeat(5 - n);
+const ratingLabel = (n: number | string) =>
+  `${s.of[lang]} ${String(n).replace(".", lang === "ru" ? "," : ".")} ${lang === "ru" ? "из" : "out of"} 5`;
+---
+
+<section id="reviews" class="scroll-mt-24 border-t border-line bg-surface py-16 sm:py-20">
+  <div class="mx-auto max-w-3xl px-5">
+    <p class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+      {s.eyebrow[lang]}
+    </p>
+    <h2
+      class="reveal mt-4 text-[clamp(1.75rem,3.2vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em]"
+      style="--d:1"
+    >
+      {s.title[lang]}
+    </h2>
+
+    {/* Средняя оценка — то самое, что уходит в aggregateRating. Стоит видимой
+        строкой, иначе разметка описывала бы то, чего на странице нет. */}
+    <p class="reveal mt-4 flex flex-wrap items-center gap-x-3 gap-y-1" style="--d:2">
+      <span class="text-[1.05rem] tracking-[0.1em] text-brand-ink" role="img" aria-label={ratingLabel(rating.value)}>
+        {stars(Math.round(Number(rating.value)))}
+      </span>
+      <span class="text-[0.95rem] text-ink-muted">
+        {rating.value.replace(".", lang === "ru" ? "," : ".")} · {s.count(rating.count)}
+      </span>
+    </p>
+
+    <div class="mt-8 grid gap-3">
+      {
+        reviews.map((r, i) => (
+          <article class="reveal glass rounded-2xl px-5 py-4" style={`--d:${i + 3}`}>
+            <header class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <p class="text-[1.02rem] font-semibold tracking-tight">{r.author}</p>
+              <time datetime={r.date} class="text-[0.85rem] text-ink-dim">
+                {date.format(new Date(`${r.date}T12:00:00Z`))}
+              </time>
+            </header>
+            <p
+              class="mt-1 text-[0.95rem] tracking-[0.1em] text-brand-ink"
+              role="img"
+              aria-label={ratingLabel(r.rating)}
+            >
+              {stars(r.rating)}
+            </p>
+            <p class="mt-3 text-[0.95rem] leading-relaxed text-ink-muted">{r.text}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
