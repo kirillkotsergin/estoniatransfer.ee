@@ -232,12 +232,43 @@ const schema = {
         { "@type": "Place", name: place.luhamaa[lang] },
         { "@type": "Country", name: lang === "ru" ? "Эстония" : "Estonia" },
       ],
-      vehicle: {
-        "@type": "Vehicle",
-        name: facts.car,
-        vehicleSeatingCapacity: facts.seats,
-        vehicleConfiguration: lang === "ru" ? "седан, кондиционер" : "sedan, air conditioning",
-      },
+      /**
+       * Машина описана свойствами, а не отдельным узлом Vehicle — 31.08.2026.
+       *
+       * Было `vehicle: { "@type": "Vehicle", … }`, и Search Console ругалась на
+       * обе главные: «Provide a value for one of the following data elements:
+       * offers, review, or aggregateRating». Причина в иерархии schema.org —
+       * Vehicle наследник Product, и валидатор требует у него полей товара.
+       * Ни одно из трёх сюда не годится: `offers` означал бы, что машина
+       * продаётся (цена поездки и так лежит в makesOffer ниже), а рейтинг без
+       * настоящих отзывов выдумывать нельзя — за это снимают сниппеты со всего
+       * сайта.
+       *
+       * Вдобавок свойства `vehicle` в schema.org нет вообще (страница отдаёт
+       * 404), так что узел висел на выдуманном ключе и пользы не приносил.
+       *
+       * PropertyValue Product не наследует, валидатор товаров его не трогает, а
+       * additionalProperty — законное свойство Place, от которого LocalBusiness
+       * наследуется наравне с Organization. Факт про машину при этом остаётся
+       * машиночитаемым, ради чего узел и заводили.
+       */
+      additionalProperty: [
+        {
+          "@type": "PropertyValue",
+          name: lang === "ru" ? "Автомобиль" : "Vehicle",
+          value: facts.car,
+        },
+        {
+          "@type": "PropertyValue",
+          name: lang === "ru" ? "Пассажирских мест" : "Passenger seats",
+          value: facts.seats,
+        },
+        {
+          "@type": "PropertyValue",
+          name: lang === "ru" ? "Класс автомобиля" : "Vehicle class",
+          value: lang === "ru" ? "седан, кондиционер" : "sedan, air conditioning",
+        },
+      ],
       employee: {
         "@type": "Person",
         name: facts.driver,
