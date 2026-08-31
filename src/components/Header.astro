@@ -1,5 +1,6 @@
 ---
 import LangSwitcher from "./LangSwitcher.astro";
+import BrandIcon from "./BrandIcon.astro";
 import { useTranslations, facts, localePath, type Lang } from "../i18n/ui";
 
 interface Props {
@@ -20,8 +21,11 @@ const home = localePath(lang, "/");
       самого высокого ребёнка, а состав детей меняется: кнопка с телефоном
       появляется только с sm, переключатель языков растёт при открытии. Любая
       такая перемена смещала содержимое страницы вниз. */}
-  <div class="mx-auto flex min-h-[4.25rem] max-w-6xl items-center gap-4 px-5 py-3.5">
-    <a href={home} class="flex items-center gap-2.5 font-semibold tracking-tight">
+  {/* gap-3 до lg, а не gap-4 везде: с появлением пары мессенджеров строка на
+      планшете (768–1023 px, где уже видна навигация) шла впритык. На широких
+      экранах место есть, там прежние gap-4 и gap-7. */}
+  <div class="mx-auto flex min-h-[4.25rem] max-w-6xl items-center gap-3 px-5 py-3.5 lg:gap-4">
+    <a href={home} class="flex shrink-0 items-center gap-2.5 font-semibold tracking-tight">
       <span
         class="grid size-9 place-items-center rounded-xl bg-brand text-ink"
         aria-hidden="true"
@@ -37,17 +41,50 @@ const home = localePath(lang, "/");
       <span class="text-[1.05rem]">Estonia<span class="text-brand-ink">Transfer</span></span>
     </a>
 
-    <nav class="ml-auto hidden items-center gap-7 text-[0.95rem] text-ink-muted md:flex" aria-label={lang === "ru" ? "Основная навигация" : "Main navigation"}>
+    <nav class="ml-auto hidden items-center gap-6 whitespace-nowrap text-[0.95rem] text-ink-muted md:flex lg:gap-7" aria-label={lang === "ru" ? "Основная навигация" : "Main navigation"}>
       <a class="transition-colors hover:text-ink" href={`${home}#routes`}>{t("nav.routes")}</a>
       <a class="transition-colors hover:text-ink" href={`${home}#car`}>{t("nav.car")}</a>
       <a class="transition-colors hover:text-ink" href={`${home}#order`}>{t("nav.order")}</a>
     </nav>
 
-    <LangSwitcher lang={lang} path={path} langs={langs} />
+    <div class="shrink-0"><LangSwitcher lang={lang} path={path} langs={langs} /></div>
+
+    {/* Мессенджеры вплотную к телефону: заказ идёт в них, а не через форму, и
+        путь к ним не должен начинаться с прокрутки до подвала. Ссылки прямые —
+        те же facts.whatsapp и facts.telegram, что и везде на сайте, номер в
+        разметке не дублируется.
+
+        Показываются с той же ширины, что и кнопка с номером: ниже sm в шапке
+        для них нет места, а мобильному посетителю ту же пару даёт плавающая
+        кнопка внизу экрана.
+
+        Цвет фирменный, зелёный и синий: узнаваемость логотипа здесь важнее
+        единообразия, а WCAG к логотипам требований по контрасту не предъявляет.
+        Имя ссылки задано aria-label — сама иконка для скринридера скрыта. */}
+    <div class="hidden shrink-0 items-center gap-1 sm:flex">
+      <a
+        href={facts.whatsapp}
+        target="_blank"
+        rel="noopener"
+        aria-label={lang === "ru" ? "Написать в WhatsApp" : "Message us on WhatsApp"}
+        class="grid size-8 place-items-center rounded-xl border border-line-strong/50 text-[#25D366] transition-colors hover:bg-surface"
+      >
+        <BrandIcon name="whatsapp" class="size-4" />
+      </a>
+      <a
+        href={facts.telegram}
+        target="_blank"
+        rel="noopener"
+        aria-label={lang === "ru" ? "Написать в Telegram" : "Message us on Telegram"}
+        class="grid size-8 place-items-center rounded-xl border border-line-strong/50 text-[#26A5E4] transition-colors hover:bg-surface"
+      >
+        <BrandIcon name="telegram" class="size-4" />
+      </a>
+    </div>
 
     <a
       href={facts.phoneHref}
-      class="hidden rounded-xl bg-brand px-4 py-2.5 text-[0.95rem] font-semibold text-ink transition-colors hover:bg-brand-hover sm:block"
+      class="hidden shrink-0 rounded-xl bg-brand px-4 py-2.5 text-[0.95rem] font-semibold text-ink transition-colors hover:bg-brand-hover sm:block"
     >
       {facts.phone}
     </a>

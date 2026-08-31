@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import BrandIcon from "../components/BrandIcon.astro";
 import { facts } from "../i18n/ui";
 
 const lang = "ru" as const;
@@ -35,9 +36,11 @@ const lang = "ru" as const;
           href={facts.whatsapp}
           target="_blank"
           rel="noopener"
-          class="rounded-2xl border border-line-strong/60 px-6 py-3.5 font-semibold transition-colors hover:bg-surface"
-          >Написать в WhatsApp</a
+          class="inline-flex items-center gap-2.5 rounded-2xl border border-line-strong/60 px-6 py-3.5 font-semibold transition-colors hover:bg-surface"
         >
+          <BrandIcon name="whatsapp" class="size-5 shrink-0 text-[#25D366]" />
+          Написать в WhatsApp
+        </a>
       </div>
     </div>
   </section>
