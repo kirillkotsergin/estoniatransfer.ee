@@ -196,7 +196,7 @@ export const landings: LandingRoute[] = [
   // ────────────────────────────── Таллинн — Нарва ──────────────────────────────
   {
     slug: "transfer-tallinn-narva",
-    updated: "2026-08-17",
+    updated: "2026-08-21",
     routeId: "narva",
     form: { from: "tallinn", to: "narva" },
     photo: "car-1",
@@ -487,7 +487,7 @@ export const landings: LandingRoute[] = [
   // ───────────────────────────── Таллинн — Койдула ─────────────────────────────
   {
     slug: "transfer-tallinn-koidula",
-    updated: "2026-08-17",
+    updated: "2026-08-21",
     routeId: "koidula",
     form: { from: "tallinn", to: "koidula" },
     photo: "car-2",
@@ -791,7 +791,7 @@ export const landings: LandingRoute[] = [
   // ───────────────────────────── Таллинн — Лухамаа ─────────────────────────────
   {
     slug: "transfer-tallinn-luhamaa",
-    updated: "2026-08-17",
+    updated: "2026-08-21",
     routeId: "luhamaa",
     form: { from: "tallinn", to: "luhamaa" },
     photo: "car-3",
@@ -1015,7 +1015,7 @@ export const landings: LandingRoute[] = [
   // Цена — из facts.fromTartu, подтверждена владельцем 17.08.2026.
   {
     slug: "transfer-tartu-koidula-luhamaa",
-    updated: "2026-08-17",
+    updated: "2026-08-21",
     form: { from: "tartu", to: "koidula" },
     photo: "car-2",
     copy: {
