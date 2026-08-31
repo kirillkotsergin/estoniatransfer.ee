@@ -14,3 +14,6 @@ id_*
 # локальные настройки Claude Code: туда попадают команды целиком,
 # вместе с токенами из них
 .claude/settings.local.json
+
+# скриншоты от tools/measure-header.mjs — рабочий мусор, не история
+tools/.screens/
