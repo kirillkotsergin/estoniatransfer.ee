@@ -78,59 +78,71 @@ const t = useTranslations(lang);
                 {t(`routes.${r.id}.note` as UIKey)}
               </p>
 
-              {/* Цифры маршрута — пилюлями с иконками, как в макете */}
+              {/* Цифры маршрута — пилюлями с иконками, как в макете.
+
+                  Внутри <dl> допустимы только dt и dd, либо <div>, внутри
+                  которого снова строго dt и dd. Здесь раньше стоял <span> в
+                  роли обёртки, а иконка лежала рядом с ним — из-за этого
+                  Lighthouse писал «List items are not contained within <dl>
+                  elements» и «<dl> elements contain invalid children», а
+                  скринридер терял связь названия со значением.
+
+                  Иконка переехала внутрь <dt>: она часть подписи, а не
+                  отдельная колонка. Значение под подписью выравнивается
+                  отступом pl-[1.625rem] — это ширина иконки (1.125rem) плюс
+                  gap-2 (0.5rem). */}
               <dl class="mt-5 grid grid-cols-2 gap-2.5 text-[0.85rem]">
-                <div class="flex items-center gap-2 rounded-xl border border-line bg-page px-3 py-2">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    width="18"
-                    height="18"
-                    class="size-4.5 shrink-0 text-brand-ink"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M12 20a8 8 0 1 1 8-8"
-                      stroke="currentColor"
-                      stroke-width="1.8"
-                      stroke-linecap="round"
-                    />
-                    <path
-                      d="m12 12 4-3"
-                      stroke="currentColor"
-                      stroke-width="1.8"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                  <span class="min-w-0">
-                    <dt class="text-[0.72rem] leading-none text-ink-dim">{t("routes.km")}</dt>
-                    <dd class="mt-1 font-semibold leading-none">{r.km}</dd>
-                  </span>
+                <div class="rounded-xl border border-line bg-page px-3 py-2">
+                  <dt class="flex items-center gap-2 text-[0.72rem] leading-none text-ink-dim">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      width="18"
+                      height="18"
+                      class="size-4.5 shrink-0 text-brand-ink"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M12 20a8 8 0 1 1 8-8"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                      <path
+                        d="m12 12 4-3"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                    {t("routes.km")}
+                  </dt>
+                  <dd class="mt-1.5 pl-[1.625rem] font-semibold leading-none">{r.km}</dd>
                 </div>
 
-                <div class="flex items-center gap-2 rounded-xl border border-line bg-page px-3 py-2">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    width="18"
-                    height="18"
-                    class="size-4.5 shrink-0 text-brand-ink"
-                    aria-hidden="true"
-                  >
-                    <circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.8" />
-                    <path
-                      d="M12 8.4V12l2.6 1.8"
-                      stroke="currentColor"
-                      stroke-width="1.8"
-                      stroke-linecap="round"
-                    />
-                  </svg>
-                  <span class="min-w-0">
-                    <dt class="text-[0.72rem] leading-none text-ink-dim">{t("routes.time")}</dt>
-                    <dd class="mt-1 font-semibold leading-none">
-                      {lang === "ru" ? r.hours : r.hoursEn}
-                    </dd>
-                  </span>
+                <div class="rounded-xl border border-line bg-page px-3 py-2">
+                  <dt class="flex items-center gap-2 text-[0.72rem] leading-none text-ink-dim">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      width="18"
+                      height="18"
+                      class="size-4.5 shrink-0 text-brand-ink"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.8" />
+                      <path
+                        d="M12 8.4V12l2.6 1.8"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                    {t("routes.time")}
+                  </dt>
+                  <dd class="mt-1.5 pl-[1.625rem] font-semibold leading-none">
+                    {lang === "ru" ? r.hours : r.hoursEn}
+                  </dd>
                 </div>
               </dl>
 
@@ -144,11 +156,23 @@ const t = useTranslations(lang);
                   Контраст проверен: оранжевый текст по нежной подложке 4.68,
                   при наведении заливка становится яркой, а текст тёмным — 6.85.
                   Белого текста на оранжевом здесь по-прежнему нет нигде. */}
+              {/* Три кнопки «Подробнее» ведут на три разных маршрута. Глазами
+                  это видно по карточке, а в списке ссылок, которым пользуется
+                  скринридер, все три назывались одинаково — WCAG 2.4.4, и
+                  Lighthouse помечает такое как «links with the same name have
+                  different purposes».
+
+                  Название маршрута дописано в sr-only, а не в aria-label:
+                  aria-label заменил бы имя целиком, и голосовое управление
+                  перестало бы находить кнопку по видимому слову «Подробнее»
+                  (WCAG 2.5.3, Label in Name). Здесь видимое слово остаётся
+                  началом имени, а дальше идёт уточнение. */}
               <a
                 href={href ?? "#order"}
                 class="mt-6 flex items-center justify-center rounded-2xl border border-brand/40 bg-brand-soft px-4 py-3 text-[0.82rem] font-semibold uppercase tracking-[0.06em] text-brand-ink-soft transition-colors hover:bg-brand hover:text-ink"
               >
                 {t("routes.more")}
+                <span class="sr-only">: {t(`routes.${r.id}` as UIKey)}</span>
               </a>
 
               {/* Декор: условная линия маршрута с двумя точками. Не карта и не

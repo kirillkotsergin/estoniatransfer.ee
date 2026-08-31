@@ -23,19 +23,26 @@ export const GET: APIRoute = ({ site }) => {
   const price = (id: "narva" | "koidula" | "luhamaa") =>
     facts.routes.find((r) => r.id === id)!.price;
 
+  /**
+   * Ссылки — markdown-ссылками `[имя](адрес): пояснение`, а не голым URL в
+   * тексте. Так их описывает соглашение llmstxt.org, и так они разбираются
+   * однозначно: у ссылки есть имя, адрес и примечание, а не строка, из которой
+   * это нужно угадывать.
+   */
   const routeLines = facts.routes.map((r) => {
     const page = landings.find((l) => l.routeId === r.id);
     const url = page ? `${origin}/${page.slug}/` : `${origin}/#routes`;
-    return `- **Таллинн — ${{ narva: "Нарва", koidula: "Койдула", luhamaa: "Лухамаа" }[r.id]}** — ${r.price} € за автомобиль целиком, ${r.km} км, ${r.hours} в пути. Страница: ${url}`;
+    const to = { narva: "Нарва", koidula: "Койдула", luhamaa: "Лухамаа" }[r.id];
+    return `- [Таллинн — ${to}](${url}): ${r.price} € за автомобиль целиком, ${r.km} км, ${r.hours} в пути.`;
   });
 
   const pageLines = landings
     .filter((l) => l.copy.ru)
-    .map((l) => `- ${l.copy.ru!.breadcrumb} — ${origin}/${l.slug}/`);
+    .map((l) => `- [${l.copy.ru!.breadcrumb}](${origin}/${l.slug}/): ${l.copy.ru!.description}`);
 
   const enLines = landings
     .filter((l) => l.copy.en)
-    .map((l) => `- ${l.copy.en!.breadcrumb} — ${origin}/en/${l.slug}/`);
+    .map((l) => `- [${l.copy.en!.breadcrumb}](${origin}/en/${l.slug}/): ${l.copy.en!.description}`);
 
   const qa = answers.ru.map((a) => `### ${a.q}\n${a.a}`).join("\n\n");
 
@@ -49,8 +56,8 @@ export const GET: APIRoute = ({ site }) => {
 ## Контакты
 
 - Телефон, WhatsApp и Telegram: ${facts.phone}
-- WhatsApp: ${facts.whatsapp}
-- Telegram: ${facts.telegram}
+- [WhatsApp](${facts.whatsapp}): переписка, отвечаем в течение нескольких минут.
+- [Telegram](${facts.telegram}): то же самое, если удобнее.
 - Почта: ${facts.email}
 - Отвечает сам водитель (${facts.driver}), без диспетчера. Языки: русский, английский.
 - Город: Таллинн, Эстония. Работаем круглосуточно, включая ночь и праздники.

@@ -151,24 +151,43 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
     // отсюда, а не из разметки, — значит краулеры, не исполняющие JS, счётчик
     // не накручивают. Если PHP недоступен или запрос не удался, пилюля так и
     // остаётся скрытой.
+    //
+    // Рендер этот запрос не блокировал никогда: это fetch, а не <script src>,
+    // и вешать на него defer или async не на что. Но уходил он на ~885 мс,
+    // почти вровень с первой отрисовкой, и попадал в цепочку критических
+    // запросов в отчёте PageSpeed. Теперь ждём load, а потом ещё и свободной
+    // минуты браузера: число посещений в подвале не стоит ни одного
+    // миллисекунды в борьбе за LCP.
     (function () {
       "use strict";
       var box = document.querySelector("[data-hits]");
       if (!box || !window.fetch) return;
 
-      fetch("/hits.php", { credentials: "omit" })
-        .then(function (res) {
-          return res.ok ? res.json() : null;
-        })
-        .then(function (data) {
-          if (!data || typeof data.total !== "number" || data.total < 1) return;
-          var value = box.querySelector("[data-hits-value]");
-          if (value) value.textContent = data.total.toLocaleString("ru-RU");
-          box.hidden = false;
-        })
-        .catch(function () {
-          /* молча: счётчик не та вещь, из-за которой стоит шуметь в консоли */
-        });
+      function load() {
+        fetch("/hits.php", { credentials: "omit" })
+          .then(function (res) {
+            return res.ok ? res.json() : null;
+          })
+          .then(function (data) {
+            if (!data || typeof data.total !== "number" || data.total < 1) return;
+            var value = box.querySelector("[data-hits-value]");
+            if (value) value.textContent = data.total.toLocaleString("ru-RU");
+            box.hidden = false;
+          })
+          .catch(function () {
+            /* молча: счётчик не та вещь, из-за которой стоит шуметь в консоли */
+          });
+      }
+
+      // timeout у requestIdleCallback обязателен: на занятой вкладке свободной
+      // минуты может не случиться вовсе, и посетитель остался бы без числа.
+      function schedule() {
+        if (window.requestIdleCallback) requestIdleCallback(load, { timeout: 3000 });
+        else setTimeout(load, 1200);
+      }
+
+      if (document.readyState === "complete") schedule();
+      else window.addEventListener("load", schedule, { once: true });
     })();
   </script>
 </footer>
