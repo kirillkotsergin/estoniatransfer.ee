@@ -9,8 +9,14 @@
  *
  * ⚠️ Главное, что нужно понимать про эти четыре страницы: **эстонская машина
  * границу не пересекает.** До пункта пропуска пассажира довозим мы, границу он
- * проходит сам, а дальше по России едет отдельный автомобиль. Поэтому здесь
- * нет блока про Toyota Corolla — показать её значило бы пообещать не ту машину.
+ * проходит сам, а дальше по России едет отдельный автомобиль. Поэтому видимого
+ * блока про Toyota Corolla здесь нет: пообещать её в тексте страницы значило бы
+ * пообещать не ту машину. Блок висит на `copy.car`, а его в этих текстах нет.
+ *
+ * Поле `photo` при этом задано — решение владельца от 31.08.2026. Фото уходит
+ * только в микроразметку, в `image` у Product: без него Search Console пишет
+ * «Missing field image» и снимает страницу с merchant listings (ошибка пришла
+ * на /transfer-ivangorod-spb/). На самой странице фото по-прежнему не видно.
  *
  * ПРОВЕРЬ у владельца:
  *   - кто именно предоставляет автомобиль по России;
@@ -35,9 +41,11 @@ export const russiaRoutes: LandingRoute[] = [
   // ────────────────── Ивангород ↔ Санкт-Петербург, 6500 ₽ ──────────────────
   {
     slug: "transfer-ivangorod-spb",
-    updated: "2026-08-19",
+    updated: "2026-08-31",
     group: "russia",
     form: { from: "ivangorod", to: "spb" },
+    // только в image у Product, видимого блока нет — см. шапку файла
+    photo: "car-1",
     copy: {
       ru: {
         title: `Трансфер Ивангород — Санкт-Петербург: такси ${rub(r.ivangorodSpb)}`,
@@ -248,9 +256,10 @@ export const russiaRoutes: LandingRoute[] = [
   // ─────────────────── Куничина Гора ↔ Псков, 3000 ₽ ───────────────────
   {
     slug: "transfer-kunichina-gora-pskov",
-    updated: "2026-08-19",
+    updated: "2026-08-31",
     group: "russia",
     form: { from: "kunichina", to: "pskov" },
+    photo: "car-2",
     copy: {
       ru: {
         title: `Трансфер Куничина Гора — Псков: такси ${rub(r.kunichinaPskov)}`,
@@ -449,9 +458,10 @@ export const russiaRoutes: LandingRoute[] = [
   // ───────────────────── Шумилкино ↔ Псков, 3000 ₽ ─────────────────────
   {
     slug: "transfer-shumilkino-pskov",
-    updated: "2026-08-19",
+    updated: "2026-08-31",
     group: "russia",
     form: { from: "shumilkino", to: "pskov" },
+    photo: "car-3",
     copy: {
       ru: {
         title: `Трансфер Шумилкино — Псков: такси ${rub(r.shumilkinoPskov)}`,
@@ -650,9 +660,10 @@ export const russiaRoutes: LandingRoute[] = [
   // ────────── Куничина Гора / Шумилкино → Санкт-Петербург, 17 000 ₽ ──────────
   {
     slug: "transfer-kunichina-shumilkino-spb",
-    updated: "2026-08-19",
+    updated: "2026-08-31",
     group: "russia",
     form: { from: "kunichina", to: "spb" },
+    photo: "car-1",
     copy: {
       ru: {
         title: `Трансфер от границы в Санкт-Петербург: ${rub(r.kunichinaShumilkinoSpb)}`,
