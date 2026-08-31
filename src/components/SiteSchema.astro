@@ -33,6 +33,8 @@
  * допишите `et`: по этому полю ассистенты отвечают на вопрос «а на каком языке
  * с ними можно?».
  */
+import { getImage } from "astro:assets";
+import bizPhoto from "../assets/car/car-1.jpg";
 import { facts, localePath, type Lang } from "../i18n/ui";
 import { landingsFor } from "../data/routes";
 
@@ -44,6 +46,25 @@ const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
 const home = new URL(localePath(lang, "/"), site).href;
 const org = `${site}/#business`;
 const phone = facts.phoneHref.replace("tel:", "");
+
+/**
+ * Фотографии бизнеса. Раньше здесь стояла favicon-192x192.png — иконка 192×192
+ * в роли снимка: формально поле заполнено, а показать по нему нечего.
+ *
+ * Три пропорции одного кадра, как на страницах маршрутов: в разных местах
+ * выдачи карточка обрезается по-разному, и без нужной пропорции Google режет
+ * сам, иногда по машине. Файлы те же самые, что уже собраны для Product на
+ * страницах маршрутов, — Astro отдаёт их из кеша, новых картинок не появится.
+ */
+const bizImages = await Promise.all(
+  [
+    [1200, 1200],
+    [1200, 900],
+    [1200, 675],
+  ].map(([width, height]) =>
+    getImage({ src: bizPhoto, width, height, fit: "cover", position: "center", format: "jpeg" })
+  )
+).then((list) => list.map((img: { src: string }) => new URL(img.src, site).href));
 
 /** Города и переходы на двух языках: в разметке имя должно быть на языке страницы. */
 const place = {
@@ -191,7 +212,7 @@ const schema = {
       description: t.desc,
       telephone: phone,
       email: facts.email,
-      image: new URL("/favicon-192x192.png", site).href,
+      image: bizImages,
       priceRange: `${facts.fromTartu.price}–${Math.max(...facts.routes.map((r) => r.price))} €`,
       currenciesAccepted: "EUR",
       paymentAccepted: t.payment,
