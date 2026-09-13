@@ -16,8 +16,16 @@ const year = new Date().getFullYear();
 const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
 ---
 
+{/* data-nosnippet на обоих блоках подвала: он стоит на всех страницах, и
+    Google цеплял из него текст в сниппет. Атрибут поддерживается только на
+    div, span и section — вешать его на сам <footer> бесполезно.
+    На индексацию и на ссылки внутри подвала это не влияет: запрет касается
+    только показа текста в описании выдачи. */}
 <footer class="border-t border-line bg-surface">
-  <div class="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-6">
+  <div
+    class="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-6"
+    data-nosnippet
+  >
     <div class="lg:col-span-2">
       <p class="text-[1.05rem] font-semibold tracking-tight">
         Estonia<span class="text-brand-ink">Transfer</span>
@@ -113,7 +121,7 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
     </nav>
   </div>
 
-  <div class="border-t border-line">
+  <div class="border-t border-line" data-nosnippet>
     <div
       class="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-2 px-5 py-5 text-[0.85rem] text-ink-dim"
     >

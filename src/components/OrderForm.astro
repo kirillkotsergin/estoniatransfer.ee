@@ -37,7 +37,15 @@ const label = "block text-[0.85rem] font-semibold text-ink-muted";
 ---
 
 <aside id="order" class:list={["scroll-mt-24", offset && "lg:pt-14"]}>
-  <div class="glass rounded-[--radius-card] p-6 sm:p-8">
+  {/* data-nosnippet: Google брал в сниппет строку «Заявка уходит письмом на
+      info@estoniatransfer.ee…» вместо маршрутов и цен. Атрибут запрещает
+      использовать содержимое блока в описании выдачи, но НЕ мешает
+      индексации — страница ранжируется как прежде.
+
+      ⚠️ Атрибут работает только на div, span и section. На <aside> выше, на
+      <footer> и на <p> с самой строкой Google его игнорирует молча — поэтому
+      он висит здесь, на ближайшем div, и накрывает всю карточку заявки. */}
+  <div class="glass rounded-[--radius-card] p-6 sm:p-8" data-nosnippet>
     <p class="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
       {t("order.eyebrow")}
     </p>
