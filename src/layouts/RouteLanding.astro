@@ -664,7 +664,12 @@ const td = "px-4 py-3.5 align-top";
         </h2>
         <p class="reveal mt-4 max-w-lg text-ink-muted" style="--d:1">{c.cta.text}</p>
 
-        <div class="reveal mt-7 max-w-sm" style="--d:2">
+        {/* data-nosnippet только на кнопки, не на весь блок: заголовок и текст
+            CTA выше — нормальный текст страницы, пусть остаются доступны для
+            сниппета. А «WhatsApp · Ответим сразу · Telegram» Google уже
+            подставлял в выдачу вместо маршрутов. Третье место, где стоят
+            мессенджеры: два других — в OrderForm и в подвале. */}
+        <div class="reveal mt-7 max-w-sm" style="--d:2" data-nosnippet>
           <Messengers lang={lang} />
           <a
             href={facts.phoneHref}
