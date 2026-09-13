@@ -55,6 +55,31 @@ export const facts = {
   car: "Toyota Corolla",
   seats: 4,
   driver: "Кирилл",
+  /**
+   * Профиль в Google Business (заведён владельцем, подтверждён 13.09.2026).
+   *
+   * `profile` — ссылка, которой поделился владелец; уходит в `sameAs`, чтобы
+   * поисковик связал сайт и карточку на Картах как один субъект.
+   * `review` — короткая ссылка, открывающая сразу форму отзыва. Именно форму
+   * написания, а не список: подписывать её «читать отзывы» было бы обманом.
+   * `maps` — канонический адрес карточки, восстановлен из `review` (ludocid
+   * CfA6q8Cv45byEBM → CID 17480409347676388080). Он долговечнее короткой
+   * ссылки, но подтвердить его запросом нельзя: Карты рисуются скриптом.
+   * Откройте его один раз в браузере — если это ваша карточка, поставьте
+   * `profile: maps` и ссылка перестанет зависеть от редиректов Google.
+   *
+   * ⚠️ `rating` показывается в подвале как текст и НЕ уходит в микроразметку.
+   * Причина в разделе «Отзывы» у reviews.ts: рейтинг с чужой площадки в своей
+   * разметке Google засчитывать не станет, а за самоприсвоенные звёзды
+   * снимает расширенные сниппеты со всего сайта. Цифру правит человек —
+   * появится четвёрка, и «5» здесь станет неправдой.
+   */
+  google: {
+    profile: "https://share.google/VAAG1ZLOuBKLDyJIC",
+    review: "https://g.page/r/CfA6q8Cv45byEBM/review",
+    maps: "https://maps.google.com/?cid=17480409347676388080",
+    rating: 5,
+  },
   /** Место в очереди на границе — доплата к маршруту Нарва (как на ridego.ee). */
   queueSlot: { price: 50, route: "narva" as const },
   routes: [
@@ -287,6 +312,11 @@ export const ui = {
     "footer.hits": "Посещений:",
     "footer.city": "Таллинн, Эстония",
 
+    "google.title": "Нас оценивают на Google",
+    "google.stars": "Оценка 5 из 5 на Google",
+    "google.read": "Смотреть отзывы",
+    "google.write": "Оставить отзыв",
+
     "common.from": "от",
     "common.perCar": "за автомобиль",
     "lang.label": "Язык",
@@ -466,6 +496,11 @@ export const ui = {
     "footer.rights": "All rights reserved",
     "footer.hits": "Visits:",
     "footer.city": "Tallinn, Estonia",
+
+    "google.title": "Rated on Google",
+    "google.stars": "Rated 5 out of 5 on Google",
+    "google.read": "See reviews",
+    "google.write": "Leave a review",
 
     "common.from": "from",
     "common.perCar": "per car",

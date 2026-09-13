@@ -218,7 +218,20 @@ const schema = {
       paymentAccepted: t.payment,
       // Мессенджеры — это и есть профили сервиса на стороне: другого способа
       // связаться нет, поэтому они стоят в sameAs, а не только ссылками.
-      sameAs: [facts.whatsapp, facts.telegram],
+      //
+      // Профиль Google Business добавлен 13.09.2026 — это главный сигнал, что
+      // сайт и карточка на Картах один субъект, а не два похожих бизнеса.
+      // Именно sameAs, а не hasMap: hasMap описывает карту объекта, а нам
+      // нужно тождество сущностей.
+      //
+      // ⚠️ aggregateRating сюда НЕ добавляем, даже когда на карточке пятёрки.
+      // Во-первых, рейтинг с чужой площадки в своей разметке — не тот
+      // источник, который Google засчитывает. Во-вторых, для LocalBusiness он
+      // прямо не даёт звёзд за отзывы о себе на своём же сайте: «If the entity
+      // that's being reviewed controls the reviews about itself, their pages
+      // are ineligible for star review feature». Звёзды в выдаче даёт сама
+      // карточка Google, а не разметка — и она их уже даёт.
+      sameAs: [facts.whatsapp, facts.telegram, facts.google.profile],
       contactPoint: [
         {
           "@type": "ContactPoint",

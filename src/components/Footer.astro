@@ -33,6 +33,54 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
       <p class="mt-3 max-w-sm text-[0.95rem] leading-relaxed text-ink-muted">
         {t("footer.tagline")}
       </p>
+
+      {/* Отзывы на Google. Статический блок, без виджета Elfsight и подобных:
+          у сайта CSP `default-src 'self'`, сторонний скрипт потребовал бы
+          открыть script-src и connect-src наружу, поставил бы cookie (а из-за
+          их отсутствия сайту не нужен баннер согласия) и отрисовал бы отзывы
+          скриптом — то есть краулеры, не исполняющие JS, их бы не увидели.
+
+          Звёзды — inline SVG, а не картинка и не иконочный шрифт: лишний
+          запрос ради пяти треугольников не нужен.
+
+          Ссылки намеренно разные. `/review` открывает форму написания отзыва,
+          поэтому подписана «Оставить отзыв»; читать отзывы ведут на карточку.
+          Рейтинг — текст, в микроразметку он не идёт (см. facts.google). */}
+      <div class="mt-6">
+        <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
+          {t("google.title")}
+        </p>
+        <div class="mt-2 flex items-center gap-2">
+          <span class="flex gap-0.5" role="img" aria-label={t("google.stars")}>
+            {
+              Array.from({ length: facts.google.rating }, () => (
+                <svg class="size-4 text-brand-ink" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L1.5 7.7l5.9-.9L10 1.5z" />
+                </svg>
+              ))
+            }
+          </span>
+          <span class="text-[0.95rem] font-semibold tabular-nums">{facts.google.rating},0</span>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <a
+            class="rounded-xl border border-line-strong/60 px-4 py-2 text-[0.9rem] font-semibold transition-colors hover:bg-page"
+            href={facts.google.profile}
+            target="_blank"
+            rel="noopener nofollow"
+          >
+            {t("google.read")}
+          </a>
+          <a
+            class="rounded-xl bg-brand px-4 py-2 text-[0.9rem] font-semibold text-ink transition-colors hover:bg-brand-hover"
+            href={facts.google.review}
+            target="_blank"
+            rel="noopener nofollow"
+          >
+            {t("google.write")}
+          </a>
+        </div>
+      </div>
     </div>
 
     {/* Заголовки колонок подвала — <p>, а не <h2>.
