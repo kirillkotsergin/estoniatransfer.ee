@@ -1,0 +1,54 @@
+---
+/**
+ * Кнопка «Написать отзыв» — ведёт в форму отзыва на карточке Google.
+ *
+ * Отдельным компонентом, а не строчкой в подвале: призыв оставить отзыв
+ * пригодится и в других местах (например, после поездки на странице маршрута),
+ * а адрес и подпись тогда не разъедутся между копиями.
+ *
+ * ⚠️ Не путать два адреса Google, они делают разное:
+ *   facts.google.review  — /review, открывает форму НАПИСАНИЯ отзыва;
+ *   facts.google.profile — карточка, где отзывы ЧИТАЮТ.
+ * Подпись обязана соответствовать адресу: кнопка «смотреть», открывающая
+ * форму, — это обманутое ожидание и почти гарантированный уход со страницы.
+ *
+ * variant:
+ *   solid   — заливка брендовым, для основного призыва (по умолчанию);
+ *   outline — рамка, когда рядом уже есть заливная кнопка и две подряд спорят.
+ *
+ * ⚠️ У solid текст `text-ink`, а не белый: --color-brand это заливка под
+ * тёмный текст, белым по оранжевому контраст проваливается. Подробности —
+ * в шапке src/styles/global.css.
+ */
+import { facts, useTranslations, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+  variant?: "solid" | "outline";
+  class?: string;
+}
+
+const { lang, variant = "solid", class: extra = "" } = Astro.props;
+const t = useTranslations(lang);
+
+const base =
+  "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[0.9rem] font-semibold transition-colors";
+const look =
+  variant === "solid"
+    ? "bg-brand text-ink hover:bg-brand-hover"
+    : "border border-line-strong/60 text-ink hover:bg-page";
+---
+
+<a
+  class={`${base} ${look} ${extra}`}
+  href={facts.google.review}
+  target="_blank"
+  rel="noopener nofollow"
+>
+  {/* Звезда с пером читается как «оставить оценку» быстрее любого текста,
+      но текст всё равно рядом: иконка здесь украшение, отсюда aria-hidden. */}
+  <svg class="size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+    <path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L1.5 7.7l5.9-.9L10 1.5z"></path>
+  </svg>
+  {t("google.write")}
+</a>

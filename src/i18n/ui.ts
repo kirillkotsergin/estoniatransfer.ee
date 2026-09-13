@@ -317,6 +317,7 @@ export const ui = {
     "google.stars": "Оценка 5 из 5 на Google",
     "google.text": "Отличные отзывы клиентов",
     "google.cta": "Смотреть отзывы в Google",
+    "google.write": "Написать отзыв",
 
     "common.from": "от",
     "common.perCar": "за автомобиль",
@@ -501,6 +502,7 @@ export const ui = {
     "google.stars": "Rated 5 out of 5 on Google",
     "google.text": "Excellent customer reviews",
     "google.cta": "View reviews on Google",
+    "google.write": "Write a review",
 
     "common.from": "from",
     "common.perCar": "per car",

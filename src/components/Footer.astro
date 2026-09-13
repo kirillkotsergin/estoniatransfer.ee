@@ -1,5 +1,6 @@
 ---
 import Messengers from "./Messengers.astro";
+import ReviewButton from "./ReviewButton.astro";
 import { useTranslations, facts, localePath, type Lang, type UIKey } from "../i18n/ui";
 import { footerLinks } from "../data/routes";
 
@@ -99,15 +100,25 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
 
         <p class="mt-3 text-[0.95rem] leading-relaxed text-ink-muted">{t("google.text")}</p>
 
+        {/* Читать отзывы — на карточку профиля. Раньше вела на /review, то
+            есть на форму написания: подпись «Смотреть отзывы» обещала одно, а
+            открывалось другое. Развели, когда появилась кнопка «Написать
+            отзыв» ниже — иначе две кнопки вели бы на один адрес. */}
         <a
           class="mt-4 block rounded-xl border border-line-strong/60 px-4 py-2.5 text-center text-[0.9rem] font-semibold text-ink transition-colors hover:bg-page"
-          href={facts.google.review}
+          href={facts.google.profile}
           target="_blank"
           rel="noopener nofollow"
         >
           {t("google.cta")}
         </a>
       </div>
+
+      {/* Призыв оставить отзыв — отдельной заливной кнопкой под бейджем, а не
+          внутри него: бейдж сообщает факт (нас оценили), кнопка просит о
+          действии. Заливка нужна, чтобы её замечали: рядом в подвале всё
+          остальное — ссылки и рамки. */}
+      <ReviewButton lang={lang} class="mt-3 w-full max-w-sm" />
     </div>
 
     {/* Заголовки колонок подвала — <p>, а не <h2>.
