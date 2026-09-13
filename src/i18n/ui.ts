@@ -312,10 +312,11 @@ export const ui = {
     "footer.hits": "Посещений:",
     "footer.city": "Таллинн, Эстония",
 
-    "google.title": "Нас оценивают на Google",
+    // Звёзды в карточке aria-hidden, поэтому оценку скринридеру сообщает
+    // отдельная строка — без неё бейдж читался бы как «5.0» без контекста.
     "google.stars": "Оценка 5 из 5 на Google",
-    "google.read": "Смотреть отзывы",
-    "google.write": "Оставить отзыв",
+    "google.text": "Отличные отзывы клиентов",
+    "google.cta": "Смотреть отзывы в Google",
 
     "common.from": "от",
     "common.perCar": "за автомобиль",
@@ -497,10 +498,9 @@ export const ui = {
     "footer.hits": "Visits:",
     "footer.city": "Tallinn, Estonia",
 
-    "google.title": "Rated on Google",
     "google.stars": "Rated 5 out of 5 on Google",
-    "google.read": "See reviews",
-    "google.write": "Leave a review",
+    "google.text": "Excellent customer reviews",
+    "google.cta": "View reviews on Google",
 
     "common.from": "from",
     "common.perCar": "per car",
