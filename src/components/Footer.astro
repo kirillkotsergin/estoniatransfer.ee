@@ -1,7 +1,7 @@
 ---
 import Messengers from "./Messengers.astro";
 import ReviewButton from "./ReviewButton.astro";
-import { useTranslations, facts, localePath, type Lang, type UIKey } from "../i18n/ui";
+import { useTranslations, facts, localePath, reviewsWord, type Lang, type UIKey } from "../i18n/ui";
 import { footerLinks } from "../data/routes";
 
 interface Props {
@@ -56,10 +56,6 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
           список. Подпись «Смотреть отзывы в Google» выбрана владельцем
           осознанно; чтобы вела на карточку, замените `review` на `profile`. */}
       <div
-        {/* ⚠️ rounded-[var(--radius-card)], а НЕ rounded-[--radius-card].
-            Второй вариант — синтаксис Tailwind 3, где var() подставлялся сам.
-            В Tailwind 4 его убрали: класс не генерирует ни одного правила и
-            молча даёт квадратные углы. В проекте так написаны ещё 15 мест. */}
         class="mt-6 max-w-sm rounded-[var(--radius-card)] border border-line bg-white p-5 shadow-[0_1px_2px_rgb(11_11_12/0.05),0_10px_30px_-18px_rgb(11_11_12/0.25)]"
       >
         <div class="flex items-center gap-3">
@@ -95,6 +91,16 @@ const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
           <span class="text-[1.05rem] font-bold tabular-nums text-ink">
             {facts.google.rating}.0
           </span>
+          {/* Число отзывов появляется, только когда оно задано в facts.
+              Ставить «0 отзывов» или прочерк нельзя: пустое место читается
+              лучше, чем признание, что отзывов нет. */}
+          {
+            facts.google.reviews !== null && (
+              <span class="text-[0.9rem] text-ink-muted">
+                · {facts.google.reviews} {reviewsWord(lang, facts.google.reviews)}
+              </span>
+            )
+          }
           <span class="sr-only">{t("google.stars")}</span>
         </div>
 

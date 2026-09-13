@@ -49,7 +49,7 @@ const t = useTranslations(lang);
           return (
             <li
               class:list={[
-                "reveal glass relative flex flex-col overflow-hidden rounded-[--radius-card] p-6 transition-transform hover:-translate-y-1",
+                "reveal glass relative flex flex-col overflow-hidden rounded-[var(--radius-card)] p-6 transition-transform hover:-translate-y-1",
                 // Выделенная карточка: рамка бренда и лёгкое свечение. Только
                 // рамкой, без заливки — заливка утащила бы за собой белый текст.
                 r.popular && "ring-2 ring-brand ring-offset-2 ring-offset-surface",
@@ -209,7 +209,7 @@ const t = useTranslations(lang);
         иначе её читают как часть цены маршрута. Переключатель настоящий: он
         отмечает опцию в форме заявки ниже и подсвечивается, когда включён. */}
     <div
-      class="reveal mt-6 flex flex-wrap items-center gap-x-6 gap-y-4 rounded-[--radius-card] border border-brand/35 bg-brand-soft px-6 py-5"
+      class="reveal mt-6 flex flex-wrap items-center gap-x-6 gap-y-4 rounded-[var(--radius-card)] border border-brand/35 bg-brand-soft px-6 py-5"
       style="--d:4"
     >
       {/* На нежной подложке нужен более тёмный оттенок — см. global.css */}

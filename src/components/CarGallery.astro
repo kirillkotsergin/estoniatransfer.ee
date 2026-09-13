@@ -51,7 +51,7 @@ const photos = Object.entries(modules)
 {
   photos.length === 0 ? (
     <div
-      class="grid aspect-[16/9] place-items-center rounded-[--radius-card] border border-dashed border-line-strong/50 bg-surface text-center text-[0.9rem] text-ink-dim"
+      class="grid aspect-[16/9] place-items-center rounded-[var(--radius-card)] border border-dashed border-line-strong/50 bg-surface text-center text-[0.9rem] text-ink-dim"
     >
       <p>
         {lang === "ru" ? "Положите фото в src/assets/car/" : "Drop photos into src/assets/car/"}
@@ -65,14 +65,14 @@ const photos = Object.entries(modules)
           без единой строки JS. Стрелки и точки — надстройка для мыши. */}
       <div
         data-gallery-track
-        class="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth rounded-[--radius-card] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        class="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth rounded-[var(--radius-card)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         tabindex="0"
         role="group"
         aria-roledescription={lang === "ru" ? "галерея" : "carousel"}
         aria-label={lang === "ru" ? "Фотографии автомобиля" : "Vehicle photos"}
       >
         {photos.map((p, i) => (
-          <div class="relative w-full shrink-0 grow-0 basis-full snap-center overflow-hidden rounded-[--radius-card] bg-surface">
+          <div class="relative w-full shrink-0 grow-0 basis-full snap-center overflow-hidden rounded-[var(--radius-card)] bg-surface">
             {/* Picture, а не Image: только он отдаёт несколько форматов сразу.
                 AVIF первым, WebP вторым, JPEG как запас для старых браузеров. */}
             <Picture

@@ -45,7 +45,7 @@ const prose = "[&_a]:font-semibold [&_a]:text-brand-ink [&_a:hover]:underline";
           <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {block.items.map((it, i) => (
               <li
-                class="reveal glass flex flex-col rounded-[--radius-card] p-5"
+                class="reveal glass flex flex-col rounded-[var(--radius-card)] p-5"
                 style={`--d:${i + 1}`}
               >
                 <h3 class="text-[1.05rem] font-semibold tracking-tight">{it.title}</h3>

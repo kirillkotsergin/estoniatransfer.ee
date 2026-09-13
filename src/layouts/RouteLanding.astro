@@ -366,7 +366,7 @@ const td = "px-4 py-3.5 align-top";
       <dl class="reveal mt-11 grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3" style="--d:4">
         {
           stats.map((s) => (
-            <div class="glass rounded-[--radius-card] px-5 py-4">
+            <div class="glass rounded-[var(--radius-card)] px-5 py-4">
               <dt class="text-[0.82rem] text-ink-dim">{s.label}</dt>
               <dd class="mt-1 text-2xl font-semibold tracking-tight">{s.value}</dd>
             </div>
@@ -416,7 +416,7 @@ const td = "px-4 py-3.5 align-top";
       {
         c.notice && (
           <div
-            class="reveal mt-10 max-w-3xl rounded-[--radius-card] border border-brand/45 bg-brand-soft p-6 sm:p-7"
+            class="reveal mt-10 max-w-3xl rounded-[var(--radius-card)] border border-brand/45 bg-brand-soft p-6 sm:p-7"
             style="--d:6"
           >
             <p class="flex items-start gap-3 font-semibold tracking-tight">
@@ -444,7 +444,7 @@ const td = "px-4 py-3.5 align-top";
       }
 
       {/* Короткий ответ: первым экраном после героя, отдельной карточкой */}
-      <div class="reveal glass mt-10 max-w-3xl rounded-[--radius-card] p-6 sm:p-7" style="--d:6">
+      <div class="reveal glass mt-10 max-w-3xl rounded-[var(--radius-card)] p-6 sm:p-7" style="--d:6">
         <div class={`grid gap-3 text-[0.98rem] leading-relaxed text-ink-muted ${prose}`}>
           {c.answer.map((p) => <p set:html={p} />)}
         </div>
@@ -501,7 +501,7 @@ const td = "px-4 py-3.5 align-top";
           <ol class="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {c.steps.items.map((s, i) => (
               <li
-                class="reveal glass flex flex-col rounded-[--radius-card] p-6"
+                class="reveal glass flex flex-col rounded-[var(--radius-card)] p-6"
                 style={`--d:${i + 1}`}
               >
                 <span class="text-[2rem] font-semibold leading-none tracking-tight text-brand">
@@ -610,7 +610,7 @@ const td = "px-4 py-3.5 align-top";
                 fallbackFormat="jpg"
                 loading="lazy"
                 decoding="async"
-                class="aspect-[16/10] w-full rounded-[--radius-card] object-cover"
+                class="aspect-[16/10] w-full rounded-[var(--radius-card)] object-cover"
               />
               <figcaption class="mt-3 text-[0.85rem] text-ink-dim">{c.car.caption}</figcaption>
             </figure>
