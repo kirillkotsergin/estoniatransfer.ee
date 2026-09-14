@@ -362,6 +362,10 @@ export const ui = {
     "footer.russia": "Из России",
     "footer.rights": "Все права защищены",
     "footer.hits": "Посещений:",
+    // Вторая половина пилюли счётчика. Отдельный ключ от form.today
+    // («Сегодня» в календаре заявки): там подпись кнопки, здесь — метка
+    // числа, и переводы у них могут разойтись.
+    "footer.hitsToday": "сегодня",
     "footer.city": "Таллинн, Эстония",
 
     // Звёзды в карточке aria-hidden, поэтому оценку скринридеру сообщает
@@ -549,6 +553,7 @@ export const ui = {
     "footer.russia": "From Russia",
     "footer.rights": "All rights reserved",
     "footer.hits": "Visits:",
+    "footer.hitsToday": "today",
     "footer.city": "Tallinn, Estonia",
 
     "google.stars": "Rated 5 out of 5 on Google",

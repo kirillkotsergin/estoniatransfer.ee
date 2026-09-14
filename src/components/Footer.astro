@@ -321,9 +321,23 @@ const row = "group flex items-baseline justify-between gap-4 text-ink-muted tran
       <div class="grid gap-2">
         <p>© {year} EstoniaTransfer · {t("footer.rights")}</p>
 
-        {/* Счётчик посещений: слева внизу, под копирайтом. Число подставляет
+        {/* Счётчик посещений: слева внизу, под копирайтом. Числа подставляет
             скрипт ниже из /hits.php — без JS или без PHP строка остаётся
             скрытой, пустого «Посещений: —» посетитель не увидит.
+
+            Счётчик за сутки (14.09.2026) добавлен ВТОРОЙ ПОЛОВИНОЙ той же
+            пилюли, а не отдельной пилюлей рядом. Причины две. Визуально: две
+            рамки подряд в подвале, где всё остальное — текст без рамок, читались
+            бы как элементы управления. И практически: один элемент в потоке
+            нельзя развалить или наложить друг на друга на узком экране — на
+            320 px вся пилюля ≈ 200 px и переносится целиком, тогда как два
+            соседних блока пришлось бы разводить gap'ами и проверять на каждой
+            ширине.
+
+            Данные брать было откуда с самого начала: hits.php возвращает
+            `{"total":…,"today":…}` и сам обнуляет дневную корзину по UTC —
+            подвал просто игнорировал второе поле. Поэтому здесь настоящее
+            число, а не заглушка.
 
             Про [&[hidden]]:hidden рядом с inline-flex. Скрывать элемент
             атрибутом hidden и задавать ему display утилитой — обычно конфликт:
@@ -331,15 +345,46 @@ const row = "group flex items-baseline justify-between gap-4 text-ink-muted tran
             потому что preflight Tailwind 4 ставит [hidden]{display:none
             !important}, но полагаться на чужой !important не хочется — свой
             селектор по атрибуту специфичнее любой утилиты и не зависит от
-            того, что там в preflight следующей версии. */}
+            того, что там в preflight следующей версии. Тот же приём на
+            дневной половине: у неё своя видимость. */}
         <p
           data-hits
           hidden
-          class="inline-flex items-center gap-2 self-start rounded-full border border-line bg-page px-2.5 py-1 text-[0.72rem] tracking-wide [&[hidden]]:hidden"
+          class="inline-flex flex-wrap items-center gap-x-2 gap-y-1 self-start rounded-full border border-line bg-page px-2.5 py-1 text-[0.72rem] tracking-wide [&[hidden]]:hidden"
         >
-          <span class="size-1.5 rounded-full bg-brand" aria-hidden="true"></span>
-          {t("footer.hits")}
-          <span data-hits-value class="font-semibold text-ink-muted tabular-nums">—</span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="size-1.5 rounded-full bg-brand" aria-hidden="true"></span>
+            {t("footer.hits")}
+            <span data-hits-value class="font-semibold text-ink-muted tabular-nums">—</span>
+          </span>
+
+          {/* Своя видимость: сразу после полуночи по UTC today может быть 0, и
+              тогда показывать «сегодня: 0» не нужно — половина просто не
+              появляется, а общее число остаётся на месте.
+
+              Волосяная линия слева вместо точки-разделителя: она не занимает
+              места в строке и не выглядит опечаткой при переносе. */}
+          <span
+            data-hits-today
+            hidden
+            class="inline-flex items-center gap-1.5 border-l border-line pl-2 [&[hidden]]:hidden"
+          >
+            <svg
+              class="size-2.5 shrink-0 text-ink-dim"
+              viewBox="0 0 12 12"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle cx="6" cy="6" r="4.7" stroke="currentColor" stroke-width="1.2"></circle>
+              <path
+                d="M6 3.5V6l1.9 1.1"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"></path>
+            </svg>
+            {t("footer.hitsToday")}
+            <span data-hits-today-value class="font-semibold text-ink-muted tabular-nums">—</span>
+          </span>
         </p>
       </div>
 
@@ -347,7 +392,25 @@ const row = "group flex items-baseline justify-between gap-4 text-ink-muted tran
     </div>
   </div>
 
-  <script is:inline>
+  <script
+    is:inline
+    define:vars={{
+      // Разделитель разрядов зависит от языка: 1 234 по-русски и 1,234
+      // по-английски. До 14.09.2026 здесь была прошитая строка "ru-RU", и на
+      // английских страницах число форматировалось по русским правилам.
+      //
+      // ⚠️ Имя обязано быть уникальным на всю страницу. define:vars
+      // разворачивается в `const <имя>` на верхнем уровне инлайнового скрипта,
+      // а верхний уровень классических скриптов — одна общая лексическая
+      // область: два `const locale` в двух разных <script> дают
+      // «Identifier 'locale' has already been declared», и второй скрипт не
+      // исполняется целиком. Ровно это и случилось: `locale` уже занят в
+      // OrderForm.astro, и на главной счётчик молча перестал работать.
+      // Отсюда префикс hits. Заводите переменную здесь — проверяйте
+      // `grep -o 'const [a-z]*' dist/index.html` на коллизии.
+      hitsLocale: lang === "ru" ? "ru-RU" : "en-GB",
+    }}
+  >
     // Считает сервер (hits.php), браузер только показывает число. Запрос идёт
     // отсюда, а не из разметки, — значит краулеры, не исполняющие JS, счётчик
     // не накручивают. Если PHP недоступен или запрос не удался, пилюля так и
@@ -364,16 +427,32 @@ const row = "group flex items-baseline justify-between gap-4 text-ink-muted tran
       var box = document.querySelector("[data-hits]");
       if (!box || !window.fetch) return;
 
+      // Одна и та же проверка на оба числа: показываем только настоящее
+      // положительное значение. Ноль, null и мусор от сбойного ответа
+      // оставляют свою половину скрытой — «сегодня: 0» посетителю не нужно,
+      // а «сегодня: —» выглядит поломкой.
+      function put(sel, n) {
+        if (typeof n !== "number" || !isFinite(n) || n < 1) return false;
+        var el = box.querySelector("[data-" + sel + "-value]");
+        if (el) el.textContent = n.toLocaleString(hitsLocale);
+        return true;
+      }
+
       function load() {
         fetch("/hits.php", { credentials: "omit" })
           .then(function (res) {
             return res.ok ? res.json() : null;
           })
           .then(function (data) {
-            if (!data || typeof data.total !== "number" || data.total < 1) return;
-            var value = box.querySelector("[data-hits-value]");
-            if (value) value.textContent = data.total.toLocaleString("ru-RU");
+            if (!data) return;
+
+            // Общее число — условие показа всей пилюли: без него дневное
+            // висело бы в одиночестве и читалось бы как общий итог.
+            if (!put("hits", data.total)) return;
             box.hidden = false;
+
+            var today = box.querySelector("[data-hits-today]");
+            if (today && put("hits-today", data.today)) today.hidden = false;
           })
           .catch(function () {
             /* молча: счётчик не та вещь, из-за которой стоит шуметь в консоли */
