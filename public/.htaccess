@@ -29,7 +29,10 @@ AddType image/x-icon .ico
   # По логам боты до сих пор просят /sitemap_index.xml (это путь Yoast SEO) и
   # /sitemap.txt и получают 404. Адреса остались в чужих индексах с прежнего
   # сайта; 301 возвращает этот сигнал себе вместо того, чтобы терять его.
-  RewriteRule ^sitemap(_index\.xml|\.txt|-index\.xml)$ /sitemap.xml [R=301,L]
+  #
+  # 14.09.2026 добавлен .xml.gz: сжатую карту боты тоже спрашивают, и она
+  # оставалась единственным вариантом из четырёх, который отдавал 404.
+  RewriteRule ^sitemap(_index\.xml|\.txt|-index\.xml|\.xml\.gz)$ /sitemap.xml [R=301,L]
 </IfModule>
 
 <IfModule mod_deflate.c>

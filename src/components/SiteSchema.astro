@@ -35,7 +35,7 @@
  */
 import { getImage } from "astro:assets";
 import bizPhoto from "../assets/car/car-1.jpg";
-import { facts, localePath, type Lang } from "../i18n/ui";
+import { facts, localePath, siteUpdated, type Lang } from "../i18n/ui";
 import { landingsFor } from "../data/routes";
 
 interface Props {
@@ -214,8 +214,15 @@ const schema = {
       email: facts.email,
       image: bizImages,
       priceRange: `${facts.fromTartu.price}–${Math.max(...facts.routes.map((r) => r.price))} €`,
-      currenciesAccepted: "EUR",
+      // Рубли здесь не для красоты: на обратных маршрутах от границы расчёт
+      // рублями заявлен прямым текстом на страницах и в llms.txt, а поездки по
+      // российской стороне в рублях и считаются. Факт обязан совпадать на
+      // всех поверхностях — сайт, разметка, карточка Google.
+      currenciesAccepted: "EUR, RUB",
       paymentAccepted: t.payment,
+      // Языки водителя отдельным полем. Уже заявлены в llms.txt и в блоке про
+      // водителя, но там это проза — модель вытащит её хуже, чем свойство.
+      knowsLanguage: ["ru", "en"],
       // Мессенджеры — это и есть профили сервиса на стороне: другого способа
       // связаться нет, поэтому они стоят в sameAs, а не только ссылками.
       //
@@ -232,6 +239,30 @@ const schema = {
       // are ineligible for star review feature». Звёзды в выдаче даёт сама
       // карточка Google, а не разметка — и она их уже даёт.
       sameAs: [facts.whatsapp, facts.telegram, facts.google.profile],
+      /**
+       * hasMap добавлен 14.09.2026. Выше написано «именно sameAs, а не hasMap»,
+       * и это остаётся верным по смыслу: тождество сущностей заявляет sameAs.
+       * Но одно другому не мешает — hasMap описывает карту этого места, это
+       * законное свойство LocalBusiness, и оно даёт вторую, независимую
+       * привязку к той же карточке. Стоят оба, каждое в своей роли.
+       */
+      hasMap: facts.google.profile,
+      /**
+       * Идентификаторы карточки машиночитаемо. Ссылка в sameAs требует от
+       * разборщика догадаться, что `cid=` в URL — это идентификатор; здесь он
+       * лежит явно и с названием системы.
+       *
+       * Регистрационный код (registrikood) сюда же, когда владелец его назовёт:
+       * для LLM проверяемое юридическое лицо — сильнейший маркер доверия из
+       * всех, что вообще можно отдать разметкой.
+       */
+      identifier: [
+        {
+          "@type": "PropertyValue",
+          propertyID: "Google Maps CID",
+          value: facts.google.cid,
+        },
+      ],
       contactPoint: [
         {
           "@type": "ContactPoint",
@@ -266,6 +297,26 @@ const schema = {
         { "@type": "Place", name: place.luhamaa[lang] },
         { "@type": "Country", name: lang === "ru" ? "Эстония" : "Estonia" },
       ],
+      /**
+       * Зона обслуживания вместо адреса. У сервиса нет офиса, и выдуманный
+       * PostalAddress — прямое нарушение правил Google для бизнесов с зоной
+       * обслуживания: за него карточку понижают. Поэтому `address` нет и не
+       * будет, а вместо него описан радиус работы.
+       *
+       * Центр — Таллинн, откуда выезжают все маршруты. Радиус 300 км взят по
+       * самому длинному из них: до Лухамаа 280. Это не обещание ехать ровно на
+       * триста километров, а машиночитаемая граница «здесь мы работаем» —
+       * именно её спрашивает ассистент, когда пользователь называет свой город.
+       */
+      serviceArea: {
+        "@type": "GeoCircle",
+        geoMidpoint: {
+          "@type": "GeoCoordinates",
+          latitude: 59.437,
+          longitude: 24.7536,
+        },
+        geoRadius: "300000",
+      },
       /**
        * Машина описана свойствами, а не отдельным узлом Vehicle — 31.08.2026.
        *
@@ -331,6 +382,11 @@ const schema = {
       isPartOf: { "@id": `${site}/#website` },
       about: { "@id": org },
       inLanguage: lang,
+      // Та же дата, что уходит в lastmod карты сайта для главной, — правится
+      // руками в siteUpdated. Модель, пришедшая по ссылке из ответа, видит
+      // свежесть страницы, не заглядывая в карту. `datePublished` не ставим:
+      // даты первой публикации в данных нет, а выдуманная хуже отсутствующей.
+      dateModified: siteUpdated,
       // Блок коротких ответов — то, что голосовым помощникам стоит читать
       // вслух и что модели проще всего вытащить как факт.
       speakable: {

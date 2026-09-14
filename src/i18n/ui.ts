@@ -75,6 +75,12 @@ export const googleAds = {
   conversion: "ads_conversion___1",
 } as const;
 
+/**
+ * CID карточки Google Business. Отдельной константой, а не строкой внутри
+ * facts: из него собирается и адрес профиля, и `identifier` в разметке.
+ */
+const googleCid = "17480409347676388080";
+
 /** Цены, телефон и парк — в одном месте: правится один раз, меняется везде. */
 export const facts = {
   phone: "+372 56277764",
@@ -108,7 +114,20 @@ export const facts = {
    * неизвестно, и в бейдже выводится одна оценка без «N отзывов».
    */
   google: {
-    profile: "https://maps.google.com/?cid=17480409347676388080",
+    /**
+     * CID карточки отдельным полем — из него собирается `profile`, чтобы номер
+     * не пришлось держать в двух местах. В разметку он уходит ещё и как
+     * `identifier`: ссылка в `sameAs` заявляет тождество, а PropertyValue
+     * отдаёт сам идентификатор машиночитаемо, без разбора URL.
+     *
+     * ⚠️ Есть второй идентификатор той же карточки — Knowledge Graph MID
+     * `/g/11zx7vl1b4`, он приходит из короткой ссылки share.google. В `sameAs`
+     * его пока нет: не подтверждено, что это та же карточка, а не второй
+     * профиль на тот же бизнес. Подтвердится — добавить и его,
+     * `https://www.google.com/search?kgmid=/g/11zx7vl1b4`.
+     */
+    cid: googleCid,
+    profile: `https://maps.google.com/?cid=${googleCid}`,
     review: "https://g.page/r/CfA6q8Cv45byEBM/review",
     rating: 5,
     reviews: null as number | null,

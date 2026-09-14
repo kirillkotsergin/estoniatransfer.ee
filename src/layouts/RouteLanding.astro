@@ -200,11 +200,12 @@ const org = {
  * неправдой, поэтому там Article с датой обновления. У страниц маршрутов
  * наоборот: Service с ценой и зоной обслуживания.
  */
+const mainId = `${url}#${isGuide ? "article" : "service"}`;
 const main =
   isGuide
     ? {
         "@type": "Article",
-        "@id": `${url}#article`,
+        "@id": mainId,
         headline: c.h1,
         description: c.schema.description,
         inLanguage: lang,
@@ -234,7 +235,7 @@ const main =
          * отсутствие.
          */
         "@type": ["Product", "Service"],
-        "@id": `${url}#service`,
+        "@id": mainId,
         name: c.schema.name,
         ...(c.schema.alternateName ? { alternateName: c.schema.alternateName } : {}),
         serviceType: c.schema.serviceType,
@@ -286,6 +287,50 @@ const schema = {
         name: q.q,
         acceptedAnswer: { "@type": "Answer", text: plain(q.a) },
       })),
+    },
+    /**
+     * Узел страницы. Добавлен 14.09.2026 — до этого его здесь не было вовсе,
+     * и посадочные отдавали только BreadcrumbList, услугу и FAQ.
+     *
+     * Он нужен ради двух вещей, и обе про ИИ-выдачу:
+     *
+     * 1. `dateModified`. Дата правки жила только в `lastmod` карты сайта, то
+     *    есть модель, пришедшая на страницу напрямую (а `ChatGPT-User` и
+     *    `Perplexity-User` приходят именно так, по ссылке из ответа), не
+     *    видела, свежий перед ней текст или трёхлетний. Берётся из того же
+     *    поля `updated`, что и карта, поэтому разойтись они не могут.
+     *
+     *    `datePublished` сознательно НЕ ставим: даты первой публикации в
+     *    данных нет, а `updated` в этой роли был бы неправдой — страница
+     *    Нарвы вышла 17.08, а не 13.09. Выдуманная дата хуже отсутствующей.
+     *    У гида `datePublished` всё же стоит в узле Article выше и там
+     *    равен `updated` — это унаследованная неточность, чинится только
+     *    настоящими датами.
+     *
+     * 2. `speakable` на блок «Коротко». На главной он давно указывает на
+     *    `#answers`, а у посадочных аналогичный блок (`c.answer`, карточка
+     *    сразу под героем) не был помечен никак. Это ровно тот фрагмент,
+     *    который голосовой помощник читает вслух, а модель вытаскивает как
+     *    факт: цена, километры, время, валюта — в двух-трёх предложениях.
+     *
+     * Второй FAQPage отсюда не появляется: вопросы остаются в узле выше,
+     * а этот узел описывает саму страницу.
+     */
+    {
+      "@type": "WebPage",
+      "@id": `${url}#webpage`,
+      url,
+      name: c.title,
+      description: c.description,
+      inLanguage: lang,
+      isPartOf: { "@id": `${site}/#website` },
+      about: { "@id": mainId },
+      ...(productImages.length ? { primaryImageOfPage: productImages[0] } : {}),
+      ...(route.updated ? { dateModified: route.updated } : {}),
+      speakable: {
+        "@type": "SpeakableSpecification",
+        cssSelector: ["#answer"],
+      },
     },
   ],
 };
@@ -443,8 +488,18 @@ const td = "px-4 py-3.5 align-top";
         )
       }
 
-      {/* Короткий ответ: первым экраном после героя, отдельной карточкой */}
-      <div class="reveal glass mt-10 max-w-3xl rounded-[var(--radius-card)] p-6 sm:p-7" style="--d:6">
+      {/* Короткий ответ: первым экраном после героя, отдельной карточкой.
+
+          id="answer" не для ссылок, а для `speakable` в разметке выше: он
+          указывает на этот блок селектором. Меняете id — меняйте и там,
+          иначе `speakable` начнёт ссылаться в пустоту, и это никак не
+          проявится: валидатор ошибки не покажет, просто помощник перестанет
+          находить, что читать. */}
+      <div
+        id="answer"
+        class="reveal glass mt-10 max-w-3xl rounded-[var(--radius-card)] p-6 sm:p-7"
+        style="--d:6"
+      >
         <div class={`grid gap-3 text-[0.98rem] leading-relaxed text-ink-muted ${prose}`}>
           {c.answer.map((p) => <p set:html={p} />)}
         </div>
