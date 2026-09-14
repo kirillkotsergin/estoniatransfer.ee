@@ -20,6 +20,13 @@ import type { RouteCopy, RouteId } from "./routes";
 const eur = (id: RouteId) => `€${facts.routes.find((r) => r.id === id)!.price}`;
 const queue = `€${facts.queueSlot.price}`;
 const tartu = `€${facts.fromTartu.price}`;
+/**
+ * Запись маршрута из facts целиком — для обратных страниц, у которых нет
+ * routeId. Цена, километры и время у них те же, что у поездки из Таллинна, но
+ * связывать страницу с facts через routeId нельзя: почему, написано у записи
+ * «Нарва — Таллинн» в routes.ts.
+ */
+const spec = (id: RouteId) => facts.routes.find((r) => r.id === id)!;
 
 export const en: Record<string, RouteCopy> = {
   // ─────────────────────────── Tallinn — Narva ───────────────────────────
@@ -206,13 +213,14 @@ export const en: Record<string, RouteCopy> = {
         },
         {
           q: "Do you drive the other way, from the border to Tallinn?",
-          a: `Yes, at the same price — ${eur("narva")}. Arrange the return in advance: taxis almost never wait at the Narva checkpoint, especially in the evening. You can book both trips in one message.`,
+          a: `Yes, at the same price — ${eur("narva")}, and it has a page of its own: <a href="/en/transfer-narva-tallinn/">Narva — Tallinn</a>. It covers the meeting point after control, free waiting in the queue and paying in roubles. Arrange the return in advance: taxis almost never wait at the Narva checkpoint, especially in the evening.`,
         },
       ],
     },
     links: [
       { label: "Transfer Tallinn — Koidula", note: eur("koidula"), href: "/transfer-tallinn-koidula/" },
       { label: "Transfer Tallinn — Luhamaa", note: eur("luhamaa"), href: "/transfer-tallinn-luhamaa/" },
+      { label: "Back: Narva — Tallinn", note: eur("narva"), href: "/transfer-narva-tallinn/" },
       { label: "All routes and prices", href: "/#routes" },
       { label: "The car and the driver", href: "/#car" },
     ],
@@ -234,6 +242,292 @@ export const en: Record<string, RouteCopy> = {
       areaServed: [
         { type: "City", name: "Tallinn" },
         { type: "City", name: "Narva" },
+      ],
+    },
+  },
+
+  // ─────────────────────────── Narva — Tallinn ───────────────────────────
+  // Английская версия обратной страницы (14.09.2026). Русская появилась 13.09,
+  // и правило «заголовки только по-русски» — про неё: здесь язык страницы
+  // английский, поэтому Narva — Tallinn в заголовках стоит естественно.
+  //
+  // Текст не перевод русского абзац за абзацем: по-английски эту дорогу ищут
+  // как «Narva to Tallinn airport transfer», и страница отвечает на это прямо.
+  "transfer-narva-tallinn": {
+    title: `Transfer Narva — Tallinn: ${eur("narva")} from the border`,
+    description:
+      "Private transfer Narva — Tallinn: €130 per car from the border crossing to the city. The driver waits on the Estonian side and waiting in the queue is free.",
+    ogDescription:
+      "Return transfer from the Narva checkpoint to Tallinn: €130 per car, the driver waits on the Estonian side, drop-off at the airport terminal.",
+    breadcrumb: "Narva — Tallinn",
+    h1: "Transfer and taxi Narva — Tallinn: the way back from the border",
+    badge: `Return route · ${eur("narva")} per car`,
+    footer: { label: "Narva — Tallinn", note: eur("narva") },
+    stats: [
+      { value: eur("narva"), label: "per car" },
+      { value: spec("narva").hoursEn, label: "on the road" },
+      { value: `${spec("narva").km} km`, label: "border to city" },
+    ],
+    offers: [{ name: "Transfer Narva — Tallinn", price: String(spec("narva").price) }],
+    lead:
+      "You have walked across the bridge and you are standing on the Estonian side with your suitcases — that is where our part begins. We collect you at the Narva-1 checkpoint and drive you to Tallinn: 210 kilometres, about two and a half hours, drop-off at the airport terminal, the cruise port, a hotel or any address. How long the queue kept you makes no difference to the price.",
+    notice: {
+      title: "The crossing is closed at night",
+      text: "Narva-1 works in daytime and shuts completely for the night, so you cannot walk out to a waiting car at two in the morning — the crossing has to wait until the next day. Plan to leave the queue well before closing time. <em>Opening hours change; check them before you travel.</em>",
+    },
+    answer: [
+      `<strong>In short.</strong> Narva to Tallinn costs <strong>${eur("narva")}</strong> for the whole car — up to four passengers with luggage. It is 210 km from the border to Tallinn, about <strong>2 hours 30 minutes</strong>. The car waits on the Estonian side of the checkpoint, not at a bus station across town.`,
+      "<strong>Waiting is not billed.</strong> Nobody can say in advance how long the queue will take, so we do not ask for an exact hour: give us an approximate one and the driver will wait. <strong>No prepayment</strong>, and you can settle <strong>in euros or in roubles</strong>, in cash or by transfer.",
+      'On the signs the Estonian checkpoint is marked Narva-1; the Russian side across the river is Ivangorod. Need the other direction, from Tallinn to the border? That is the <a href="/en/transfer-tallinn-narva/">Tallinn — Narva</a> page, at the same price.',
+    ],
+    price: {
+      eyebrow: "Price",
+      title: "What the Narva — Tallinn taxi costs",
+      lead:
+        "The fare is the same as towards the border: the way back is not a separate service and does not cost more. You pay for the car rather than for a seat, so a family of four pays what one passenger pays.",
+      caption: "Narva — Tallinn transfer fares and extras",
+      rows: [
+        ["Narva — Tallinn", eur("narva"), "the whole car, up to 4 passengers with luggage"],
+        [
+          "Waiting at the checkpoint",
+          "€0",
+          "the queue cannot be predicted, so waiting time is not billed",
+        ],
+        [
+          "Drop-off at Tallinn airport or the port",
+          "€0",
+          "we take you to the terminal itself, not to the nearest stop",
+        ],
+        [
+          "Luggage, child seat, late departure",
+          "€0",
+          "no surcharge for suitcases or for the evening",
+        ],
+      ],
+      note:
+        "<strong>Paying.</strong> Cash to the driver — <strong>in euros or in roubles</strong> — or by bank transfer. On the way back that matters more than it sounds: Russian bank cards do not work in Estonia and there may be no exchange office at the crossing. No prepayment: the ride first, the settlement after.",
+      extra: [
+        {
+          title: "Why the return trip is booked in advance",
+          text: "There is no taxi rank at the Narva checkpoint waiting for passengers. During the day you can sometimes arrange something on the spot; in the evening almost never, because local drivers do not drive out to a closing crossing. Add suitcases, a child and a Russian SIM card that may not work in Estonia, and there is simply nothing to call a car with. A transfer booked in advance removes the whole chain: the driver is already there and knows who he is waiting for.",
+        },
+        {
+          title: "If you are going further than Tallinn",
+          text: `From Narva we also drive to <a href="/en/transfer-tartu-koidula-luhamaa/">Tartu</a>, to the port for a particular ferry and to Riga — those are quoted separately, so send the route and the time. The way back to the border is still ${eur("narva")}: if you return in a few days, both trips can be booked in one message.`,
+        },
+      ],
+    },
+    airport: {
+      eyebrow: "Airport and port",
+      title: "From Narva to Tallinn airport and the port",
+      lead:
+        "The most common reason for this trip is a flight or a ferry out of Tallinn. What matters here is not the price but counting backwards: from check-in, through two and a half hours of driving, to the moment you walk out of the checkpoint.",
+      items: [
+        {
+          title: "A flight from Lennart Meri airport",
+          text: "Give us the flight number and we will work out when you need to be out of the border queue to make check-in comfortably. On tickets and departure boards the airport is Tallinn Airport, code TLL; it sits four kilometres from the centre, so the drive ends at the terminal door. If the crossing dragged on and the margin is gone, the driver tells you on the way rather than on arrival.",
+        },
+        {
+          title: "Ferries to Helsinki and Stockholm",
+          text: "We drop you at the right terminal in the Old Port — ferries and cruise berths have different entrances, so tell us the vessel or the operator in advance. Allow the same margin as for a flight: time at the border goes unpredictably and the ferry does not wait.",
+        },
+        {
+          title: "Trains, coaches and a night in town",
+          text: "We also drive to the Baltic station, the coach station or a hotel, if you have a night in Tallinn between the border and your flight. Name the address when you book: there is no district surcharge — Lasnamäe and Pirita cost what the Old Town costs.",
+        },
+      ],
+      cta: "Book a transfer to the airport",
+      waText: "Hello! I need a transfer from Narva to Tallinn airport. Flight number: ",
+    },
+    steps: {
+      eyebrow: "How the trip works",
+      title: "How the way back from Narva works",
+      items: [
+        {
+          title: "Tell us the date and roughly when you expect to be out",
+          text: "An exact hour is not needed — «in the morning» or «after lunch» is enough. If a flight or a ferry follows, give us its departure time and we will count backwards. You get a confirmation with the price, the car's registration and the driver's phone number: save it <strong>before</strong> you cross, because reception on the other side can disappear.",
+        },
+        {
+          title: "The driver waits on the Estonian side",
+          text: "The car stands at the Narva-1 checkpoint, on the side you come out on after control. You will not have to search the car park: the driver meets you at the exit. If the queue takes longer than you expected, he waits — that changes neither the price nor the booking.",
+        },
+        {
+          title: "The road through Jõhvi and Rakvere",
+          text: "Two hundred and ten kilometres of even highway, about two and a half hours. We can stop for coffee and a stretch on the way — after hours on your feet in a queue that is usually worth more than twenty minutes saved, and there is nothing extra to pay for it.",
+        },
+        {
+          title: "Drop-off wherever you need",
+          text: "An airport terminal, a berth in the port, a station, a hotel or your front door — we drive to the address, not to the nearest main street. We unload the suitcases ourselves; you settle after the ride, in cash in euros or roubles, or by transfer.",
+        },
+      ],
+    },
+    compare: {
+      eyebrow: "Comparison",
+      title: "Narva — Tallinn: transfer, train or coach",
+      lead:
+        "An honest comparison: travelling alone with a backpack and no evening flight, the train and the coach are several times cheaper. The difference is where they leave from and whose timetable they keep — and from the border you first have to reach them.",
+      caption: "Ways to get from Narva to Tallinn: price, time, convenience",
+      cols: ["Way", "Price", "Time", "What matters"],
+      rows: [
+        [
+          "EstoniaTransfer private car",
+          `${eur("narva")} per car`,
+          "≈ 2 h 30 min",
+          "the driver waits at the checkpoint, drop-off at the terminal or your address",
+        ],
+        [
+          "Elron train",
+          "€13–23 per person",
+          "≈ 2 h 50 min",
+          "the station is not far from the crossing, but there are few departures and the last one leaves long before night",
+        ],
+        [
+          "Lux Express coach",
+          "from €9 per person",
+          "≈ 3 h",
+          "the cheapest way: bus station to bus station, with a walk to it carrying your luggage",
+        ],
+        [
+          "Taxi off the street",
+          "by the meter, unknown upfront",
+          "≈ 2 h 30 min",
+          "cars rarely wait at the crossing, and in the evening there are none at all",
+        ],
+      ],
+      note:
+        "<strong>When there is barely a choice.</strong> An evening crossing, once the timetable is over. A flight or a ferry out of Tallinn the same day. A child, a pram or four suitcases between two people. And the drive straight after the queue, when working out connections is the last thing you want.",
+    },
+    car: {
+      eyebrow: "The car",
+      title: "The car waiting for you at the border",
+      caption: "Toyota Corolla — the actual car that will come for you",
+      text: [
+        "Toyota Corolla: four passenger seats, two large suitcases plus hand luggage in the boot, working climate control. After a few hours in a queue that is more than a formality — the cabin is warm in winter and cool in summer, and you can finally sit down. In winter the car is on winter tyres: the road from Narva runs across open country where the snow drifts.",
+        "Kirill is at the wheel — the same person who answers WhatsApp and Telegram, and the one who will actually arrive. There is no dispatcher in between: you arrange everything with the driver himself. He speaks Russian, gets by in English, knows the road to the crossing and takes it for granted that the hour you clear the queue is an estimate.",
+      ],
+    },
+    crossing: {
+      eyebrow: "The border crossing",
+      title: "Where you are met in Narva",
+      items: [
+        {
+          title: "The meeting point is the Estonian side of Narva-1",
+          text: "The Narva crossing is for pedestrians: from Ivangorod you walk over the bridge across the Narva river and come out at the Narva-1 checkpoint, already in Estonia. That is where you are met — at the exit after control. The registration number and the driver's phone arrive in the confirmation beforehand, so neither of you has to make roaming calls.",
+        },
+        {
+          title: "If the queue drags on",
+          text: "We wait. It is built into the service: a passenger does not control the speed of a border queue, and billing for it would be odd. Message us from the other side if you can; if there is no signal, never mind — the driver is there anyway.",
+        },
+        {
+          title: "If you do not make it before closing",
+          text: "The crossing shuts for the night and you stay on the Russian side until morning. Write as soon as that becomes clear and we will move the trip. We hold none of your money, so moving it costs nothing.",
+        },
+        {
+          title: "Phone numbers, just in case",
+          text: "Narva-1 checkpoint — <strong>+372 333 1600</strong>, the Russian side in Ivangorod — <strong>+7 81375 5-29-78</strong>. The Estonian Police and Border Guard Board — <strong>+372 612 3000</strong>.",
+        },
+      ],
+    },
+    /**
+     * ⚠️ Числовых лимитов на ввоз в Эстонию здесь нет намеренно — как и в
+     * русской версии: они различаются по товарам и меняются, а ошибка в цифре
+     * стоит пассажиру изъятого багажа. Вместо чисел — ссылка на emta.ee.
+     */
+    blocks: [
+      {
+        eyebrow: "Entering Estonia",
+        title: "What to allow for when entering Estonia through Narva",
+        lead:
+          "As of September 2026. Rules on this direction change several times a year — check politsei.ee and the customs service before you travel; links at the end of the section.",
+        layout: "accordion",
+        headings: true,
+        place: "bottom",
+        items: [
+          {
+            title: "Phones and money right after the border",
+            text: "The commonest problem on the way back is not customs but being unable to call or pay.<br><br>• A Russian SIM card may not work in Estonia at all: most operators have roaming switched off;<br>• cards issued by Russian banks are not accepted here, in taxis or at ticket desks;<br>• there may be no exchange office or cash machine at the checkpoint itself;<br>• so save the driver's number and the car's registration <strong>before</strong> you cross;<br>• <strong>you can pay us in roubles</strong> — there is no need to change money for the transfer.",
+          },
+          {
+            title: "What you may bring into Estonia",
+            text: 'Imports from Russia are restricted by both customs and sanctions rules. The limits depend on the goods and they change, so there are deliberately no figures here: check them at <a href="https://www.emta.ee/en" target="_blank" rel="noopener nofollow">emta.ee</a> before you travel.<br><br>• The officer at the border always has the final say;<br>• keep receipts for expensive items to hand, not at the bottom of a suitcase;<br>• prescription medicines with controlled substances need the prescription and a translation;<br>• we drive you to Tallinn, but the contents of your luggage are your responsibility, and we do not advise on customs.',
+          },
+          {
+            title: "The best time to cross",
+            text: "Morning beats evening almost every time.<br><br>• At opening the queue is at its shortest and your margin before a flight survives;<br>• it grows towards evening, and after closing you cannot cross at all — that means a night on the Russian side;<br>• at weekends and before public holidays the wait is longer at any hour;<br>• if a plane or a ferry is waiting in Tallinn, allow at least half a day: no transport makes the border itself faster.",
+          },
+        ],
+        note:
+          'Worth checking before you set off: <a href="https://www.politsei.ee/en" target="_blank" rel="noopener nofollow">politsei.ee</a> for opening hours and crossing rules, <a href="https://www.emta.ee/en" target="_blank" rel="noopener nofollow">emta.ee</a> for what you may bring into Estonia.',
+      },
+    ],
+    faq: {
+      eyebrow: "FAQ",
+      title: "Transfer Narva — Tallinn: common questions",
+      items: [
+        {
+          q: "How much does the Narva — Tallinn transfer cost?",
+          a: `${eur("narva")} for the whole car — the same as towards the border. The number of passengers, the number of suitcases and the hour of the day do not change it, and waiting at the checkpoint is not billed. Cash or bank transfer, no prepayment.`,
+        },
+        {
+          q: "How long is the drive from the border in Narva to Tallinn?",
+          a: "About 2 hours 30 minutes — 210 km of highway through Jõhvi and Rakvere. Longer in snow and heavy traffic. Clearing the border is not included in that: the queue takes anything from half an hour to several hours and cannot be predicted.",
+        },
+        {
+          q: "Where exactly will the car be waiting?",
+          a: "On the Estonian side of the Narva-1 checkpoint, at the exit after control. The registration number and the driver's phone come in the confirmation beforehand — save them before you cross, because reception on the other side may not work.",
+        },
+        {
+          q: "What if I come out later than planned?",
+          a: "The driver waits and there is no surcharge for it — which is why we do not need an exact hour. If you fail to cross before closing altogether, message us and we will move the trip to another day at no cost.",
+        },
+        {
+          q: "Can I pay in roubles?",
+          a: "Yes. We take both euros and roubles, in cash or by transfer. There is no need to hunt for an exchange office after the border — there may not be one at the crossing, and Russian bank cards do not work in Estonia. We take no prepayment in any currency.",
+        },
+        {
+          q: "Will you take me straight to Tallinn airport?",
+          a: "Yes, to the right terminal and with no surcharge for the drop-off. Give us the flight number when you book and we will work out when you need to be out of the queue to make check-in. We also drive to the cruise port, the Baltic station and the coach station.",
+        },
+        {
+          q: "Can I book both directions at once?",
+          a: `Yes, and it is the easiest way: both trips at ${eur("narva")}, booked in one message. The drive from Tallinn to the border is described on the <a href="/en/transfer-tallinn-narva/">Tallinn — Narva</a> page, together with the queue slot you can book for leaving Estonia.`,
+        },
+      ],
+    },
+    links: [
+      { label: "Transfer Tallinn — Narva", note: eur("narva"), href: "/transfer-tallinn-narva/" },
+      {
+        label: "Back from Koidula: Koidula — Tallinn",
+        note: eur("koidula"),
+        href: "/transfer-koidula-tallinn/",
+      },
+      {
+        label: "Back from Luhamaa: Luhamaa — Tallinn",
+        note: eur("luhamaa"),
+        href: "/transfer-luhamaa-tallinn/",
+      },
+      { label: "How to reach the border: every option", href: "/kak-dobratsya-do-granicy/" },
+      { label: "All routes and prices", href: "/#routes" },
+    ],
+    cta: {
+      title: "Book a transfer from the border to Tallinn",
+      text: "Send the date and roughly when you expect to clear the checkpoint — we will confirm the car, the price and the driver's number in one message. No prepayment; we wait on the Estonian side.",
+    },
+    waText: "Hello! I need a transfer from the border in Narva to Tallinn.",
+    schema: {
+      name: "Transfer Narva — Tallinn",
+      alternateName: [
+        "Taxi Narva — Tallinn",
+        "Narva to Tallinn airport transfer",
+        "Private transfer from the Narva border crossing",
+        "Taxi from the Narva checkpoint to Tallinn",
+      ],
+      serviceType: "Private transfer from a border crossing",
+      description:
+        "Private transfer from the Narva checkpoint to Tallinn: 210 km, about 2 h 30 min, €130 for the whole car. The driver waits on the Estonian side of the crossing; drop-off at the airport terminal, the port or any address.",
+      areaServed: [
+        { type: "City", name: "Narva" },
+        { type: "City", name: "Tallinn" },
       ],
     },
   },
@@ -398,11 +692,16 @@ export const en: Record<string, RouteCopy> = {
           q: "Can we stop in Tartu on the way?",
           a: `The route runs through Tartu, so a stop or a drop-off there is entirely possible — tell us in advance and we will work it out. And if you start in Tartu, there is a separate transfer to Koidula for ${tartu}, about an hour on the road.`,
         },
+        {
+          q: "Do you drive the other way, from the border to Tallinn?",
+          a: `Yes, at the same price — ${eur("koidula")}, and it has a page of its own: <a href="/en/transfer-koidula-tallinn/">Koidula — Tallinn</a>. Arrange it in advance: there is no taxi rank at the crossing and no scheduled transport leaves it.`,
+        },
       ],
     },
     links: [
       { label: "Transfer Tallinn — Narva", note: eur("narva"), href: "/transfer-tallinn-narva/" },
       { label: "Transfer Tallinn — Luhamaa", note: eur("luhamaa"), href: "/transfer-tallinn-luhamaa/" },
+      { label: "Back: Koidula — Tallinn", note: eur("koidula"), href: "/transfer-koidula-tallinn/" },
       { label: "From Tartu to the border", note: tartu, href: "/transfer-tartu-koidula-luhamaa/" },
       { label: "All routes and prices", href: "/#routes" },
     ],
@@ -424,6 +723,304 @@ export const en: Record<string, RouteCopy> = {
       areaServed: [
         { type: "City", name: "Tallinn" },
         { type: "Place", name: "Koidula" },
+      ],
+    },
+  },
+
+  // ─────────────────────────── Koidula — Tallinn ───────────────────────────
+  // Английская версия второй обратной страницы (14.09.2026). Своя фактура —
+  // станция в двух километрах от перехода, на которую рассчитывают те, кто
+  // прочитал про неё в интернете; страница отвечает на это прямо.
+  "transfer-koidula-tallinn": {
+    title: `Transfer Koidula — Tallinn: ${eur("koidula")} from the border`,
+    description:
+      "Private transfer Koidula — Tallinn: €160 per car from the border crossing. The driver waits on the Estonian side and waiting in the queue is free.",
+    ogDescription:
+      "Return transfer from the Koidula checkpoint to Tallinn: €160 per car, 270 km via Tartu, the driver waits on the Estonian side.",
+    breadcrumb: "Koidula — Tallinn",
+    h1: "Transfer and taxi Koidula — Tallinn: the way back from the border",
+    badge: `Return route · ${eur("koidula")} per car`,
+    footer: { label: "Koidula — Tallinn", note: eur("koidula") },
+    stats: [
+      { value: eur("koidula"), label: "per car" },
+      { value: spec("koidula").hoursEn, label: "on the road" },
+      { value: `${spec("koidula").km} km`, label: "border to city" },
+    ],
+    offers: [{ name: "Transfer Koidula — Tallinn", price: String(spec("koidula").price) }],
+    lead:
+      "Control is behind you and the barrier is up — that is where our part begins. We collect you on the Estonian side of Koidula and drive you to Tallinn: 270 kilometres via Tartu, about three hours, drop-off at the airport terminal, the port, a hotel or any address. There is no town and no taxi rank around the crossing, which is why the car back from here is booked in advance rather than found on the spot.",
+    notice: {
+      title: "No scheduled transport leaves the crossing",
+      // ПРОВЕРЬ: пара поездов в день и 2 км до станции — те же данные, что в
+      // таблице сравнения на странице «Tallinn — Koidula».
+      text: "Not a single bus leaves Koidula itself. The railway station is two kilometres from the checkpoint, but there are only a couple of trains a day on the line, and with suitcases that route looks easier on a map than on the ground. <em>Timetables and opening hours change — check them before you travel.</em>",
+    },
+    answer: [
+      `<strong>In short.</strong> Koidula to Tallinn costs <strong>${eur("koidula")}</strong> for the whole car — up to four passengers with luggage. It is 270 km via Tartu, about <strong>3 hours 5 minutes</strong>. The car waits on the Estonian side of the checkpoint, at the exit from its grounds.`,
+      "<strong>Waiting is not billed.</strong> Nobody can say how long the queue on the Russian side will hold you, so we do not need an exact hour: give us an approximate one and the driver will wait. <strong>No prepayment</strong>, and you can settle <strong>in euros or in roubles</strong>, in cash or by transfer.",
+      'The Russian side of this crossing is called Kunichina Gora; the Estonian side is Koidula. Need the other direction, from Tallinn to the border? That is the <a href="/en/transfer-tallinn-koidula/">Tallinn — Koidula</a> page, at the same price.',
+    ],
+    price: {
+      eyebrow: "Price",
+      title: "What the Koidula — Tallinn taxi costs",
+      lead:
+        "The fare is the same as towards the border: the way back is not a separate service. You pay for the car rather than for a seat, so two, three or four passengers cost the same, and luggage does not change the sum.",
+      caption: "Koidula — Tallinn transfer fares and extras",
+      rows: [
+        ["Koidula — Tallinn", eur("koidula"), "the whole car, up to 4 passengers with luggage"],
+        [
+          "Waiting at the checkpoint",
+          "€0",
+          "the border queue cannot be predicted, so waiting time is not billed",
+        ],
+        [
+          "Drop-off at Tallinn airport or the port",
+          "€0",
+          "we take you to the terminal itself, not to the nearest stop",
+        ],
+        ["Koidula — Tartu", tartu, "if Tallinn is not where you need: ≈ 65 km, about an hour"],
+        [
+          "Luggage, child seat, late departure",
+          "€0",
+          "no surcharge for suitcases or for the evening",
+        ],
+      ],
+      note:
+        "<strong>Paying.</strong> Cash to the driver — <strong>in euros or in roubles</strong> — or by bank transfer. There is no exchange office and no cash machine at Koidula, and Russian bank cards are not accepted in Estonia, so roubles help here more often than it sounds. No prepayment: the ride first, the settlement after.",
+      extra: [
+        {
+          title: "Why you cannot simply hail a car at Koidula",
+          text: "The crossing sits in Setomaa, away from the main roads: 65 kilometres to Tartu, 270 to Tallinn, and Võru as the nearest town. There is no taxi rank at the checkpoint and no cars waiting — there are simply not that many local drivers. There is nobody to call through an app, and a Russian SIM card may not work in Estonia at all. A transfer booked in advance removes the whole chain: the driver is already there and knows who he is waiting for.",
+        },
+        {
+          title: "If Tallinn is not where you are going",
+          text: `From Koidula we also drive to <a href="/en/transfer-tartu-koidula-luhamaa/">Tartu</a> for ${tartu}, and to Pärnu, Riga or the airport for a particular flight — those are quoted separately, so send the route and the time. The way back to the crossing is still ${eur("koidula")}: if you return in a few days, both trips can be booked in one message.`,
+        },
+      ],
+    },
+    airport: {
+      eyebrow: "Airport and port",
+      title: "From Koidula to Tallinn airport and the port",
+      lead:
+        "Most of these trips are booked for a flight or a ferry. What matters is the countdown: three hours of driving plus an unpredictable border, and from that we work out when you need to be out of the checkpoint.",
+      items: [
+        {
+          title: "A flight from Lennart Meri airport",
+          text: "Give us the flight number and we will count the departure time backwards from check-in. On tickets and departure boards the airport is Tallinn Airport, code TLL; it is four kilometres from the centre, so the drive ends at the terminal door. If the border ate your margin, the driver tells you on the way rather than on arrival.",
+        },
+        {
+          title: "Ferries to Helsinki and Stockholm",
+          text: "We drop you at the right terminal in the Old Port; ferries and cruise berths have different entrances, so name the vessel or the operator in advance. Allow the same margin as for a flight — the ferry does not wait either.",
+        },
+        {
+          title: "Tartu on the way, not as a detour",
+          text: `The road from Koidula to Tallinn runs through Tartu anyway, so a drop-off there complicates nothing: tell us in advance and we will stop at the station, at Tartu airport or at an address. If Tallinn is not needed at all, the trip to Tartu costs ${tartu}.`,
+        },
+      ],
+      cta: "Book a transfer to the airport",
+      waText: "Hello! I need a transfer from Koidula to Tallinn airport. Flight number: ",
+    },
+    steps: {
+      eyebrow: "How the trip works",
+      title: "How the way back from Koidula works",
+      items: [
+        {
+          title: "Tell us the date and roughly when you expect to be out",
+          text: "An exact hour is not needed — «in the morning» or «after lunch» is enough. If a flight or a ferry follows, give us its departure time and we will count backwards. The confirmation carries the price, the car's registration and the driver's phone: save it <strong>before</strong> you cross, because reception on the Russian side can disappear.",
+        },
+        {
+          title: "The driver waits beyond the control building",
+          text: "The car stands on the Estonian side of Koidula, at the exit from the checkpoint grounds. This is a road crossing, so people come out in different ways — some in the car that brought them to the border, some on foot after control; either way you are met at the exit.",
+        },
+        {
+          title: "The road through Setomaa and Tartu",
+          text: "First the local roads towards Põlva and Tartu, then the highway to Tallinn: 270 kilometres, about three hours. Halfway we stop for coffee and a stretch — after hours at the border that is usually worth more than twenty minutes saved, and the stop costs nothing extra.",
+        },
+        {
+          title: "Drop-off wherever you need",
+          text: "An airport terminal, a berth in the port, a station, a hotel or your front door — we drive to the address, not to the nearest main street. We unload the suitcases ourselves; you settle after the ride, in euros or roubles, in cash or by transfer.",
+        },
+      ],
+    },
+    compare: {
+      eyebrow: "Comparison",
+      title: "Koidula — Tallinn: transfer, train or coach",
+      lead:
+        "The comparison is honest but short: there is almost nothing to compare at Koidula. The coach to Tallinn passes by, the train leaves from a station two kilometres away, and both options begin with walking there carrying your bags.",
+      caption: "Ways to get from the Koidula crossing to Tallinn",
+      cols: ["Way", "Price", "Time", "What matters"],
+      // ПРОВЕРЬ цены и расписания перевозчиков: данные на сентябрь 2026.
+      rows: [
+        [
+          "EstoniaTransfer private car",
+          `${eur("koidula")} per car`,
+          "≈ 3 h 5 min",
+          "the driver waits at the checkpoint, drop-off at the terminal or your address",
+        ],
+        [
+          "Elron train with a change",
+          "Elron fares",
+          "line R46 plus Tartu — Tallinn",
+          "about 2 km on foot to the station, and only a couple of trains a day on the line",
+        ],
+        [
+          "Ecolines coach Pskov — Tallinn",
+          "see the booking system",
+          "≈ 7 h",
+          "it runs through the crossing, but boarding at the checkpoint itself is not provided for",
+        ],
+        [
+          "Taxi from Võru or Tartu",
+          "by the meter plus the approach",
+          "≈ 3 h 30 min",
+          "it has to be called in advance: no cars wait at the crossing, and the empty run out to it is in the fare",
+        ],
+      ],
+      note:
+        "<strong>When there is barely a choice.</strong> Crossing in the afternoon, once the train has gone. A flight or a ferry out of Tallinn the same day. A child, a pram or four suitcases between two people. And any situation in which two kilometres to the station means two kilometres along the verge with your luggage.",
+    },
+    car: {
+      eyebrow: "The car",
+      title: "The car waiting for you at Koidula",
+      caption: "Toyota Corolla — the actual car that will come for you",
+      text: [
+        "Toyota Corolla: four passenger seats, two large suitcases plus hand luggage in the boot, working climate control. On this route that is not a formality: the drive from Koidula is nearly an hour longer than the Narva one, and it starts where you have already spent hours at the border. In winter the car is on winter tyres — the first stretch runs on the local Setomaa roads, which are not the first to be cleared.",
+        "Kirill is at the wheel — the same person who answers WhatsApp and Telegram, and the one who will actually arrive. No dispatcher in between: you arrange everything with the driver himself. He speaks Russian, gets by in English, and takes it for granted that the hour you clear the queue is an estimate.",
+      ],
+    },
+    crossing: {
+      eyebrow: "The border crossing",
+      title: "Where you are met at Koidula",
+      items: [
+        {
+          title: "The meeting point is the Estonian side of Koidula",
+          text: "The Russian side of the crossing is Kunichina Gora, the Estonian one is Koidula — that is how it is signposted. We meet you at the exit from the checkpoint grounds, immediately beyond the control building. The registration number and the driver's phone arrive in the confirmation beforehand, so neither of you has to make roaming calls.",
+        },
+        {
+          title: "The queue for entering Estonia",
+          // ПРОВЕРЬ: что бронь GoSwift нужна только на выезд из Эстонии.
+          text: 'A GoSwift booking is needed to <strong>leave</strong> Estonia, not to enter it: the queue on the Russian side is their own and we have no influence on its speed. That is exactly why we do not fix a meeting time — we wait. Opening hours are published at <a href="https://www.politsei.ee/en" target="_blank" rel="noopener">politsei.ee</a>.',
+        },
+        {
+          title: "If you do not make it before closing",
+          text: "Koidula works in daytime and shuts completely for the night — then you stay on the Russian side until morning. Write as soon as that becomes clear and we will move the trip to another day at no cost: we hold none of your money.",
+        },
+        {
+          title: "Phone numbers, just in case",
+          text: "Koidula checkpoint — <strong>+372 786 1800</strong>, the Russian side at Kunichina Gora — <strong>+7 811 489-34-21</strong>. The Estonian Police and Border Guard Board — <strong>+372 612 3000</strong>.",
+        },
+      ],
+    },
+    /**
+     * ⚠️ Числовых лимитов на ввоз в Эстонию здесь нет намеренно — как и в
+     * русской версии. Не «дополняйте» этот блок нормами по памяти.
+     */
+    blocks: [
+      {
+        eyebrow: "Entering Estonia",
+        title: "What to allow for when entering Estonia through Koidula",
+        lead:
+          "As of September 2026. Rules on this direction change several times a year — check politsei.ee and the customs service before you travel; links at the end of the section.",
+        layout: "accordion",
+        headings: true,
+        place: "bottom",
+        items: [
+          {
+            title: "Phones, money and no infrastructure at all",
+            text: "Koidula is not a town crossing: on the Estonian side there is no shop, no exchange office, no cash machine and no taxi rank.<br><br>• A Russian SIM card may not work in Estonia at all: most operators have roaming switched off;<br>• cards issued by Russian banks are not accepted here;<br>• there is nowhere to get euros on the spot — the nearest cash machines are in Võru and Tartu;<br>• so save the driver's number and the car's registration <strong>before</strong> you cross;<br>• <strong>you can pay us in roubles</strong> — no need to look for an exchange office.",
+          },
+          {
+            title: "What you may bring into Estonia",
+            text: 'Imports from Russia are restricted by both customs and sanctions rules. The limits depend on the goods and they change, so there are deliberately no figures here: check them at <a href="https://www.emta.ee/en" target="_blank" rel="noopener nofollow">emta.ee</a> before you travel.<br><br>• The officer at the border always has the final say;<br>• keep receipts for expensive items to hand, not at the bottom of a suitcase;<br>• prescription medicines with controlled substances need the prescription and a translation;<br>• we drive you to Tallinn, but the contents of your luggage are your responsibility, and we do not advise on customs.',
+          },
+          {
+            title: "A road crossing: how people come out of it",
+            // ПРОВЕРЬ: порядок прохода пешком через Койдулу — правила менялись.
+            text: "Koidula takes cars, and that changes the picture compared with pedestrian Narva.<br><br>• A passenger driven to the border from the Russian side is cleared in Estonia and walks out of the checkpoint grounds alone;<br>• the rules for crossing on foot here have changed — if you are travelling without a car, check them in advance;<br>• how long control takes depends on the queue on the Russian side, not on the Estonian one;<br>• our part begins beyond the barrier and does not depend on how you came out.",
+          },
+        ],
+        note:
+          'Worth checking before you set off: <a href="https://www.politsei.ee/en" target="_blank" rel="noopener nofollow">politsei.ee</a> for opening hours and crossing rules, <a href="https://www.emta.ee/en" target="_blank" rel="noopener nofollow">emta.ee</a> for what you may bring into Estonia.',
+      },
+    ],
+    faq: {
+      eyebrow: "FAQ",
+      title: "Transfer Koidula — Tallinn: common questions",
+      items: [
+        {
+          q: "How much does the Koidula — Tallinn transfer cost?",
+          a: `${eur("koidula")} for the whole car — the same as towards the border. The number of passengers, the number of suitcases and the hour of the day do not change it, and waiting at the checkpoint is not billed. Cash or bank transfer, no prepayment.`,
+        },
+        {
+          q: "How long is the drive from Koidula to Tallinn?",
+          a: "About 3 hours 5 minutes — 270 km via Tartu. Longer in winter and in heavy traffic. Clearing the border is not included: the queue on the Russian side takes anything from half an hour to several hours and cannot be predicted.",
+        },
+        {
+          q: "Where exactly will the car be waiting?",
+          a: "On the Estonian side of the Koidula checkpoint, at the exit from its grounds, immediately beyond the control building. The registration number and the driver's phone come in the confirmation beforehand — save them before you cross, because reception on the Russian side may not work.",
+        },
+        {
+          q: "What if the queue holds me up for hours?",
+          a: "The driver waits and there is no surcharge for it — which is why we do not need an exact hour. If you fail to cross before closing altogether, message us and we will move the trip to another day at no cost.",
+        },
+        {
+          q: "Can I pay in roubles?",
+          a: "Yes. We take both euros and roubles, in cash or by transfer. There is no exchange office or cash machine at Koidula and Russian bank cards do not work in Estonia, so you will not have to change money for the transfer. We take no prepayment in any currency.",
+        },
+        {
+          q: "Can I leave Koidula by train or coach?",
+          // ПРОВЕРЬ расписания: пара поездов в день и маршрут Ecolines через
+          // переход — данные на сентябрь 2026.
+          a: "In theory yes, in practice it is awkward. The station is two kilometres from the checkpoint and the line has only a couple of trains a day; the Pskov — Tallinn coach runs through the crossing but boarding at the checkpoint itself is not provided for. With suitcases or a child both options look easier on a map than on the ground. Timetables change — check them before you travel.",
+        },
+        {
+          q: "Will you take me straight to Tallinn airport?",
+          a: "Yes, to the right terminal and with no surcharge for the drop-off. Give us the flight number when you book and we will work out when you need to be out of the border queue to make check-in. We also drive to the cruise port, the Baltic station and the coach station.",
+        },
+        {
+          q: "Can I book both directions at once?",
+          a: `Yes, and it is the easiest way: both trips at ${eur("koidula")}, booked in one message. The drive from Tallinn to the border is described on the <a href="/en/transfer-tallinn-koidula/">Tallinn — Koidula</a> page, together with the GoSwift booking you need for leaving Estonia.`,
+        },
+      ],
+    },
+    links: [
+      {
+        label: "Transfer Tallinn — Koidula",
+        note: eur("koidula"),
+        href: "/transfer-tallinn-koidula/",
+      },
+      {
+        label: "Back from Luhamaa: Luhamaa — Tallinn",
+        note: eur("luhamaa"),
+        href: "/transfer-luhamaa-tallinn/",
+      },
+      {
+        label: "Back from Narva: Narva — Tallinn",
+        note: eur("narva"),
+        href: "/transfer-narva-tallinn/",
+      },
+      { label: "From Koidula to Tartu", note: tartu, href: "/transfer-tartu-koidula-luhamaa/" },
+      { label: "All routes and prices", href: "/#routes" },
+    ],
+    cta: {
+      title: "Book a transfer from Koidula to Tallinn",
+      text: "Send the date and roughly when you expect to clear the checkpoint — we will confirm the car, the price and the driver's number in one message. No prepayment; we wait on the Estonian side.",
+    },
+    waText: "Hello! I need a transfer from the border at Koidula to Tallinn.",
+    schema: {
+      name: "Transfer Koidula — Tallinn",
+      alternateName: [
+        "Taxi Koidula — Tallinn",
+        "Koidula to Tallinn airport transfer",
+        "Private transfer from the Koidula border crossing",
+        "Transfer Kunichina Gora — Tallinn",
+      ],
+      serviceType: "Private transfer from a border crossing",
+      description:
+        "Private transfer from the Koidula border crossing to Tallinn: 270 km via Tartu, about 3 h 5 min, €160 for the whole car. The driver waits on the Estonian side; drop-off at the airport terminal, the port or any address.",
+      areaServed: [
+        { type: "Place", name: "Koidula" },
+        { type: "City", name: "Tallinn" },
       ],
     },
   },
@@ -592,11 +1189,16 @@ export const en: Record<string, RouteCopy> = {
           q: "Do you meet passengers at Tallinn airport?",
           a: "Yes — at the airport, the cruise port and the stations. Send the flight number or the ship's name: the driver tracks the arrival and waits with a name board, and waiting after landing is not billed.",
         },
+        {
+          q: "Do you drive the other way, from the border to Tallinn?",
+          a: `Yes, at the same price — ${eur("luhamaa")}, and it has a page of its own: <a href="/en/transfer-luhamaa-tallinn/">Luhamaa — Tallinn</a>. Here the return matters even more than elsewhere: no scheduled transport leaves the crossing and the nearest town is thirty kilometres away.`,
+        },
       ],
     },
     links: [
       { label: "Transfer Tallinn — Koidula", note: eur("koidula"), href: "/transfer-tallinn-koidula/" },
       { label: "Transfer Tallinn — Narva", note: eur("narva"), href: "/transfer-tallinn-narva/" },
+      { label: "Back: Luhamaa — Tallinn", note: eur("luhamaa"), href: "/transfer-luhamaa-tallinn/" },
       { label: "From Tartu to the border", note: tartu, href: "/transfer-tartu-koidula-luhamaa/" },
       { label: "All routes and prices", href: "/#routes" },
     ],
@@ -618,6 +1220,309 @@ export const en: Record<string, RouteCopy> = {
       areaServed: [
         { type: "City", name: "Tallinn" },
         { type: "Place", name: "Luhamaa" },
+      ],
+    },
+  },
+
+  // ─────────────────────────── Luhamaa — Tallinn ───────────────────────────
+  // Английская версия третьей обратной страницы (14.09.2026). Единственный
+  // довод, который здесь нужен, — вокруг перехода нет ничего: ни автобуса, ни
+  // магазина, ни такси, ближайший город в тридцати километрах. Рекламных
+  // усилений не добавлять, факт сильнее любого из них.
+  "transfer-luhamaa-tallinn": {
+    title: `Transfer Luhamaa — Tallinn: ${eur("luhamaa")} from the border`,
+    description:
+      "Private transfer Luhamaa — Tallinn: €160 per car. No scheduled transport leaves the crossing at all, so the driver waits for you at the checkpoint itself.",
+    ogDescription:
+      "Return transfer from the Luhamaa checkpoint to Tallinn: €160 per car, 280 km via Võru and Tartu, the driver waits on the Estonian side.",
+    breadcrumb: "Luhamaa — Tallinn",
+    h1: "Transfer and taxi Luhamaa — Tallinn: how to get away from the crossing",
+    badge: `Return route · ${eur("luhamaa")} per car`,
+    footer: { label: "Luhamaa — Tallinn", note: eur("luhamaa") },
+    stats: [
+      { value: eur("luhamaa"), label: "per car" },
+      { value: spec("luhamaa").hoursEn, label: "on the road" },
+      { value: `${spec("luhamaa").km} km`, label: "border to city" },
+    ],
+    offers: [{ name: "Transfer Luhamaa — Tallinn", price: String(spec("luhamaa").price) }],
+    lead:
+      "You walk out of the Luhamaa checkpoint and you are standing on the Riga — Pskov road: no town, no bus stop, no taxi waiting. That is where our part begins — 280 kilometres via Võru and Tartu, about three hours ten minutes, drop-off at the airport terminal, the port, a hotel or any address. We wait as long as the border keeps you.",
+    notice: {
+      title: "Not a single bus leaves Luhamaa",
+      // ПРОВЕРЬ: отсутствие рейсов до деревни Люта и 30 км до Выру — те же
+      // данные, что в таблице сравнения на странице «Tallinn — Luhamaa».
+      text: "That is literal: there is no scheduled transport from the checkpoint and none from the neighbouring village of Lüta either. The nearest town is Võru, about thirty kilometres away, and there is nothing to get there with. This is why the ride back from Luhamaa is arranged in advance rather than decided on the spot. <em>Opening hours change; check them before you travel.</em>",
+    },
+    answer: [
+      `<strong>In short.</strong> Luhamaa to Tallinn costs <strong>${eur("luhamaa")}</strong> for the whole car — up to four passengers with luggage. It is 280 km via Võru and Tartu, about <strong>3 hours 10 minutes</strong>. The car waits on the Estonian side, at the exit from the checkpoint grounds.`,
+      "<strong>Waiting is not billed.</strong> Nobody predicts the queue on the Russian side, so an exact hour is not needed: give us an approximate one and the driver will wait. <strong>No prepayment</strong>, and you can settle <strong>in euros or in roubles</strong>, in cash or by transfer.",
+      'The Russian side of this crossing is Shumilkino; the Estonian one is Luhamaa. Need the other direction, from Tallinn to the border? That is the <a href="/en/transfer-tallinn-luhamaa/">Tallinn — Luhamaa</a> page, at the same price.',
+    ],
+    price: {
+      eyebrow: "Price",
+      title: "What the Luhamaa — Tallinn taxi costs",
+      lead:
+        "The fare matches both the outbound trip and the Koidula one: ten kilometres do not justify a separate price. You pay for the car rather than for a seat, so four passengers cost what one costs.",
+      caption: "Luhamaa — Tallinn transfer fares and extras",
+      rows: [
+        ["Luhamaa — Tallinn", eur("luhamaa"), "the whole car, up to 4 passengers with luggage"],
+        [
+          "Waiting at the checkpoint",
+          "€0",
+          "the border queue cannot be predicted, so waiting time is not billed",
+        ],
+        [
+          "Drop-off at Tallinn airport or the port",
+          "€0",
+          "we take you to the terminal itself, not to the nearest stop",
+        ],
+        ["Luhamaa — Tartu", tartu, "≈ 95 km via Võru, about 1 h 20 min"],
+        [
+          "Luggage, child seat, late departure",
+          "€0",
+          "no surcharge for suitcases or for the evening",
+        ],
+      ],
+      note:
+        "<strong>Paying.</strong> Cash to the driver — <strong>in euros or in roubles</strong> — or by bank transfer. There is no exchange office, cash machine or shop at Luhamaa, and Russian bank cards are not accepted in Estonia: roubles are effectively the only money that works here. No prepayment: the ride first, the settlement after.",
+      extra: [
+        {
+          title: "Why nothing can be «sorted out on the spot» here",
+          text: "Narva has a town and a railway station; Koidula has at least a station two kilometres away. Luhamaa has nothing: the crossing stands on the Riga — Pskov road, the nearest village is Lüta and the nearest town is Võru, thirty kilometres off. No taxi rank, no bus stop, not even a shop to ask for advice in. Add a Russian SIM card that may not work in Estonia and there is nothing to call a car with. That is why the ride back from here is booked before you cross, not after.",
+        },
+        {
+          title: "If you are heading for Riga or Tartu instead",
+          text: `Luhamaa sits directly on the Riga — Pskov road, so going south from the crossing is in fact shorter: we drive to Riga and quote it separately — send the date and the time. <a href="/en/transfer-tartu-koidula-luhamaa/">Tartu</a> costs ${tartu}, about 95 kilometres via Võru. The way back to the crossing is still ${eur("luhamaa")}: if you return in a few days, both trips can be booked in one message.`,
+        },
+      ],
+    },
+    airport: {
+      eyebrow: "Airport and port",
+      title: "From Luhamaa to Tallinn airport and the port",
+      lead:
+        "Most of these trips are booked for a flight or a ferry out of Tallinn. The counting has to be backwards and generous: three hours ten minutes of driving plus a border whose timing depends on neither of us.",
+      items: [
+        {
+          title: "A flight from Lennart Meri airport",
+          text: "Give us the flight number and we will work out when you need to be out of the checkpoint to make check-in comfortably. On tickets and departure boards the airport is Tallinn Airport, code TLL, four kilometres from the centre, so the drive ends at the terminal door. The margin here needs to be bigger than on the Narva route: the road is longer and there is no way round it.",
+        },
+        {
+          title: "Ferries to Helsinki and Stockholm",
+          text: "We drop you at the right terminal in the Old Port; ferries and cruise berths have different entrances, so name the vessel or the operator in advance. Allow the same margin as for a flight.",
+        },
+        {
+          title: "Võru and Tartu on the way",
+          text: "The route runs through Võru and Tartu, so a drop-off in either complicates nothing — just tell us in advance. From those towns onwards there are buses and trains: if you are not heading for Tallinn but for somewhere in southern Estonia, it is often cheaper to ride with us to the town and continue on scheduled transport.",
+        },
+      ],
+      cta: "Book a transfer to the airport",
+      waText: "Hello! I need a transfer from Luhamaa to Tallinn airport. Flight number: ",
+    },
+    steps: {
+      eyebrow: "How the trip works",
+      title: "How the way back from Luhamaa works",
+      items: [
+        {
+          title: "Tell us the date and roughly when you expect to be out",
+          text: "An exact hour is not needed — «in the morning» or «in the afternoon» is enough. If a flight, a ferry or a train follows, give us its departure time and we will count backwards. The confirmation carries the price, the car's registration and the driver's phone: save it <strong>before</strong> you cross, because reception on the Russian side can disappear.",
+        },
+        {
+          title: "The driver waits at the exit from the checkpoint",
+          text: "The car stands on the Estonian side of Luhamaa, at the exit from the crossing grounds. It is hard to get the place wrong: there is one road at the barrier and no second way out. If the queue takes longer than you expected, he waits — that changes neither the price nor the booking.",
+        },
+        {
+          title: "The road through Võru and Tartu",
+          text: "First thirty kilometres along the Riga — Pskov road to the Võru turn, then Tartu and the highway to Tallinn: 280 kilometres, about three hours ten minutes. This is the longest of our return routes, so halfway we stop for coffee and a stretch — that time is allowed for and costs nothing extra.",
+        },
+        {
+          title: "Drop-off wherever you need",
+          text: "An airport terminal, a berth in the port, a station, a hotel or your front door — we drive to the address, not to the nearest main street. We unload the suitcases ourselves; you settle after the ride, in euros or roubles, in cash or by transfer.",
+        },
+      ],
+    },
+    compare: {
+      eyebrow: "Why a transfer",
+      title: "There is no public transport away from Luhamaa",
+      lead:
+        "This is geography rather than a sales pitch: there is hardly anything to compare. Narva has a train and a coach from the border, Koidula has a station two kilometres away. Luhamaa has neither.",
+      caption: "Ways to get from the Luhamaa crossing to Tallinn",
+      cols: ["Way", "Price", "Time", "What matters"],
+      // ПРОВЕРЬ: отсутствие рейсов от перехода и от деревни Люта, 30 км до
+      // Выру. Данные на сентябрь 2026.
+      rows: [
+        [
+          "EstoniaTransfer private car",
+          `${eur("luhamaa")} per car`,
+          "≈ 3 h 10 min",
+          "the driver waits at the checkpoint, drop-off at the terminal or your address",
+        ],
+        [
+          "Scheduled bus from the crossing",
+          "—",
+          "—",
+          "does not exist: none from the checkpoint and none from the village of Lüta",
+        ],
+        [
+          "International coach to Tallinn",
+          "operator's fare",
+          "depends on the service",
+          "passes by; boarding at the crossing itself is not provided for",
+        ],
+        [
+          "Taxi from Võru",
+          "by the meter plus the approach",
+          "≈ 3 h 40 min",
+          "has to be called in advance: Võru is thirty kilometres away and the empty run out is in the fare",
+        ],
+      ],
+      note:
+        "<strong>Without embellishment.</strong> If you travel light and do not mind changes, it is cheaper to cross at Narva, where the border has both a train and a coach. But once you have come out at Luhamaa the choice narrows to two: a car is waiting for you, or you look for one standing on the highway.",
+    },
+    car: {
+      eyebrow: "The car",
+      title: "The car waiting for you on the Riga — Pskov road",
+      caption: "Toyota Corolla — the actual car that will come for you",
+      text: [
+        "Toyota Corolla: four passenger seats, two large suitcases plus hand luggage, working climate control. On this route it matters more than on the others: 280 kilometres is the longest of the three drives, and it begins where there is nowhere to wait in the warm. In winter the car is on winter tyres — the stretch from the border to Võru runs across open country where the snow drifts.",
+        "Kirill is at the wheel — the same person who answers WhatsApp and Telegram, and the one who will actually arrive. No dispatcher in between: you arrange everything with the driver himself. He speaks Russian, gets by in English, and takes it for granted that the hour you clear the border is an estimate.",
+      ],
+    },
+    crossing: {
+      eyebrow: "The border crossing",
+      title: "Where you are met at Luhamaa",
+      items: [
+        {
+          title: "The meeting point is the Estonian side of Luhamaa",
+          text: "The Russian side of the crossing is Shumilkino, the Estonian one is Luhamaa — that is how it is signposted. We meet you at the exit from the checkpoint grounds: there is a single road there and nowhere to miss each other. The registration number and the driver's phone arrive in the confirmation beforehand, so neither of you has to make roaming calls.",
+        },
+        {
+          title: "The queue for entering Estonia",
+          // ПРОВЕРЬ: что бронь GoSwift нужна только на выезд из Эстонии.
+          text: 'A GoSwift booking is needed to <strong>leave</strong> Estonia, not to enter it: the queue on the Russian side is their own and we have no influence on its speed. That is why we do not fix a meeting time — we wait. Opening hours are published at <a href="https://www.politsei.ee/en" target="_blank" rel="noopener">politsei.ee</a>.',
+        },
+        {
+          title: "If you do not make it before closing",
+          text: "Luhamaa takes cars in daytime and shuts completely for the night — then you stay on the Russian side until morning. Write as soon as that becomes clear and we will move the trip to another day at no cost: we hold none of your money.",
+        },
+        {
+          title: "No shop and no café nearby",
+          text: "There is no shop at the crossing, no café and no shelter from the rain: the nearest are in Võru, thirty kilometres away. Bring water and food with you, especially if you are travelling with children. The car at least offers warmth and somewhere to finally sit down.",
+        },
+        {
+          title: "Phone numbers, just in case",
+          // ПРОВЕРЬ: у пункта пропуска Лухамаа в источниках встречаются два
+          // разных номера — то же предупреждение, что на исходящей странице.
+          text: "Luhamaa checkpoint — <strong>+372 786 1830</strong>, the Russian side at Shumilkino — <strong>+7 811 489-83-21</strong>. The Estonian Police and Border Guard Board — <strong>+372 612 3000</strong>.",
+        },
+      ],
+    },
+    /**
+     * ⚠️ Числовых лимитов на ввоз в Эстонию здесь нет намеренно — как и в
+     * русской версии. Не «дополняйте» этот блок нормами по памяти.
+     */
+    blocks: [
+      {
+        eyebrow: "Entering Estonia",
+        title: "What to allow for when entering Estonia through Luhamaa",
+        lead:
+          "As of September 2026. Rules on this direction change several times a year — check politsei.ee and the customs service before you travel; links at the end of the section.",
+        layout: "accordion",
+        headings: true,
+        place: "bottom",
+        items: [
+          {
+            title: "Phones and money when there is nothing around",
+            text: "At this crossing the absence of infrastructure is felt more keenly than the customs rules.<br><br>• A Russian SIM card may not work in Estonia at all: most operators have roaming switched off;<br>• cards issued by Russian banks are not accepted here;<br>• there is no exchange office or cash machine at the crossing — the nearest are in Võru;<br>• do not count on Wi-Fi inside the checkpoint;<br>• so save the driver's number and the car's registration <strong>before</strong> you cross;<br>• <strong>you can pay us in roubles</strong> — no need to change money for the transfer.",
+          },
+          {
+            title: "What you may bring into Estonia",
+            text: 'Imports from Russia are restricted by both customs and sanctions rules. The limits depend on the goods and they change, so there are deliberately no figures here — check them at <a href="https://www.emta.ee/en" target="_blank" rel="noopener nofollow">emta.ee</a> before you travel.<br><br>• The officer at the border has the final say, and arguing at the barrier is pointless;<br>• keep receipts for expensive items to hand, not at the bottom of a suitcase;<br>• prescription medicines with controlled substances need the prescription and a translation;<br>• we drive you to Tallinn, but the contents of your luggage are your responsibility; we do not advise on customs and do not handle paperwork.',
+          },
+          {
+            title: "Why crossing in the morning is better",
+            text: "Morning is calmer than evening here almost every time.<br><br>• At opening the queue on the Russian side is usually shorter and your margin before a flight survives;<br>• it grows towards evening, and after closing you cannot cross at all — that means finding a bed on the Russian side;<br>• at weekends and before public holidays the wait is longer at any hour;<br>• if a plane or a ferry is waiting in Tallinn, allow at least half a day: neither the border nor 280 kilometres can be done faster.",
+          },
+        ],
+        note:
+          'Worth checking before you set off: <a href="https://www.politsei.ee/en" target="_blank" rel="noopener nofollow">politsei.ee</a> for opening hours and crossing rules, <a href="https://www.emta.ee/en" target="_blank" rel="noopener nofollow">emta.ee</a> for what you may bring into Estonia.',
+      },
+    ],
+    faq: {
+      eyebrow: "FAQ",
+      title: "Transfer Luhamaa — Tallinn: common questions",
+      items: [
+        {
+          q: "How much does the Luhamaa — Tallinn transfer cost?",
+          a: `${eur("luhamaa")} for the whole car — the same as towards the border. Passengers, suitcases and the hour of the day do not change it, and waiting at the checkpoint is not billed. Cash or bank transfer, no prepayment.`,
+        },
+        {
+          q: "How long is the drive from Luhamaa to Tallinn?",
+          a: "About 3 hours 10 minutes — 280 km via Võru and Tartu. This is the longest of our return routes and it takes more in winter. Clearing the border is not included: the queue on the Russian side cannot be predicted.",
+        },
+        {
+          q: "Can I get away from Luhamaa without a transfer?",
+          a: "In practice, no. There is no scheduled transport to the checkpoint or to the neighbouring village of Lüta, international coaches pass by without picking up at the crossing, and the nearest town, Võru, is thirty kilometres away. What is left is a car that comes to meet you.",
+        },
+        {
+          q: "Where exactly will the car be waiting?",
+          a: "On the Estonian side of Luhamaa, at the exit from the checkpoint grounds. There is one road there, so there is nowhere to miss each other. The registration number and the driver's phone come in the confirmation beforehand — save them before you cross, because reception on the other side may not work.",
+        },
+        {
+          q: "What if the queue holds me up for hours?",
+          a: "The driver waits and there is no surcharge: the speed of a border queue does not depend on the passenger, and billing for it would be odd. If you fail to cross before closing, message us and we will move the trip to another day at no cost.",
+        },
+        {
+          q: "Can I pay in roubles?",
+          a: "Yes. We take both euros and roubles, in cash or by transfer. There is no exchange office or cash machine at Luhamaa and Russian bank cards do not work in Estonia, so you will not have to change money for the ride. We take no prepayment in any currency.",
+        },
+        {
+          q: "Will you take me straight to Tallinn airport?",
+          a: "Yes, to the right terminal and with no surcharge for the drop-off. Give us the flight number when you book and we will work out when you need to be out of the border queue to make check-in. We also drive to the cruise port, the Baltic station and the coach station.",
+        },
+        {
+          q: "Can I book both directions at once?",
+          a: `Yes — both trips at ${eur("luhamaa")}, in one message. The drive from Tallinn to the crossing is described on the <a href="/en/transfer-tallinn-luhamaa/">Tallinn — Luhamaa</a> page, together with the GoSwift booking you need for leaving Estonia.`,
+        },
+      ],
+    },
+    links: [
+      {
+        label: "Transfer Tallinn — Luhamaa",
+        note: eur("luhamaa"),
+        href: "/transfer-tallinn-luhamaa/",
+      },
+      {
+        label: "Back from Koidula: Koidula — Tallinn",
+        note: eur("koidula"),
+        href: "/transfer-koidula-tallinn/",
+      },
+      {
+        label: "Back from Narva: Narva — Tallinn",
+        note: eur("narva"),
+        href: "/transfer-narva-tallinn/",
+      },
+      { label: "From Luhamaa to Tartu", note: tartu, href: "/transfer-tartu-koidula-luhamaa/" },
+      { label: "All routes and prices", href: "/#routes" },
+    ],
+    cta: {
+      title: "Book a transfer from Luhamaa to Tallinn",
+      text: "Send the date and roughly when you expect to clear the checkpoint — we will confirm the car, the price and the driver's number in one message. No prepayment; the driver will be waiting at the barrier.",
+    },
+    waText: "Hello! I need a transfer from the border at Luhamaa to Tallinn.",
+    schema: {
+      name: "Transfer Luhamaa — Tallinn",
+      alternateName: [
+        "Taxi Luhamaa — Tallinn",
+        "Luhamaa to Tallinn airport transfer",
+        "Private transfer from the Luhamaa border crossing",
+        "Transfer Shumilkino — Tallinn",
+      ],
+      serviceType: "Private transfer from a border crossing",
+      description:
+        "Private transfer from the Luhamaa border crossing to Tallinn: 280 km via Võru and Tartu, about 3 h 10 min, €160 for the whole car. No scheduled transport leaves the crossing; the driver waits on the Estonian side.",
+      areaServed: [
+        { type: "Place", name: "Luhamaa" },
+        { type: "City", name: "Tallinn" },
       ],
     },
   },
