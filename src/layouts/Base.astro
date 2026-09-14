@@ -11,6 +11,8 @@ import {
   defaultLang,
   localePath,
   verification,
+  googleAds,
+  facts,
   type Lang,
 } from "../i18n/ui";
 
@@ -191,6 +193,135 @@ const canonical = new URL(localePath(lang, path), site).href;
       data-key="S/fOM82aG8zzRinAm3OnqA"
       async
       is:inline></script>
+
+    {/* Google Ads: базовый тег плюс отслеживание конверсий по клику.
+
+        Пустой googleAds.id — и ничего этого в HTML нет: подробности и два
+        условия включения (CSP, баннер согласия) — в шапке googleAds в
+        src/i18n/ui.ts.
+
+        is:inline здесь не украшение. Без него Astro собирает <script> как
+        ES-модуль и выносит в /_astro/hoisted.*.js, а у модуля своя область
+        видимости: ни gtag, ни gtagSendEvent не попадают в window, и вызов из
+        onclick падает с «gtagSendEvent is not defined». Падает молча — кнопка
+        просто перестаёт работать. */}
+    {
+      googleAds.id && (
+        <Fragment>
+          <script
+            src={`https://www.googletagmanager.com/gtag/js?id=${googleAds.id}`}
+            async
+            is:inline></script>
+          <script
+            is:inline
+            define:vars={{
+              adsId: googleAds.id,
+              conversion: googleAds.conversion,
+              phoneHref: facts.phoneHref,
+              waBase: facts.whatsapp,
+              tgBase: facts.telegram,
+            }}
+          >
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+              dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+            gtag("config", adsId);
+
+            /**
+             * Отправка события с задержкой перехода. Это хелпер из панели
+             * Google Ads, с двумя добавлениями, без которых он опасен:
+             *
+             * 1. Проверка, что gtag вообще загрузился. Блокировщик рекламы,
+             *    оффлайн, сбой сети — и вызов gtag() бросает исключение,
+             *    callback не срабатывает, перехода не происходит. То есть
+             *    кнопка «Позвонить» перестаёт звонить. Потерянный звонок
+             *    дороже потерянной конверсии, поэтому здесь сначала переход.
+             * 2. Свой setTimeout. event_timeout спасает, только если gtag.js
+             *    загрузился; если он загрузился, но запрос не ушёл,
+             *    event_callback не вызовут никогда.
+             */
+            function send(name, url) {
+              var navigated = false;
+              var go = function () {
+                if (navigated) return;
+                navigated = true;
+                if (typeof url === "string") window.location = url;
+              };
+              if (typeof gtag !== "function") {
+                go();
+                return false;
+              }
+              gtag("event", name, { event_callback: go, event_timeout: 2000 });
+              window.setTimeout(go, 1200);
+              return false;
+            }
+
+            /** Контракт из панели Google Ads: onclick="return gtagSendEvent(this.href)" */
+            function gtagSendEvent(url) {
+              return send(conversion, url);
+            }
+
+            /**
+             * Цель конверсии определяется по самой ссылке, а не атрибутом на
+             * каждой кнопке. Телефон и мессенджеры стоят в семнадцати местах —
+             * в шапке, в герое, в модалке заказа, в форме, в подвале, на
+             * каждой посадочной странице и на 404-й, — и адреса везде берутся
+             * из facts. Значит и правило можно построить на facts: добавите
+             * кнопку в новом блоке, она попадёт в отслеживание сама. Семнадцать
+             * руками расставленных атрибутов однажды забыли бы на восемнадцатой.
+             *
+             * data-gtag-event остаётся как явное дополнение: атрибут задаёт
+             * своё имя события для чего угодно ещё.
+             */
+            function conversionName(a) {
+              var own = a.getAttribute("data-gtag-event");
+              if (own) return own;
+              var h = a.getAttribute("href") || "";
+              if (h === phoneHref) return conversion;
+              if (h.indexOf(waBase) === 0 || h.indexOf(tgBase) === 0) return conversion;
+              return null;
+            }
+
+            document.addEventListener("click", function (e) {
+              var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+              if (!a) return;
+
+              // Средняя кнопка, Ctrl/Cmd-клик, уже отменённое событие — это
+              // осознанный выбор посетителя открыть ссылку иначе, не мешаем.
+              if (e.defaultPrevented || e.button !== 0) return;
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+              var name = conversionName(a);
+              if (!name) return;
+
+              var href = a.getAttribute("href") || "";
+
+              /*
+               * Новая вкладка, tel: и mailto: страницу не выгружают, поэтому
+               * задерживать переход не нужно и вредно: window.location увёл бы
+               * текущую вкладку вместо открытия новой, а у tel: управление
+               * забирает набиратель номера — событие успевает уйти само.
+               * beacon доживает до отправки даже при выгрузке.
+               *
+               * На сегодня все наши цели попадают именно сюда: мессенджеры
+               * стоят с target="_blank", телефон — это tel:. Ветка с задержкой
+               * ниже нужна, если конверсию когда-нибудь навесят на обычную
+               * ссылку в той же вкладке.
+               */
+              if (a.target === "_blank" || /^(tel:|mailto:)/i.test(href)) {
+                gtag("event", name, { transport_type: "beacon" });
+                return;
+              }
+
+              e.preventDefault();
+              send(name, a.href);
+            });
+          </script>
+        </Fragment>
+      )
+    }
   </head>
 
   <body class="bg-page text-ink antialiased">
