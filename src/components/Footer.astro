@@ -15,202 +15,303 @@ const year = new Date().getFullYear();
 // стоит на каждой странице сайта, и это основная перелинковка. Новая
 // посадочная страница появляется здесь сама.
 const links = footerLinks(lang, (id) => t(`routes.${id}` as UIKey));
+
+/**
+ * Раскладка подвала: 4 колонки компании + 8 навигации (14.09.2026).
+ *
+ * До этого было шесть равных колонок, и на ссылку приходилось ~155 px. При
+ * такой ширине КАЖДАЯ строка маршрута переносилась в две, цена отрывалась от
+ * названия и уезжала на следующую строку с висящим тире. Восемь направлений
+ * превращались в шестнадцать строк, колонка вытягивалась на 750 px, а справа
+ * («Из России» кончается на четвёртом пункте, «Полезное» на третьем) висело
+ * полтысячи пикселей пустоты. Отсюда и «перегружен и несбалансирован».
+ *
+ * Что изменилось, по причинам:
+ *  - колонки шире: 4/12 ≈ 350 px, и «Ивангород — Петербург  6500 ₽» помещается
+ *    в одну строку. Это главное — остальное следствие;
+ *  - цена не часть фразы, а правая колонка списка (flex + justify-between,
+ *    tabular-nums). Подвал читается как прайс, а не как перечисление;
+ *  - «Из России» и «Полезное» стоят друг под другом в одной колонке: две
+ *    короткие группы закрывают пустоту справа;
+ *  - контакты переехали к названию компании — им там и место, а одна тощая
+ *    колонка из подвала ушла;
+ *  - бейдж Google и «Написать отзыв» — отдельной полосой во всю ширину.
+ *    Карточкой в левой колонке они добавляли ей 260 px, и левый край был выше
+ *    правого на треть. Решения владельца от 13.09 сохранены: бейдж остался
+ *    белой карточкой с рамкой, призыв — заливной кнопкой.
+ *
+ * Иерархия держится на цвете, а не на размере: телефон — ink и semibold,
+ * ссылки — ink-muted, цены — ink-dim. Оранжевого ровно четыре пятна на весь
+ * подвал (чёрточки у заголовков, «все направления», точка счётчика и кнопка
+ * отзыва) — больше, и он перестаёт быть акцентом.
+ */
+const head = "flex items-center gap-2 text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim";
+/** Строка списка ссылок: подпись слева, цена справа, обе гаснут при ховере */
+const row = "group flex items-baseline justify-between gap-4 text-ink-muted transition-colors hover:text-brand-ink";
 ---
 
-{/* data-nosnippet на обоих блоках подвала: он стоит на всех страницах, и
+{/* data-nosnippet на всех блоках подвала: он стоит на всех страницах, и
     Google цеплял из него текст в сниппет. Атрибут поддерживается только на
     div, span и section — вешать его на сам <footer> бесполезно.
     На индексацию и на ссылки внутри подвала это не влияет: запрет касается
     только показа текста в описании выдачи. */}
 <footer class="border-t border-line bg-surface">
   <div
-    class="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-6"
+    class="mx-auto grid max-w-6xl gap-x-10 gap-y-12 px-5 pb-12 pt-14 sm:pt-16 lg:grid-cols-12"
     data-nosnippet
   >
-    <div class="lg:col-span-2">
-      <p class="text-[1.05rem] font-semibold tracking-tight">
-        Estonia<span class="text-brand-ink">Transfer</span>
-      </p>
-      <p class="mt-3 max-w-sm text-[0.95rem] leading-relaxed text-ink-muted">
-        {t("footer.tagline")}
-      </p>
-
-      {/* Карточка отзывов Google — по образцу их официального бейджа.
-          Статикой, без виджета Elfsight и подобных: у сайта CSP
-          `default-src 'self'`, сторонний скрипт потребовал бы открыть
-          script-src и connect-src наружу, поставил бы cookie (а из-за их
-          отсутствия сайту не нужен баннер согласия) и рисовал бы отзывы
-          скриптом — краулеры без JS не увидели бы ничего.
-
-          Логотип и звёзды — inline SVG, не картинки: и лишних запросов нет,
-          и с gstatic.com их бы всё равно не пустил CSP.
-
-          Звёзды намеренно жёлтые, #FBBC04 — фирменный цвет Google, ради
-          узнаваемости бейджа. На белом он даёт около 1.7:1, то есть под
-          правило 4.5:1 не проходит, и это допустимо ровно потому, что они
-          `aria-hidden` и ничего не сообщают: оценка стоит рядом текстом
-          «5.0», плюс есть строка для скринридера. Не делайте их значащими
-          (не убирайте текст рядом) — тогда цвет придётся менять.
-
-          ⚠️ Кнопка ведёт на `/review`, а это форма написания отзыва, не
-          список. Подпись «Смотреть отзывы в Google» выбрана владельцем
-          осознанно; чтобы вела на карточку, замените `review` на `profile`. */}
-      <div
-        class="mt-6 max-w-sm rounded-[var(--radius-card)] border border-line bg-white p-5 shadow-[0_1px_2px_rgb(11_11_12/0.05),0_10px_30px_-18px_rgb(11_11_12/0.25)]"
-      >
-        <div class="flex items-center gap-3">
-          <svg class="size-6 shrink-0" viewBox="0 0 48 48" aria-hidden="true">
-            <path
-              fill="#EA4335"
-              d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
-            ></path>
-            <path
-              fill="#4285F4"
-              d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
-            ></path>
-            <path
-              fill="#FBBC05"
-              d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
-            ></path>
-            <path
-              fill="#34A853"
-              d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-            ></path>
-          </svg>
-
-          <span class="flex gap-0.5" aria-hidden="true">
-            {
-              Array.from({ length: facts.google.rating }, () => (
-                <svg class="size-[1.05rem]" viewBox="0 0 20 20" fill="#FBBC04">
-                  <path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L1.5 7.7l5.9-.9L10 1.5z" />
-                </svg>
-              ))
-            }
-          </span>
-
-          <span class="text-[1.05rem] font-bold tabular-nums text-ink">
-            {facts.google.rating}.0
-          </span>
-          {/* Число отзывов появляется, только когда оно задано в facts.
-              Ставить «0 отзывов» или прочерк нельзя: пустое место читается
-              лучше, чем признание, что отзывов нет. */}
-          {
-            facts.google.reviews !== null && (
-              <span class="text-[0.9rem] text-ink-muted">
-                · {facts.google.reviews} {reviewsWord(lang, facts.google.reviews)}
-              </span>
-            )
-          }
-          <span class="sr-only">{t("google.stars")}</span>
+    {/* Компания и контакты. Телефон — единственный элемент подвала в полную
+        насыщенность текста: в подвале такси его ищут чаще всего остального. */}
+    <div class="lg:col-span-4">
+      {/* От 640 до 1024 название и контакты стоят рядом, а не друг под другом:
+          на планшете блок занимает всю ширину, и при вертикальной укладке
+          справа от «Контактов» зияла пустая половина экрана. На lg колонка
+          узкая (4/12), и там они снова встают столбиком — отсюда lg:block. */}
+      <div class="sm:flex sm:items-start sm:gap-10 lg:block">
+        <div class="sm:flex-1 lg:flex-none">
+          <p class="text-[1.05rem] font-semibold tracking-tight">
+            Estonia<span class="text-brand-ink">Transfer</span>
+          </p>
+          <p class="mt-3 max-w-sm text-[0.95rem] leading-relaxed text-ink-muted">
+            {t("footer.tagline")}
+          </p>
         </div>
 
-        <p class="mt-3 text-[0.95rem] leading-relaxed text-ink-muted">{t("google.text")}</p>
+        {/* Заголовки колонок подвала — <p>, а не <h2>.
+            Подвал стоит на каждой странице, и три постоянных H2 («Контакты»,
+            «Направления», «Полезное») смешивались с содержанием: на гиде из
+            пятнадцати H2 пять были служебными. Роль заголовка здесь берёт на
+            себя aria-label у <nav>, поэтому доступность не страдает. */}
+        <div class="mt-8 sm:mt-0 sm:flex-1 lg:mt-8 lg:flex-none">
+          <p class={head}>
+            <span class="h-[2px] w-3.5 rounded-full bg-brand" aria-hidden="true"></span>
+            {t("footer.contacts")}
+          </p>
+          <ul class="mt-4 grid gap-1.5">
+            <li>
+              <a
+                class="text-[1.05rem] font-semibold tracking-tight transition-colors hover:text-brand-ink"
+                href={facts.phoneHref}>{facts.phone}</a
+              >
+            </li>
+            <li>
+              <a
+                class="text-[0.95rem] text-ink-muted transition-colors hover:text-brand-ink"
+                href={`mailto:${facts.email}`}>{facts.email}</a
+              >
+            </li>
+          </ul>
+          <div class="mt-4">
+            <Messengers lang={lang} variant="compact" />
+          </div>
+        </div>
+      </div>
+    </div>
 
-        {/* Читать отзывы — на карточку профиля. Раньше вела на /review, то
-            есть на форму написания: подпись «Смотреть отзывы» обещала одно, а
-            открывалось другое. Развели, когда появилась кнопка «Написать
-            отзыв» ниже — иначе две кнопки вели бы на один адрес. */}
+    {/* Навигация. Линия слева только на широких экранах: она разделяет «кто мы»
+        и «куда возим», и заодно оправдывает разную высоту колонок — без неё
+        левый край выглядел бы просто оборванным. */}
+    <div
+      class="grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:col-span-8 lg:border-l lg:border-line lg:pl-10"
+    >
+      <nav aria-label={t("footer.routes")}>
+        <p class={head}>
+          <span class="h-[2px] w-3.5 rounded-full bg-brand" aria-hidden="true"></span>
+          {t("footer.routes")}
+        </p>
+        <ul class="mt-5 grid gap-2.5 text-[0.95rem]">
+          {
+            links.routes.map((l) => (
+              <li>
+                <a class={row} href={l.href}>
+                  <span>{l.label}</span>
+                  {/* shrink-0 обязателен: иначе при узкой колонке цена
+                      переносится под название, а именно с этого и начинался
+                      прежний бардак. tabular-nums выравнивает цифры в столбик. */}
+                  {l.note && (
+                    <span class="shrink-0 tabular-nums text-ink-dim transition-colors group-hover:text-brand-ink">
+                      {l.note}
+                    </span>
+                  )}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
         <a
-          class="mt-4 block rounded-xl border border-line-strong/60 px-4 py-2.5 text-center text-[0.9rem] font-semibold text-ink transition-colors hover:bg-page"
+          class="mt-4 inline-flex items-center gap-1.5 text-[0.9rem] font-semibold text-brand-ink"
+          href={`${localePath(lang, "/")}#routes`}
+        >
+          {t("footer.allRoutes")}
+          <span aria-hidden="true">→</span>
+        </a>
+      </nav>
+
+      {/* Две короткие группы одна под другой: по отдельности каждая занимала
+          колонку и оставляла под собой пустоту. content-start — чтобы они
+          прижались к верху, а не растянулись по высоте соседней колонки.
+
+          Отступ между группами (gap-12) заметно больше, чем между строками
+          внутри них: заголовки набраны одинаково, и на сорока пикселях
+          «Полезное» читалось как продолжение списка «Из России». */}
+      <div class="grid content-start gap-12">
+        {/* Поездки по России — отдельной группой: там рубли, другая машина и
+            границу она не пересекает. В одном списке с евровыми маршрутами это
+            читалось бы как один прайс. */}
+        {
+          links.russia.length > 0 && (
+            <nav aria-label={t("footer.russia")}>
+              <p class={head}>
+                <span class="h-[2px] w-3.5 rounded-full bg-brand" aria-hidden="true" />
+                {t("footer.russia")}
+              </p>
+              <ul class="mt-5 grid gap-2.5 text-[0.95rem]">
+                {links.russia.map((l) => (
+                  <li>
+                    <a class={row} href={l.href}>
+                      <span>{l.label}</span>
+                      {l.note && (
+                        <span class="shrink-0 tabular-nums text-ink-dim transition-colors group-hover:text-brand-ink">
+                          {l.note}
+                        </span>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )
+        }
+
+        <nav aria-label={t("footer.useful")}>
+          <p class={head}>
+            <span class="h-[2px] w-3.5 rounded-full bg-brand" aria-hidden="true"></span>
+            {t("footer.useful")}
+          </p>
+          <ul class="mt-5 grid gap-2.5 text-[0.95rem]">
+            {
+              links.guides.map((l) => (
+                <li>
+                  <a class="text-ink-muted transition-colors hover:text-brand-ink" href={l.href}>
+                    {l.label}
+                  </a>
+                </li>
+              ))
+            }
+            <li>
+              <a
+                class="text-ink-muted transition-colors hover:text-brand-ink"
+                href={`${localePath(lang, "/")}#car`}>{t("nav.car")}</a
+              >
+            </li>
+            <li>
+              <a
+                class="text-ink-muted transition-colors hover:text-brand-ink"
+                href={`${localePath(lang, "/")}#faq`}>{t("nav.faq")}</a
+              >
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  {/* Карточка отзывов Google — по образцу их официального бейджа.
+      Статикой, без виджета Elfsight и подобных: у сайта CSP
+      `default-src 'self'`, сторонний скрипт потребовал бы открыть
+      script-src и connect-src наружу, поставил бы cookie (а из-за их
+      отсутствия сайту не нужен баннер согласия) и рисовал бы отзывы
+      скриптом — краулеры без JS не увидели бы ничего.
+
+      Логотип и звёзды — inline SVG, не картинки: и лишних запросов нет,
+      и с gstatic.com их бы всё равно не пустил CSP.
+
+      Звёзды намеренно жёлтые, #FBBC04 — фирменный цвет Google, ради
+      узнаваемости бейджа. На белом он даёт около 1.7:1, то есть под
+      правило 4.5:1 не проходит, и это допустимо ровно потому, что они
+      `aria-hidden` и ничего не сообщают: оценка стоит рядом текстом
+      «5.0», плюс есть строка для скринридера. Не делайте их значащими
+      (не убирайте текст рядом) — тогда цвет придётся менять.
+
+      Лежит горизонтальной полосой, а не карточкой в левой колонке: там она
+      прибавляла колонке 260 px и валила баланс подвала. Карточка, рамка и тень
+      те же — поменялась раскладка, не решение. */}
+  <div class="mx-auto max-w-6xl px-5 pb-14 sm:pb-16" data-nosnippet>
+    <div
+      class="flex flex-col gap-5 rounded-[var(--radius-card)] border border-line bg-white p-5 shadow-[0_1px_2px_rgb(11_11_12/0.05),0_10px_30px_-18px_rgb(11_11_12/0.25)] sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:px-6"
+    >
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <svg class="size-6 shrink-0" viewBox="0 0 48 48" aria-hidden="true">
+          <path
+            fill="#EA4335"
+            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+          ></path>
+          <path
+            fill="#4285F4"
+            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+          ></path>
+          <path
+            fill="#FBBC05"
+            d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+          ></path>
+          <path
+            fill="#34A853"
+            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+          ></path>
+        </svg>
+
+        <span class="flex gap-0.5" aria-hidden="true">
+          {
+            Array.from({ length: facts.google.rating }, () => (
+              <svg class="size-[1.05rem]" viewBox="0 0 20 20" fill="#FBBC04">
+                <path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L1.5 7.7l5.9-.9L10 1.5z" />
+              </svg>
+            ))
+          }
+        </span>
+
+        <span class="text-[1.05rem] font-bold tabular-nums text-ink">
+          {facts.google.rating}.0
+        </span>
+        {/* Число отзывов появляется, только когда оно задано в facts.
+            Ставить «0 отзывов» или прочерк нельзя: пустое место читается
+            лучше, чем признание, что отзывов нет. */}
+        {
+          facts.google.reviews !== null && (
+            <span class="text-[0.9rem] text-ink-muted">
+              · {facts.google.reviews} {reviewsWord(lang, facts.google.reviews)}
+            </span>
+          )
+        }
+        <span class="sr-only">{t("google.stars")}</span>
+
+        {/* Разделитель виден только когда строка не переносится: на телефоне
+            подпись уходит вниз, и точка посередине пустой строки выглядела бы
+            мусором. */}
+        <span class="hidden text-ink-dim sm:inline" aria-hidden="true">·</span>
+        <span class="text-[0.95rem] text-ink-muted">{t("google.text")}</span>
+      </div>
+
+      {/* Читать отзывы — на карточку профиля. Раньше вела на /review, то
+          есть на форму написания: подпись «Смотреть отзывы» обещала одно, а
+          открывалось другое. Развели, когда появилась кнопка «Написать
+          отзыв» рядом — иначе две кнопки вели бы на один адрес.
+
+          Призыв оставить отзыв — заливной кнопкой, а не третьей ссылкой: бейдж
+          сообщает факт (нас оценили), кнопка просит о действии, и заметной она
+          должна быть именно здесь. */}
+      <div class="flex shrink-0 flex-col gap-2.5 sm:flex-row sm:items-center">
+        <a
+          class="inline-flex items-center justify-center rounded-xl border border-line-strong/60 px-4 py-2.5 text-center text-[0.9rem] font-semibold text-ink transition-colors hover:bg-page"
           href={facts.google.profile}
           target="_blank"
           rel="noopener nofollow"
         >
           {t("google.cta")}
         </a>
-      </div>
-
-      {/* Призыв оставить отзыв — отдельной заливной кнопкой под бейджем, а не
-          внутри него: бейдж сообщает факт (нас оценили), кнопка просит о
-          действии. Заливка нужна, чтобы её замечали: рядом в подвале всё
-          остальное — ссылки и рамки. */}
-      <ReviewButton lang={lang} class="mt-3 w-full max-w-sm" />
-    </div>
-
-    {/* Заголовки колонок подвала — <p>, а не <h2>.
-        Подвал стоит на каждой странице, и три постоянных H2 («Контакты»,
-        «Направления», «Полезное») смешивались с содержанием: на гиде из
-        пятнадцати H2 пять были служебными. Роль заголовка здесь берёт на себя
-        aria-label у <nav>, поэтому доступность не страдает. */}
-    <div>
-      <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
-        {t("footer.contacts")}
-      </p>
-      <ul class="mt-4 grid gap-2 text-[0.95rem]">
-        <li><a class="hover:text-brand-ink" href={facts.phoneHref}>{facts.phone}</a></li>
-        <li><a class="hover:text-brand-ink" href={`mailto:${facts.email}`}>{facts.email}</a></li>
-      </ul>
-      <div class="mt-3">
-        <Messengers lang={lang} variant="compact" />
+        <ReviewButton lang={lang} />
       </div>
     </div>
-
-    <nav aria-label={t("footer.routes")}>
-      <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
-        {t("footer.routes")}
-      </p>
-      <ul class="mt-4 grid gap-2 text-[0.95rem]">
-        {
-          links.routes.map((l) => (
-            <li>
-              <a class="hover:text-brand-ink" href={l.href}>
-                {l.label}
-                {l.note && <span class="text-ink-dim"> — {l.note}</span>}
-              </a>
-            </li>
-          ))
-        }
-        <li>
-          <a class="hover:text-brand-ink" href={`${localePath(lang, "/")}#routes`}>
-            {t("footer.allRoutes")}
-          </a>
-        </li>
-      </ul>
-    </nav>
-
-    {/* Поездки по России — отдельной колонкой: там рубли, другая машина и
-        границу она не пересекает. В одном списке с евровыми маршрутами это
-        читалось бы как один прайс. */}
-    {
-      links.russia.length > 0 && (
-        <nav aria-label={t("footer.russia")}>
-          <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
-            {t("footer.russia")}
-          </p>
-          <ul class="mt-4 grid gap-2 text-[0.95rem]">
-            {links.russia.map((l) => (
-              <li>
-                <a class="hover:text-brand-ink" href={l.href}>
-                  {l.label}
-                  {l.note && <span class="text-ink-dim"> — {l.note}</span>}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )
-    }
-
-    <nav aria-label={t("footer.useful")}>
-      <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
-        {t("footer.useful")}
-      </p>
-      <ul class="mt-4 grid gap-2 text-[0.95rem]">
-        {
-          links.guides.map((l) => (
-            <li>
-              <a class="hover:text-brand-ink" href={l.href}>{l.label}</a>
-            </li>
-          ))
-        }
-        <li>
-          <a class="hover:text-brand-ink" href={`${localePath(lang, "/")}#car`}>{t("nav.car")}</a>
-        </li>
-        <li>
-          <a class="hover:text-brand-ink" href={`${localePath(lang, "/")}#faq`}>{t("nav.faq")}</a>
-        </li>
-      </ul>
-    </nav>
   </div>
 
   <div class="border-t border-line" data-nosnippet>

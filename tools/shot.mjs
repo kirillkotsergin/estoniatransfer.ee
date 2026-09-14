@@ -5,7 +5,11 @@
  * Запуск в два шага:
  *   1. "C:/Program Files/Google/Chrome/Application/chrome.exe" \
  *        --headless=new --disable-gpu --remote-debugging-port=9222 about:blank
- *   2. node tools/shot.mjs <url> <out.png> [css-селектор]
+ *   2. node tools/shot.mjs <url> <out.png> [css-селектор] [ширина]
+ *
+ * Ширина по умолчанию 1280. Четвёртым аргументом задаётся любая другая —
+ * подвал и шапку приходится смотреть и на 390, где колонки складываются
+ * в одну, и «на глаз по десктопу» этого не поймать.
  *
  * ⚠️ Две ловушки, ради которых файл и существует.
  *
@@ -20,9 +24,9 @@
  */
 import { writeFileSync } from "node:fs";
 
-const [, , url, out, selector = "footer"] = process.argv;
+const [, , url, out, selector = "footer", width = "1280"] = process.argv;
 if (!url || !out) {
-  console.error("node tools/shot.mjs <url> <out.png> [селектор]");
+  console.error("node tools/shot.mjs <url> <out.png> [селектор] [ширина]");
   process.exit(1);
 }
 
@@ -53,9 +57,12 @@ ws.onmessage = (e) => {
 
 ws.onopen = async () => {
   await call("Emulation.setDeviceMetricsOverride", {
-    width: 1280,
+    width: Number(width),
     height: 900,
     deviceScaleFactor: 2,
+    // mobile: true меняет не только ширину, но и обработку viewport-метатега
+    // и масштаб шрифтов — снимок тогда не сравним с десктопным. Нам нужна
+    // только ширина, поэтому false на любой ширине.
     mobile: false,
   });
   await call("Page.navigate", { url });
@@ -84,8 +91,15 @@ ws.onopen = async () => {
 
   const b = result.value;
   const pad = 20;
+  // Третья ловушка, и она проявляется только на узких экранах. Без
+  // captureBeyondViewport всё, что выходит за высоту окна (900), попадает в
+  // кадр белым: на 1280 подвал в окно влезает и кажется, что всё работает, а
+  // на 390 он растягивается на 1500+ и снимок обрезается по середине. Плюс
+  // поверх верха блока оказывается залипшая шапка — она в вьюпорте, а мы
+  // снимаем ниже. С этим флагом Chrome рендерит нужный кусок целиком.
   const shot = await call("Page.captureScreenshot", {
     format: "png",
+    captureBeyondViewport: true,
     clip: {
       x: Math.max(0, b.x - pad),
       y: Math.max(0, b.y - pad),
