@@ -70,7 +70,23 @@ AddType image/x-icon .ico
 <IfModule mod_headers.c>
   <FilesMatch "\.(html|xml|txt)$">
     Header set Cache-Control "no-cache, must-revalidate"
+    # Expires снимаем по той же причине, что и у .php ниже: ExpiresDefault
+    # выдаёт месяц, и рядом с no-cache получались два противоречащих
+    # заголовка. Cache-Control по спецификации главнее, так что ломалось не
+    # всё, — но карта сайта, llms.txt и фид приезжали с «годен до» на месяц
+    # вперёд, и любой наивный прокси имел право отдавать их месяц.
+    # Именно эти файлы и должны перечитываться: в них дата правки, ради
+    # которой всё и затевалось.
+    Header unset Expires
   </FilesMatch>
+
+  # Atom-фид. Apache по расширению .xml отдаёт text/xml, а для Atom
+  # правильный тип application/atom+xml — по нему фид узнают читалки и
+  # агрегаторы. ForceType, а не AddType: менять тип всем .xml нельзя,
+  # карта сайта должна остаться XML общего вида.
+  <Files "feed.xml">
+    ForceType application/atom+xml
+  </Files>
 
   # PHP кешировать нельзя ни в каком виде: hits.php при кеше ответа перестал бы
   # считать посещения, а число в подвале застыло бы у посетителя в браузере.
