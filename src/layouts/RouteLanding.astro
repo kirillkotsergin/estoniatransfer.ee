@@ -186,10 +186,21 @@ const addons: Record<string, unknown>[] =
  * описывала бы отдельную безымянную компанию, и поисковик видел бы шесть
  * похожих сущностей вместо одной.
  */
+/**
+ * Заглушка бизнеса для provider. Полное описание — в SiteSchema.astro на
+ * главной, здесь только `@id` плюс поля, которые разборщик, не пошедший по
+ * ссылке, должен увидеть на месте.
+ *
+ * `legalName` в их числе с 23.09.2026: Google обрабатывает разметку
+ * постранично и по `@id` на главную не ходит, поэтому без него на странице
+ * маршрута исполнителем значился бы бренд «EstoniaTransfer», а юрлица не
+ * было бы видно вовсе. Для E-E-A-T именно юрлицо и есть проверяемая часть.
+ */
 const org = {
   "@type": ["LocalBusiness", "TaxiService"],
   "@id": `${site}/#business`,
   name: "EstoniaTransfer",
+  legalName: facts.legal.name,
   telephone: facts.phoneHref.replace("tel:", ""),
   email: facts.email,
   url: new URL(home, site).href,

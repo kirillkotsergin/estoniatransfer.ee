@@ -646,6 +646,47 @@ export const en: Record<string, RouteCopy> = {
         "Kirill is at the wheel and he answers WhatsApp and Telegram himself: you deal with the driver directly, without a dispatcher. He speaks Russian and gets by in English. A stop or a drop-off in Tartu is possible on the way — mention it in advance.",
       ],
     },
+    /**
+     * The English page had no `blocks` at all — the Russian one carries three
+     * (customs, visa, onward travel) that were never translated. This adds
+     * the array with the credentials block only; the other three remain a
+     * gap worth closing separately.
+     *
+     * Wording is written for this page rather than copied from the guide:
+     * 270 km and a booked queue slot make a different argument for checking
+     * a licence than a comparison article does. The same paragraph on eight
+     * pages reads as template filler, which is what CLAUDE.md warns about.
+     */
+    blocks: [
+      {
+        eyebrow: "The operator",
+        title: "Who runs the service",
+        lead:
+          "Koidula is 270 kilometres away and needs a booked exit slot — a journey where you depend on the driver and the car for several hours. So the numbers below are worth checking, and not only ours: carrying passengers for payment is a licensed activity in Estonia, the numbers are public, and an operator who cannot produce them is working outside the law, with no insurance covering your trip.",
+        layout: "cards",
+        place: "bottom",
+        items: [
+          {
+            title: "Legal entity",
+            specs: [
+              ["Name", facts.legal.name],
+              ["Registry code", facts.legal.registryCode],
+            ],
+            text: "Entered in the Estonian Commercial Register; the code can be checked at ariregister.rik.ee.",
+          },
+          {
+            title: "Passenger transport licence",
+            specs: [["Number", facts.legal.transportLicence]],
+            text: "Issued to the company by the Estonian Transport Administration (Transpordiamet).",
+          },
+          {
+            title: "The driver",
+            specs: [["Service card", facts.legal.serviceCard]],
+            text: `The same person every time, speaking English and Russian. The car is a ${facts.car} with four passenger seats.`,
+          },
+        ],
+      },
+    ],
     crossing: {
       eyebrow: "The border crossing",
       title: "What to know about Koidula",
