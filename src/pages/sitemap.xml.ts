@@ -55,6 +55,18 @@ export const GET: APIRoute = ({ site }) => {
       changefreq: "yearly",
       priority: "0.2",
     },
+    /*
+     * «О сервисе» — вторая страница вне `landings`, по той же причине.
+     * priority выше, чем у политики: на неё ссылается разметка как на
+     * описание водителя, и её имеет смысл показывать.
+     */
+    {
+      path: "/o-servise/",
+      langs: allLangs,
+      lastmod: "2026-09-24",
+      changefreq: "yearly",
+      priority: "0.5",
+    },
     ...landings.map((r) => ({
       path: `/${r.slug}/`,
       langs: Object.keys(r.copy) as Lang[],

@@ -1,0 +1,146 @@
+---
+/**
+ * "About the service", English. Mirror of src/pages/o-servise.astro — see the
+ * header comment there for why this is a plain page and why the Person node
+ * is referenced by @id rather than described again.
+ *
+ * The slug stays Russian in both languages, like the guide does. Changing it
+ * per language pulls in hreflang, which builds URLs from one path for all
+ * locales — see the note in CLAUDE.md about the guide's slug.
+ */
+import Base from "../../layouts/Base.astro";
+import { facts } from "../../i18n/ui";
+
+const lang = "en" as const;
+const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "@id": `${site}/en/o-servise/#page`,
+  url: `${site}/en/o-servise/`,
+  name: "About EstoniaTransfer",
+  isPartOf: { "@id": `${site}/#website` },
+  about: { "@id": `${site}/#business` },
+  mainEntity: { "@id": `${site}/#driver` },
+  inLanguage: "en",
+};
+
+const h2 = "mt-12 text-[clamp(1.4rem,2.4vw,1.9rem)] font-semibold tracking-tight";
+const p = "mt-4 leading-relaxed text-ink-muted";
+const card = "glass rounded-[var(--radius-card)] p-5";
+---
+
+<Base
+  lang={lang}
+  path="/o-servise/"
+  title="About: who drives you, and under what licence"
+  description="Who runs the transfers to Estonia's border crossings: the driver, the car, the legal entity, the passenger transport licence and the driver service card."
+>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />
+
+  <article class="mx-auto max-w-3xl px-5 py-16 sm:py-20">
+    <h1 class="text-[clamp(1.9rem,4vw,2.8rem)] font-semibold leading-tight tracking-[-0.02em]">
+      About: who drives you, and under what licence
+    </h1>
+
+    <p class="mt-6 text-[1.05rem] leading-relaxed text-ink-muted">
+      EstoniaTransfer is not a taxi company and not a dispatch service. It is
+      one driver, one car and a handful of routes to Estonia's border crossings
+      that he knows by heart. Everything here can be checked.
+    </p>
+
+    <h2 class={h2}>Who drives</h2>
+    <p class={p}>
+      Every journey is driven by <strong>{facts.driverFull.et}</strong>. He is
+      also the person answering WhatsApp and Telegram, and the one who picks up
+      the phone. There is no dispatcher in between: you arrange the trip
+      directly with the person who will arrive, and nothing is lost in
+      retelling.
+    </p>
+    <p class={p}>
+      He speaks Russian and gets by in English. He holds driver service card{" "}
+      <strong>{facts.legal.serviceCard}</strong> — in Estonia this document is
+      issued to a person, not to a company.
+    </p>
+
+    <h2 class={h2}>The car</h2>
+    <p class={p}>
+      A {facts.car}: four passenger seats, climate control, and a boot that
+      takes two large suitcases plus hand luggage. It is the driver's own car
+      rather than a rotating fleet vehicle, which is why the interior is what it
+      is. Winter tyres in winter.
+    </p>
+
+    <h2 class={h2}>Legal details</h2>
+    <p class={p}>
+      Carrying passengers for payment is a licensed activity in Estonia. Every
+      number below is public and verifiable in state registers — ask any
+      operator you arrange a border run with for theirs.
+    </p>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class={card}>
+        <p class="text-[0.82rem] uppercase tracking-wide text-ink-dim">Legal entity</p>
+        <p class="mt-1 text-[1.05rem] font-semibold">{facts.legal.name}</p>
+        <p class="mt-2 text-[0.9rem] text-ink-muted">
+          Registry code {facts.legal.registryCode}, Estonian Commercial Register
+        </p>
+      </div>
+      <div class={card}>
+        <p class="text-[0.82rem] uppercase tracking-wide text-ink-dim">Transport licence</p>
+        <p class="mt-1 text-[1.05rem] font-semibold">{facts.legal.transportLicence}</p>
+        <p class="mt-2 text-[0.9rem] text-ink-muted">Issued to the company, {facts.legal.issuer}</p>
+      </div>
+      <div class={card}>
+        <p class="text-[0.82rem] uppercase tracking-wide text-ink-dim">Driver service card</p>
+        <p class="mt-1 text-[1.05rem] font-semibold">{facts.legal.serviceCard}</p>
+        <p class="mt-2 text-[0.9rem] text-ink-muted">
+          Teenindaja kaart, issued to {facts.driverFull.et} personally
+        </p>
+      </div>
+      <div class={card}>
+        <p class="text-[0.82rem] uppercase tracking-wide text-ink-dim">Contact</p>
+        <p class="mt-1 text-[1.05rem] font-semibold">{facts.phone}</p>
+        <p class="mt-2 text-[0.9rem] text-ink-muted">{facts.email}</p>
+      </div>
+    </div>
+
+    <h2 class={h2}>How it works</h2>
+    <p class={p}>
+      You send the date, time and route; we reply with the exact fare before you
+      travel. The price is fixed and per car, not per passenger — neither
+      traffic nor the border queue changes it. There is no meter.
+    </p>
+    <p class={p}>
+      <strong>No prepayment.</strong> The ride first, the settlement after — in
+      cash to the driver or by bank transfer, in euros. Card payment is not
+      available. We confirm the amount by message in advance so you have it in
+      writing.
+    </p>
+    <p class={p}>
+      Airport pickup with a name board is included and flight waiting time is
+      not charged. If your plane is late, we wait. Luggage and a child seat cost
+      nothing extra, and night departures are the same price.
+    </p>
+
+    <h2 class={h2}>What we do not do</h2>
+    <p class={p}>
+      The Estonian car does not cross the border. On the Russian side a separate
+      car takes over and settles in roubles — except on the through route to
+      Saint Petersburg, where there is one price and it is in euros.
+    </p>
+    <p class={p}>
+      We do not arrange visas, do not book GoSwift queue slots for you, and
+      cannot clear border control on your behalf. We drive you to the checkpoint
+      and meet you after it.
+    </p>
+
+    <p class="mt-12 text-[0.9rem] text-ink-dim">
+      A question this page does not answer? Write to{" "}
+      <a class="font-semibold text-brand-ink hover:underline" href={`mailto:${facts.email}`}
+        >{facts.email}</a
+      > — the person who replies is the person who will drive.
+    </p>
+  </article>
+</Base>

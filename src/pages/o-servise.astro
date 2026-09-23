@@ -1,0 +1,159 @@
+---
+/**
+ * «О сервисе» — страница про того, кто везёт.
+ *
+ * Заведена 24.09.2026, когда владелец назвал полное имя водителя. До этого
+ * страница была бессмысленной: её главная ценность — узел Person, а Person
+ * без фамилии сопоставить не с чем.
+ *
+ * Зачем она нужна, помимо вежливости: у ассистента не было ни одного адреса,
+ * на который можно сослаться в ответе «а кто это вообще». Разметка бизнеса
+ * отвечает «что это за услуга», эта страница — «кто за неё отвечает».
+ *
+ * Обычной страницей, а не записью в `landings`, по той же причине, что и
+ * политика: RouteCopy требует offers, faq и cta, а здесь ни услуги, ни
+ * цены. Поэтому она дописана в sitemap.xml.ts руками.
+ *
+ * Person НЕ описывается здесь заново: узел живёт в SiteSchema.astro с
+ * `@id` .../#driver, а тут стоит AboutPage со ссылкой `mainEntity` на тот
+ * же `@id`. Два описания одного человека — это два человека для парсера.
+ *
+ * ⚠️ Чего здесь нет намеренно, потому что владелец этих данных не называл:
+ * стаж, число поездок, правила отмены и возврата. Появятся — дописать
+ * сюда; выдумывать их нельзя, это ровно те факты, которые проверяют.
+ */
+import Base from "../layouts/Base.astro";
+import { facts, useTranslations } from "../i18n/ui";
+
+const lang = "ru" as const;
+const t = useTranslations(lang);
+const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "@id": `${site}/o-servise/#page`,
+  url: `${site}/o-servise/`,
+  name: "О сервисе EstoniaTransfer",
+  isPartOf: { "@id": `${site}/#website` },
+  about: { "@id": `${site}/#business` },
+  mainEntity: { "@id": `${site}/#driver` },
+  inLanguage: "ru",
+};
+
+const h2 = "mt-12 text-[clamp(1.4rem,2.4vw,1.9rem)] font-semibold tracking-tight";
+const p = "mt-4 leading-relaxed text-ink-muted";
+const card = "glass rounded-[var(--radius-card)] p-5";
+---
+
+<Base
+  lang={lang}
+  path="/o-servise/"
+  title="О сервисе: кто везёт и по каким документам"
+  description="Кто выполняет трансферы к погранпереходам Эстонии: водитель, автомобиль, юридическое лицо, лицензия на перевозку пассажиров и карта обслуживающего лица."
+>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />
+
+  <article class="mx-auto max-w-3xl px-5 py-16 sm:py-20">
+    <h1 class="text-[clamp(1.9rem,4vw,2.8rem)] font-semibold leading-tight tracking-[-0.02em]">
+      О сервисе: кто везёт и по каким документам
+    </h1>
+
+    <p class="mt-6 text-[1.05rem] leading-relaxed text-ink-muted">
+      EstoniaTransfer — это не служба такси и не диспетчерская. Это один
+      водитель, одна машина и несколько маршрутов к погранпереходам Эстонии,
+      которые он знает наизусть. Здесь собрано всё, что о нас можно проверить.
+    </p>
+
+    <h2 class={h2}>Кто за рулём</h2>
+    <p class={p}>
+      Все поездки выполняет <strong>{facts.driverFull.ru}</strong> (в документах —{" "}
+      {facts.driverFull.et}). Он же отвечает в WhatsApp и Telegram и берёт трубку.
+      Диспетчера между вами и водителем нет: вы договариваетесь напрямую с тем,
+      кто приедет, и пожелания не теряются в пересказе.
+    </p>
+    <p class={p}>
+      Говорит по-русски и по-английски. Работает по карте обслуживающего лица{" "}
+      <strong>{facts.legal.serviceCard}</strong> — это документ, который в Эстонии
+      выдают водителю лично, а не фирме.
+    </p>
+
+    <h2 class={h2}>На чём</h2>
+    <p class={p}>
+      {facts.car}: четыре пассажирских места, климат-контроль, багажник на два
+      больших чемодана и ручную кладь. Это личный автомобиль водителя, а не
+      сменная машина парка — отсюда и состояние салона. Зимой на зимней резине.
+    </p>
+
+    <h2 class={h2}>Юридические реквизиты</h2>
+    <p class={p}>
+      Перевозка пассажиров за плату в Эстонии лицензируется. Все номера ниже
+      открыты и проверяются в государственных реестрах — спрашивайте их у любого
+      перевозчика, с которым договариваетесь о поездке к границе.
+    </p>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class={card}>
+        <p class="text-[0.82rem] uppercase tracking-wide text-ink-dim">Юридическое лицо</p>
+        <p class="mt-1 text-[1.05rem] font-semibold">{facts.legal.name}</p>
+        <p class="mt-2 text-[0.9rem] text-ink-muted">
+          Рег. код {facts.legal.registryCode}, Коммерческий регистр Эстонии
+        </p>
+      </div>
+      <div class={card}>
+        <p class="text-[0.82rem] uppercase tracking-wide text-ink-dim">Лицензия на перевозку</p>
+        <p class="mt-1 text-[1.05rem] font-semibold">{facts.legal.transportLicence}</p>
+        <p class="mt-2 text-[0.9rem] text-ink-muted">Выдана фирме, {facts.legal.issuer}</p>
+      </div>
+      <div class={card}>
+        <p class="text-[0.82rem] uppercase tracking-wide text-ink-dim">Карта водителя</p>
+        <p class="mt-1 text-[1.05rem] font-semibold">{facts.legal.serviceCard}</p>
+        <p class="mt-2 text-[0.9rem] text-ink-muted">
+          Teenindaja kaart, выдана {facts.driverFull.ru} лично
+        </p>
+      </div>
+      <div class={card}>
+        <p class="text-[0.82rem] uppercase tracking-wide text-ink-dim">Связь</p>
+        <p class="mt-1 text-[1.05rem] font-semibold">{facts.phone}</p>
+        <p class="mt-2 text-[0.9rem] text-ink-muted">{facts.email}</p>
+      </div>
+    </div>
+
+    <h2 class={h2}>Как это работает</h2>
+    <p class={p}>
+      Вы пишете дату, время и маршрут — мы отвечаем точной суммой до выезда.
+      Цена фиксированная и за автомобиль целиком, а не за пассажира: ни пробки,
+      ни очередь на границе её не меняют. Счётчика нет.
+    </p>
+    <p class={p}>
+      <strong>Предоплаты не берём.</strong> Сначала поездка, потом расчёт —
+      наличными водителю или банковским переводом, в евро. Картой оплатить
+      нельзя. Сумму подтверждаем сообщением заранее, чтобы она у вас была
+      письменно.
+    </p>
+    <p class={p}>
+      Встречаем в аэропорту с табличкой, ожидание рейса не тарифицируется.
+      Задержали самолёт — ждём. Багаж и детское кресло без доплат, ночной выезд
+      по той же цене.
+    </p>
+
+    <h2 class={h2}>Чего мы не делаем</h2>
+    <p class={p}>
+      Эстонский автомобиль границу не пересекает. На российской стороне поездку
+      выполняет отдельная машина, и расчёт там в рублях — кроме сквозного
+      маршрута до Петербурга, где цена одна и вся в евро.
+    </p>
+    <p class={p}>
+      Мы не оформляем визы, не бронируем очередь в GoSwift за вас и не проходим
+      пограничный контроль вместо вас. Довозим до пункта пропуска и встречаем
+      после него.
+    </p>
+
+    <p class="mt-12 text-[0.9rem] text-ink-dim">
+      Есть вопрос, ответа на который здесь нет? Напишите на{" "}
+      <a class="font-semibold text-brand-ink hover:underline" href={`mailto:${facts.email}`}
+        >{facts.email}</a
+      > — отвечает тот же человек, который повезёт.
+    </p>
+  </article>
+</Base>

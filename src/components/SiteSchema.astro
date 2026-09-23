@@ -395,11 +395,37 @@ const schema = {
           value: lang === "ru" ? "седан, кондиционер" : "sedan, air conditioning",
         },
       ],
+      /**
+       * Водитель отдельной сущностью с собственным `@id`: на него ссылается
+       * страница «О сервисе», и для модели это один и тот же человек, а не
+       * два похожих упоминания.
+       *
+       * Полное имя здесь появилось 24.09.2026 и вместе с ним — карта
+       * обслуживающего лица. До этого её нельзя было поставить никуда: на
+       * узле организации она означала бы, что документ выдан OÜ, а её
+       * выдают человеку; на Person с одним именем «Кирилл» сопоставлять
+       * было не с чем. Теперь она стоит там, где ей и место.
+       *
+       * Каноническое имя — эстонское, как в документах: номер карты рядом,
+       * и написание обязано совпадать с проверяемым. Русское идёт
+       * alternateName.
+       */
       employee: {
         "@type": "Person",
-        name: facts.driver,
+        "@id": `${site}/#driver`,
+        name: facts.driverFull.et,
+        alternateName: facts.driverFull.ru,
         jobTitle: lang === "ru" ? "Водитель" : "Driver",
         worksFor: { "@id": org },
+        knowsLanguage: ["ru", "en"],
+        hasCredential: {
+          "@type": "EducationalOccupationalCredential",
+          "@id": `${site}/#service-card`,
+          name: lang === "ru" ? "Карта обслуживающего лица" : "Driver service card",
+          credentialCategory: "license",
+          identifier: facts.legal.serviceCard,
+          recognizedBy: { "@type": "GovernmentOrganization", name: facts.legal.issuer },
+        },
       },
       makesOffer: offers,
       hasOfferCatalog: {
