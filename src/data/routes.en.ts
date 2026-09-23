@@ -1768,6 +1768,214 @@ export const en: Record<string, RouteCopy> = {
   },
 
   // ───────────────────────── Guide: how to reach the border ─────────────────────────
+  /**
+   * Helsinki → Tallinn → the border. Mirror of the Russian entry; see the
+   * comment there for why this is a guide rather than a service page (we do
+   * not sell the ferry) and why there is no separate port-pickup fare.
+   */
+  "iz-helsinki-v-peterburg": {
+    title: "Helsinki to Saint Petersburg via Tallinn: the route in 2026",
+    description:
+      "There is no direct Helsinki–Petersburg service. The route runs through Tallinn: ferry, transfer to the border and a crossing on foot at Narva. Times and prices.",
+    ogDescription:
+      "Helsinki to Saint Petersburg through Tallinn: a 2–2.5 hour ferry, a transfer to the Narva crossing and a walk across. We meet you at the port at no extra cost.",
+    breadcrumb: "Helsinki to Petersburg",
+    h1: "How to get from Helsinki to Saint Petersburg via Tallinn",
+    badge: "Route guide · updated 24 September 2026",
+    footer: { label: "From Helsinki to the border", note: "via Tallinn" },
+    stats: [
+      { value: "2–2.5 h", label: "ferry to Tallinn" },
+      { value: "2.5 h", label: "Tallinn to the border" },
+      { value: "on foot", label: "crossing at Narva" },
+    ],
+    lead:
+      "There is no longer a direct train or a direct coach from Helsinki to Saint Petersburg. What remains is the route through Estonia, and it works: a ferry across the gulf, a car to the border and a crossing on foot at Narva. It takes a day — and with sensible planning one day rather than two. Below is how to fit the pieces together without ending up at a closed checkpoint.",
+    answer: [
+      "<strong>In short.</strong> Four legs. <strong>The ferry, Helsinki to Tallinn</strong> — 2 to 2.5 hours, several sailings a day, tickets from Tallink, Viking Line or Eckerö Line. <strong>Tallinn to Narva</strong> — 210 km and about 2 h 30 min. <strong>The border</strong> — on foot, anything from half an hour to several hours. <strong>Ivangorod to Petersburg</strong> — another 150 km and 2 h 30 min.",
+      `<strong>Our part</strong> starts at the Tallinn ferry terminal and ends at the checkpoint: ${eur("narva")} per car to Narva, or ${facts.tallinnSpb.price} € for the through journey to Petersburg, where a second car is already waiting on the Russian side. Meeting you at the port is included — there is no separate fare for it.`,
+      "<strong>What decides everything</strong> is the sailing time. The Narva crossing closes at 19:00, and you count backwards from that: a morning ferry leaves room for the queue, an afternoon one is tight, and an evening one means a night in Tallinn or in Narva.",
+    ],
+    notice: {
+      title: "We do not sell ferry tickets",
+      text: "You buy the ferry yourself — from Tallink, Viking Line or Eckerö Line, directly or through an aggregator. We do not resell them and take no commission. Our part begins at the Tallinn terminal: send us the sailing number and the car will be there when it docks.",
+    },
+    compare: {
+      eyebrow: "Comparison",
+      title: "Getting from Tallinn to the border",
+      lead:
+        "The ferry is the same for everyone; the difference starts in Tallinn. Figures are as of September 2026 from the carriers — check before you travel.",
+      caption: "From the Tallinn ferry terminal to the Narva crossing: coach, train or transfer",
+      cols: ["Option", "From the port", "Time to Narva", "Price", "What to consider"],
+      rows: [
+        [
+          "Lux Express coach",
+          "your own way to the terminal",
+          "≈ 3 h",
+          "from €9",
+          "cheapest; port to coach station and Narva station to the crossing are on you",
+        ],
+        [
+          "Elron train",
+          "your own way to Balti jaam",
+          "≈ 2 h 50 min",
+          "€13–23",
+          "faster than the coach; the same two changes with luggage",
+        ],
+        [
+          "Transfer to Narva",
+          "we meet you at the terminal",
+          "≈ 2 h 30 min",
+          `€${facts.routes[0].price} per car`,
+          "ferry to barrier with no changes",
+        ],
+        [
+          "Through transfer to Petersburg",
+          "we meet you at the terminal",
+          "≈ 2 h 30 min plus the border",
+          `€${facts.tallinnSpb.price} for both cars`,
+          "a second car waits in Ivangorod; all in euros",
+        ],
+      ],
+      note:
+        "<strong>The real difference is not price but the number of changes.</strong> Off a ferry you already have your luggage with you: the coach and the train add two more moves with suitcases — to the station in Tallinn, and from the station in Narva to the checkpoint. A transfer removes both.",
+    },
+    price: {
+      eyebrow: "Prices",
+      title: "What our part of the journey costs",
+      lead:
+        "The ferry is separate and you book it yourself. Below is only what we do, from the Tallinn terminal onwards. Prices are per car, not per passenger.",
+      caption: "Transfer prices from the Tallinn ferry terminal to the border and to Petersburg",
+      rows: [
+        ["Tallinn port — Narva, to the checkpoint", eur("narva"), "210 km, about 2 h 30 min"],
+        [
+          "Tallinn port — Saint Petersburg, through",
+          `€${facts.tallinnSpb.price}`,
+          "both cars and the walk between them",
+        ],
+        ["Tallinn port — Koidula", eur("koidula"), "270 km, crossed by car rather than on foot"],
+        ["Meeting at the terminal with a name board", "€0", "ferry waiting time is not charged"],
+        ["Luggage, child seat, night departure", "€0", "no surcharges"],
+      ],
+      note:
+        "If the ferry is late we wait, exactly as with a delayed flight: we track the sailing and there is no charge for it. No prepayment either — you settle after the journey.",
+    },
+    blocks: [
+      {
+        eyebrow: "Planning",
+        title: "Fitting the ferry and the border into one day",
+        lead:
+          "The only genuinely difficult part is the timetable. Everything else is settled in advance with one message.",
+        headings: true,
+        items: [
+          {
+            title: "Count backwards from 19:00",
+            text: "The Narva-1 crossing closes at 19:00. Tallinn to the checkpoint is 2 h 30 min, plus a margin for the queue, which stretches into hours in summer and on public holidays. That means leaving Tallinn by the middle of the day, which means a morning ferry.",
+            specs: [
+              ["Crossing closes", "19:00"],
+              ["Tallinn to the border", "≈ 2 h 30 min"],
+              ["Sensible margin for the queue", "at least 2 hours"],
+            ],
+          },
+          {
+            title: "A morning ferry is the only reliable option",
+            text: "Sailings from Helsinki start early and take 2 to 2.5 hours. A morning ferry leaves a full day of margin. An afternoon one only works if the queue happens to be short, and that is not something to plan around.",
+          },
+          {
+            title: "An evening ferry means an overnight stop",
+            text: "Not a disaster, but a choice: stay in Tallinn and leave in the morning, or drive to Narva in the evening and sleep there so you are first at the crossing. Narva hotels with addresses are in the <a href=\"/en/kak-dobratsya-do-granicy/\">general border guide</a>.",
+          },
+          {
+            title: "What to send us in advance",
+            text: "The sailing number and the date. We check the timetable and the arrival time ourselves: the car will be at the terminal even if the ferry runs late. We confirm the exact fare by message before departure.",
+          },
+        ],
+        note:
+          "<strong>The return works the same way.</strong> We collect you at the exit from the Narva checkpoint and drive you to the Tallinn ferry terminal for your sailing — <a href=\"/en/transfer-narva-tallinn/\">Narva to Tallinn</a>, €130. Arrange it in advance: finding a car at the border is close to impossible.",
+      },
+    ],
+    crossing: {
+      eyebrow: "The border crossing",
+      title: "What to know about Narva",
+      items: [
+        {
+          title: "On foot only",
+          text: "The Friendship Bridge is closed to cars: the Narva border is crossed on foot through a covered walkway. Vehicles use <a href=\"/en/transfer-tallinn-koidula/\">Koidula</a> or Luhamaa, which is a different road and a different price.",
+        },
+        {
+          title: "Hours and the queue",
+          text: "07:00 to 19:00, closed overnight. The queue takes anything from half an hour to several hours and cannot be predicted. <em>The hours have changed several times in the past two years — check politsei.ee before you travel.</em>",
+        },
+        {
+          title: "Passports and visas",
+          text: "Finnish and other EU citizens need a visa to enter Russia, and not every crossing accepts the electronic one. We are not a border authority and cannot arrange it — check official sources in advance, because being turned away at the border does not refund the journey.",
+        },
+      ],
+    },
+    faq: {
+      eyebrow: "Questions",
+      title: "Common questions about the route from Helsinki",
+      items: [
+        {
+          q: "Can you get from Helsinki to Saint Petersburg in one day?",
+          a: "Yes, on a morning ferry. The crossing takes 2 to 2.5 hours, Tallinn to the border 2 h 30 min, the walk across anything from half an hour to several hours, and then 2 h 30 min to Petersburg. Around ten hours in total with a kind queue. An afternoon ferry makes it risky: the crossing closes at 19:00 and latecomers are not let through.",
+        },
+        {
+          q: "Do you sell ferry tickets?",
+          a: "No. You book the ferry yourself with Tallink, Viking Line or Eckerö Line, directly or through an aggregator. We do not resell them and take no commission. Our part starts at the Tallinn terminal: send the sailing number and the car will be there when it docks.",
+        },
+        {
+          q: "Does meeting at the port cost more than a hotel pickup?",
+          a: "No, the price is the same. The port is part of the standard fare, like the airport, a hotel or any address in Tallinn: €130 per car to Narva, €200 for the through journey to Petersburg. We meet you at the terminal with a name board, help with the luggage, and ferry waiting time is not charged.",
+        },
+        {
+          q: "What happens if the ferry is delayed?",
+          a: "Nothing. We track the sailing and arrive for the actual docking time — there is no waiting charge, exactly as with delayed flights. If the delay is bad enough that the crossing can no longer be reached before closing, we will say so honestly and suggest moving the departure to the morning rather than driving you to a closed gate.",
+        },
+      ],
+    },
+    links: [
+      {
+        label: "Tallinn to Narva transfer",
+        note: `${eur("narva")}, 210 km`,
+        href: "/transfer-tallinn-narva/",
+      },
+      {
+        label: "Tallinn to Saint Petersburg, through",
+        note: `€${facts.tallinnSpb.price}, both cars`,
+        href: "/transfer-tallinn-spb/",
+      },
+      {
+        label: "How to reach the border: every option",
+        note: "Narva, Koidula and Luhamaa",
+        href: "/kak-dobratsya-do-granicy/",
+      },
+      {
+        label: "Back again: Narva to Tallinn",
+        note: "to the ferry, €130",
+        href: "/transfer-narva-tallinn/",
+      },
+    ],
+    cta: {
+      title: "We will meet you at the Tallinn ferry terminal",
+      text: "Send the sailing number and the date — we will check the timetable, confirm the exact fare and be at the terminal when you dock. Need the whole way to Petersburg? We will arrange both cars in one message.",
+    },
+    waText:
+      "Hello! I am arriving in Tallinn by ferry from Helsinki and need a transfer to the border. Sailing number and date: ",
+    schema: {
+      name: "Helsinki to Saint Petersburg via Tallinn",
+      alternateName: ["Из Хельсинки в Санкт-Петербург через Таллинн"],
+      serviceType: "Transfer from the Tallinn ferry terminal to the border crossing",
+      description:
+        "Getting from Helsinki to Saint Petersburg through Tallinn: a ferry across the gulf, a transfer from the port to the Narva checkpoint and a border crossing on foot. Timings, prices and how to do it in one day.",
+      areaServed: [
+        { type: "City", name: "Helsinki" },
+        { type: "City", name: "Tallinn" },
+        { type: "City", name: "Narva" },
+        { type: "City", name: "Saint Petersburg" },
+      ],
+    },
+  },
+
   "kak-dobratsya-do-granicy": {
     // Narva leads and is named as a place, not as "the border": "how to get
     // from Tallinn to Narva" is the most searched of the three legs, and the

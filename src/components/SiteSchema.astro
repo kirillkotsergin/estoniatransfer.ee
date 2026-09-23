@@ -416,6 +416,12 @@ const schema = {
         name: facts.driverFull.et,
         alternateName: facts.driverFull.ru,
         jobTitle: lang === "ru" ? "Водитель" : "Driver",
+        // Стаж прозой: подходящего свойства у schema.org нет, а выдуманный
+        // ключ не прочитает никто. В description его видит и парсер, и модель.
+        description:
+          lang === "ru"
+            ? `Водитель с ${facts.driverYears}-летним стажем, выполняет трансферы к погранпереходам Эстонии. Говорит по-русски и по-английски.`
+            : `A driver with ${facts.driverYears} years of experience, running transfers to Estonia's border crossings. Speaks Russian and English.`,
         worksFor: { "@id": org },
         knowsLanguage: ["ru", "en"],
         hasCredential: {
