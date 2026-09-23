@@ -48,13 +48,21 @@ export const GET: APIRoute = ({ site }) => {
      *
      * priority низкий: страница обязательна к наличию, но в выдаче не нужна.
      */
-    {
-      path: "/privacy/",
-      langs: allLangs,
-      lastmod: "2026-09-24",
-      changefreq: "yearly",
-      priority: "0.2",
-    },
+    /*
+     * /privacy/ временно НЕ в карте — скрыта из выдачи решением владельца
+     * 24.09.2026 до вычитки. Сама страница открывается и отдаёт
+     * `noindex, follow`; подробности в шапке src/pages/privacy.astro.
+     *
+     * Возвращать — раскомментировать этот блок и снять noindex со страницы.
+     *
+     * {
+     *   path: "/privacy/",
+     *   langs: allLangs,
+     *   lastmod: "2026-09-24",
+     *   changefreq: "yearly",
+     *   priority: "0.2",
+     * },
+     */
     /*
      * «О сервисе» — вторая страница вне `landings`, по той же причине.
      * priority выше, чем у политики: на неё ссылается разметка как на

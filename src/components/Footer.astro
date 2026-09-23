@@ -218,12 +218,10 @@ const row = "group flex items-baseline justify-between gap-4 text-ink-muted tran
                 href={localePath(lang, "/o-servise/")}>{t("footer.about")}</a
               >
             </li>
-            <li>
-              <a
-                class="text-ink-muted transition-colors hover:text-brand-ink"
-                href={localePath(lang, "/privacy/")}>{t("footer.privacy")}</a
-              >
-            </li>
+            {/* Ссылка на политику временно убрана — страница скрыта из показа
+                решением владельца 24.09.2026 до вычитки текста. Сама страница
+                по адресу открывается: см. шапку src/pages/privacy.astro.
+                Возвращать вместе с записью в sitemap.xml.ts. */}
             {/* Отзыв согласия должен быть так же доступен, как и его выдача,
                 иначе оно не считается свободно данным. Ссылку перехватывает
                 скрипт в ConsentBanner.astro и открывает баннер заново.
