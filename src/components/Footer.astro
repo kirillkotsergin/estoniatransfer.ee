@@ -321,6 +321,27 @@ const row = "group flex items-baseline justify-between gap-4 text-ink-muted tran
       <div class="grid gap-2">
         <p>© {year} EstoniaTransfer · {t("footer.rights")}</p>
 
+        {/* Юридические реквизиты. В подвале, а не на каждой посадочной:
+            повторённый на двадцати двух страницах одинаковый блок Google
+            читает как шаблонный шум, а в подвале он ожидаем и посетителем,
+            и краулером.
+
+            Машиночитаемая версия — в JSON-LD (SiteSchema.astro): legalName,
+            identifier с registrikood и hasCredential с лицензией. Этот текст
+            для человека, но разойтись они не могут — оба берут facts.legal.
+
+            ⚠️ Блок стоит внутри data-nosnippet (див выше). Это НЕ мешает
+            Google их читать и индексировать, гасится только показ текста в
+            сниппете выдачи — чего мы и хотим: номер лицензии в описании
+            сайта не нужен никому. */}
+        <p class="text-ink-dim">
+          <span class="font-medium">{facts.legal.name}</span>
+          <span aria-hidden="true"> · </span>
+          {t("legal.regCode")}&nbsp;{facts.legal.registryCode}
+          <span aria-hidden="true"> · </span>
+          {t("legal.licence")}&nbsp;{facts.legal.transportLicence}
+        </p>
+
         {/* Счётчик посещений: слева внизу, под копирайтом. Числа подставляет
             скрипт ниже из /hits.php — без JS или без PHP строка остаётся
             скрытой, пустого «Посещений: —» посетитель не увидит.

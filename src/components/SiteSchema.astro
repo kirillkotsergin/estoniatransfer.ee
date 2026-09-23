@@ -93,6 +93,7 @@ const t = {
     fromTartu: "Трансфер из Тарту к погранпереходам Койдула и Лухамаа",
     distance: "Расстояние",
     duration: "Время в пути",
+    licence: "Лицензия на перевозку пассажиров",
   },
   en: {
     desc: "Private transfer from Tallinn to the Narva, Koidula and Luhamaa border crossings: a fixed price per car, airport and cruise port pickup, departures at any hour.",
@@ -105,6 +106,7 @@ const t = {
     fromTartu: "Transfer from Tartu to the Koidula and Luhamaa border crossings",
     distance: "Distance",
     duration: "Journey time",
+    licence: "Passenger transport licence",
   },
 }[lang];
 
@@ -208,6 +210,10 @@ const schema = {
       "@type": ["LocalBusiness", "TaxiService"],
       "@id": org,
       name: "EstoniaTransfer",
+      // Бренд и юрлицо — не одно и то же, и schema.org их различает: name это
+      // то, как нас называют, legalName — кто отвечает по договору. Для модели
+      // второе и есть то, что можно проверить во внешнем реестре.
+      legalName: facts.legal.name,
       url: `${site}/`,
       description: t.desc,
       telephone: phone,
@@ -252,9 +258,13 @@ const schema = {
        * разборщика догадаться, что `cid=` в URL — это идентификатор; здесь он
        * лежит явно и с названием системы.
        *
-       * Регистрационный код (registrikood) сюда же, когда владелец его назовёт:
+       * Регистрационный код добавлен 23.09.2026, когда владелец его назвал:
        * для LLM проверяемое юридическое лицо — сильнейший маркер доверия из
        * всех, что вообще можно отдать разметкой.
+       *
+       * Через PropertyValue, а не taxID: registrikood — это номер в
+       * коммерческом регистре, а не налоговый. Для KMKR у schema.org есть
+       * отдельное vatID, и когда номер появится, он пойдёт туда, а не сюда.
        */
       identifier: [
         {
@@ -262,7 +272,38 @@ const schema = {
           propertyID: "Google Maps CID",
           value: facts.google.cid,
         },
+        {
+          "@type": "PropertyValue",
+          propertyID: "EE:registrikood",
+          name: "Estonian Business Registry Code",
+          value: facts.legal.registryCode,
+        },
       ],
+      /**
+       * Лицензия на перевозку пассажиров. hasCredential — штатное свойство
+       * Organization ровно для этого, а EducationalOccupationalCredential с
+       * credentialCategory "license" — тип, который разборщики понимают.
+       *
+       * Смысл в recognizedBy: утверждение становится проверяемым. Не «у нас
+       * есть лицензия» прозой в подвале, а «документ с таким номером выдан
+       * таким органом» — это можно сверить с реестром, и именно это модель
+       * может процитировать.
+       *
+       * ⚠️ Орган берётся из facts.legal.issuer, и там висит ПРОВЕРЬ. Неверный
+       * recognizedBy — ложное машиночитаемое утверждение о госоргане.
+       *
+       * Teenindaja kaart сюда НЕ добавлять: её выдают человеку, а не фирме,
+       * и на узле организации она была бы неправдой. Причины, почему её нет
+       * и на Person, — в комментарии к facts.legal.
+       */
+      hasCredential: {
+        "@type": "EducationalOccupationalCredential",
+        "@id": `${site}/#transport-licence`,
+        name: t.licence,
+        credentialCategory: "license",
+        identifier: facts.legal.transportLicence,
+        recognizedBy: { "@type": "GovernmentOrganization", name: facts.legal.issuer },
+      },
       contactPoint: [
         {
           "@type": "ContactPoint",
