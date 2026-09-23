@@ -1,0 +1,123 @@
+---
+/**
+ * Баннер согласия на рекламные cookie (GDPR + ePrivacy, Consent Mode v2).
+ *
+ * Показывается ТОЛЬКО когда задан googleAds.id — тем же условием, что и сам
+ * тег. Пока поле пустое, на сайт не попадает ни одной cookie, и баннер был бы
+ * не только лишним, но и вредным: спрашивать разрешение не на что.
+ *
+ * Дефолты согласия ставит НЕ этот компонент, а инлайновый скрипт в
+ * Base.astro — он обязан выполниться до gtag.js, а компонент живёт в <body>.
+ * Отсюда только UI и вызов window.etConsent.set().
+ *
+ * Что здесь сделано ради юридической состоятельности, а не ради красоты:
+ *
+ * - «Отклонить» ВИЗУАЛЬНО РАВНОЗНАЧНА «Принять»: тот же размер, тот же
+ *   контраст, та же строка. Спрятанный или блёклый отказ — претензия номер
+ *   один у европейских регуляторов, и именно на ней сыплются самоделки.
+ * - Баннер ничего не перекрывает и не блокирует: это не cookie wall, читать
+ *   сайт можно не отвечая. Нет ответа — нет согласия, тег остаётся в denied.
+ * - Решение отзывается: ссылка в подвале открывает баннер заново.
+ *
+ * Технические ловушки этого проекта, каждая уже стоила одного молчаливого
+ * сбоя (подробности в CLAUDE.md):
+ *
+ * - `is:inline` обязателен. Без него Astro соберёт скрипт как ES-модуль,
+ *   вынесет в /_astro/, и функция не попадёт в window — onclick упадёт.
+ * - Имена переменных в define:vars глобальные на всю страницу. Отсюда
+ *   префикс `cb` у всех: `locale` однажды уже столкнулся с OrderForm.astro
+ *   и молча убил счётчик в подвале.
+ * - position: fixed, а не в потоке: баннер появляется после загрузки, и в
+ *   потоке он сдвинул бы вёрстку — это прямой удар по CLS.
+ * - Свой селектор [&[hidden]]:hidden рядом с flex: правило браузера для
+ *   [hidden] слабее утилиты, а полагаться на !important из preflight
+ *   Tailwind не хочется.
+ */
+import { useTranslations, localePath, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const btn =
+  "rounded-xl px-4 py-2.5 text-[0.9rem] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-ink";
+---
+
+<div
+  data-consent-banner
+  hidden
+  role="dialog"
+  aria-modal="false"
+  aria-label={t("consent.title")}
+  class="glass fixed inset-x-3 bottom-3 z-50 flex flex-col gap-4 rounded-[var(--radius-card)] p-5 shadow-lg sm:inset-x-auto sm:right-4 sm:bottom-4 sm:max-w-md [&[hidden]]:hidden"
+>
+  <div>
+    <p class="text-[1rem] font-semibold tracking-tight">{t("consent.title")}</p>
+    <p class="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">
+      {t("consent.text")}
+      <a
+        class="font-semibold text-brand-ink hover:underline"
+        href={localePath(lang, "/privacy/")}>{t("consent.more")}</a
+      >
+    </p>
+  </div>
+
+  {/* Две кнопки в одной строке и одинаковой ширины. Отказ слева и не серым:
+      равнозначность здесь — требование, а не вкусовщина. */}
+  <div class="flex gap-2.5">
+    <button
+      type="button"
+      data-consent-decline
+      class={`${btn} flex-1 border border-line-strong/60 text-ink hover:bg-surface`}
+    >
+      {t("consent.decline")}
+    </button>
+    <button
+      type="button"
+      data-consent-accept
+      class={`${btn} flex-1 bg-brand text-ink hover:bg-brand-hover`}
+    >
+      {t("consent.accept")}
+    </button>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    "use strict";
+    var cbBox = document.querySelector("[data-consent-banner]");
+    if (!cbBox || !window.etConsent) return;
+
+    function cbClose() {
+      cbBox.hidden = true;
+    }
+
+    function cbDecide(value) {
+      window.etConsent.set(value);
+      cbClose();
+    }
+
+    cbBox.querySelector("[data-consent-accept]").addEventListener("click", function () {
+      cbDecide("granted");
+    });
+    cbBox.querySelector("[data-consent-decline]").addEventListener("click", function () {
+      cbDecide("denied");
+    });
+
+    /* Повторное открытие по ссылке из подвала. Отзыв согласия обязан быть
+       так же доступен, как и его выдача, иначе оно не считается свободным. */
+    document.addEventListener("click", function (e) {
+      var link = e.target.closest ? e.target.closest("[data-consent-reopen]") : null;
+      if (!link) return;
+      e.preventDefault();
+      cbBox.hidden = false;
+      cbBox.querySelector("[data-consent-decline]").focus();
+    });
+
+    /* Показываем только тем, кто ещё не решал. Ответ «denied» — это ответ:
+       переспрашивать на каждой странице значит выпрашивать согласие. */
+    if (window.etConsent.read() === null) cbBox.hidden = false;
+  })();
+</script>

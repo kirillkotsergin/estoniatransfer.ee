@@ -4,6 +4,7 @@ import { getImage } from "astro:assets";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import OrderFab from "../components/OrderFab.astro";
+import ConsentBanner from "../components/ConsentBanner.astro";
 import ogSource from "../assets/car/car-1.jpg";
 import {
   useTranslations,
@@ -205,6 +206,75 @@ const canonical = new URL(localePath(lang, path), site).href;
         видимости: ни gtag, ни gtagSendEvent не попадают в window, и вызов из
         onclick падает с «gtagSendEvent is not defined». Падает молча — кнопка
         просто перестаёт работать. */}
+    {/* Consent Mode v2 — дефолты.
+
+        ⚠️ ЭТОТ СКРИПТ ОБЯЗАН СТОЯТЬ ДО gtag.js. Не «желательно»: Consent
+        Mode читает состояние в момент инициализации тега, и дефолты,
+        выставленные после загрузки gtag.js, не применяются вообще. Ошибка
+        молчаливая — тег работает, cookie ставятся, а вы об этом узнаете
+        только от регулятора. Переставите блоки местами — сломаете всё.
+
+        Почему denied всем, а не только ЕЭЗ: определить регион на статике
+        можно лишь внешним запросом, а это ещё одна зависимость и ещё один
+        круг до рендера. Показывать баннер всем проще и строго безопаснее.
+
+        wait_for_update даёт 500 мс на то, чтобы восстановленное согласие
+        доехало до тега раньше, чем он решит отправить первый пинг.
+
+        Отказ НЕ выключает тег: в denied он шлёт безкуковые пинги, из
+        которых Google моделирует конверсии. Это и есть смысл Consent Mode —
+        не «тег или ничего», а «с cookie или без».  */}
+    {
+      googleAds.id && (
+        <script is:inline>
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){ dataLayer.push(arguments); }
+
+            gtag('consent', 'default', {
+              ad_storage: 'denied',
+              ad_user_data: 'denied',
+              ad_personalization: 'denied',
+              analytics_storage: 'denied',
+              wait_for_update: 500
+            });
+
+            /* Решение храним в localStorage, а не в cookie: до согласия в
+               браузер не пишется вообще ничего. Cookie согласия была бы
+               «строго необходимой» и формально разрешённой, но так спорить
+               не о чем. */
+            window.etConsent = {
+              KEY: 'et-consent-v1',
+              read: function () {
+                try { return localStorage.getItem(this.KEY); } catch (e) { return null; }
+              },
+              set: function (value) {
+                try { localStorage.setItem(this.KEY, value); } catch (e) {}
+                var g = value === 'granted' ? 'granted' : 'denied';
+                gtag('consent', 'update', {
+                  ad_storage: g,
+                  ad_user_data: g,
+                  ad_personalization: g,
+                  analytics_storage: g
+                });
+              }
+            };
+
+            /* Согласие из прошлого визита применяем немедленно, до gtag.js,
+               иначе первый пинг уйдёт как denied и конверсия потеряется. */
+            if (window.etConsent.read() === 'granted') {
+              gtag('consent', 'update', {
+                ad_storage: 'granted',
+                ad_user_data: 'granted',
+                ad_personalization: 'granted',
+                analytics_storage: 'granted'
+              });
+            }
+          `}
+        </script>
+      )
+    }
+
     {
       googleAds.id && (
         <Fragment>
@@ -337,6 +407,10 @@ const canonical = new URL(localePath(lang, path), site).href;
     </main>
     <Footer lang={lang} />
     <OrderFab lang={lang} />
+    {/* Тем же условием, что и сам тег: нет googleAds.id — нет cookie, и
+        спрашивать не о чем. Впишете AW-… — баннер и Consent Mode включатся
+        вместе с тегом, править больше нечего. */}
+    {googleAds.id && <ConsentBanner lang={lang} />}
 
     <script is:inline>
       // Появление при скролле. Ванильно и дешёво: ~600 байт, без библиотек.

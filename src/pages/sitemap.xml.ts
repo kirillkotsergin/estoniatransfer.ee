@@ -37,6 +37,24 @@ export const GET: APIRoute = ({ site }) => {
 
   const entries: Entry[] = [
     { path: "/", langs: allLangs, lastmod: siteUpdated, changefreq: "monthly", priority: "1.0" },
+    /*
+     * Политика конфиденциальности — единственная страница вне `landings`
+     * (обычная src/pages/privacy.astro, потому что RouteCopy требует faq,
+     * cta и schema, которых у политики нет). Поэтому она дописана сюда
+     * руками — автоматически отсюда её взять неоткуда.
+     *
+     * Меняете слаг страницы — меняйте и здесь. Расхождение поймает
+     * tools/check-sitemap.mjs и уронит деплой до отправки.
+     *
+     * priority низкий: страница обязательна к наличию, но в выдаче не нужна.
+     */
+    {
+      path: "/privacy/",
+      langs: allLangs,
+      lastmod: "2026-09-24",
+      changefreq: "yearly",
+      priority: "0.2",
+    },
     ...landings.map((r) => ({
       path: `/${r.slug}/`,
       langs: Object.keys(r.copy) as Lang[],

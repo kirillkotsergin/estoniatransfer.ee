@@ -431,6 +431,17 @@ export const ui = {
     "footer.useful": "Полезное",
     "footer.russia": "Из России",
     "footer.rights": "Все права защищены",
+    // Баннер согласия. Текст короткий намеренно: длинная юридическая
+    // простыня в баннере читается хуже, а подробности — по ссылке, куда
+    // закон их и отправляет.
+    "consent.title": "Cookie для рекламы",
+    "consent.text":
+      "Мы используем cookie Google Ads, чтобы понимать, какая реклама приводит заказы. Без вашего согласия они не устанавливаются. Аналитика посещений работает без cookie в любом случае.",
+    "consent.more": "Подробнее в политике конфиденциальности",
+    "consent.accept": "Принять",
+    "consent.decline": "Отклонить",
+    "consent.reopen": "Настройки cookie",
+    "footer.privacy": "Конфиденциальность",
     // Реквизиты в подвале. Слово «Лицензия» целиком, а не «Лиц.»: строка
     // читается и человеком, и моделью, а сокращение экономит четыре знака
     // ценой понятности.
@@ -627,6 +638,14 @@ export const ui = {
     "footer.useful": "Useful",
     "footer.russia": "From Russia",
     "footer.rights": "All rights reserved",
+    "consent.title": "Advertising cookies",
+    "consent.text":
+      "We use Google Ads cookies to see which ads bring bookings. They are not set without your consent. Visitor analytics works without cookies either way.",
+    "consent.more": "More in the privacy policy",
+    "consent.accept": "Accept",
+    "consent.decline": "Decline",
+    "consent.reopen": "Cookie settings",
+    "footer.privacy": "Privacy",
     "legal.regCode": "Reg. code",
     "legal.licence": "Passenger transport licence",
     "footer.hits": "Visits:",

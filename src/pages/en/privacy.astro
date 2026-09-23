@@ -1,0 +1,185 @@
+---
+/**
+ * Privacy policy, English. Mirror of src/pages/privacy.astro — see the header
+ * comment there for why this is a plain page rather than a `landings` entry,
+ * and for the note that it must be listed in sitemap.xml.ts by hand.
+ *
+ * Keep the two in step: a policy that says different things in two languages
+ * is worse than one language, because it proves neither was checked.
+ */
+import Base from "../../layouts/Base.astro";
+import { facts, googleAds, useTranslations } from "../../i18n/ui";
+
+const lang = "en" as const;
+const t = useTranslations(lang);
+const updated = "24 September 2026";
+
+const h2 = "mt-12 text-[clamp(1.4rem,2.4vw,1.9rem)] font-semibold tracking-tight";
+const p = "mt-4 leading-relaxed text-ink-muted";
+const ul = "mt-4 grid gap-2 text-ink-muted [&>li]:pl-5 [&>li]:relative";
+const li =
+  "before:absolute before:left-0 before:top-[0.6em] before:size-1.5 before:rounded-full before:bg-brand";
+---
+
+<Base
+  lang={lang}
+  path="/privacy/"
+  title="Privacy Policy — EstoniaTransfer"
+  description="What data estoniatransfer.ee collects, why, on what legal basis and for how long. Cookies, the booking form, the visit counter and your rights under the GDPR."
+>
+  <article class="mx-auto max-w-3xl px-5 py-16 sm:py-20">
+    <h1 class="text-[clamp(1.9rem,4vw,2.8rem)] font-semibold leading-tight tracking-[-0.02em]">
+      Privacy Policy
+    </h1>
+    <p class="mt-4 text-[0.9rem] text-ink-dim">Last updated: {updated}</p>
+
+    <p class={p}>
+      This page explains what personal data estoniatransfer.ee collects, why it
+      is needed, on what legal basis it is processed and how long it is kept. It
+      is written to the EU General Data Protection Regulation (GDPR).
+    </p>
+
+    <h2 class={h2}>Who processes your data</h2>
+    <p class={p}>
+      The controller is <strong>{facts.legal.name}</strong>, registry code{" "}
+      {facts.legal.registryCode}, Estonia. Transport is carried out under licence{" "}
+      {facts.legal.transportLicence}.
+    </p>
+    <p class={p}>
+      For any question about this data, contact{" "}
+      <a class="font-semibold text-brand-ink hover:underline" href={`mailto:${facts.email}`}
+        >{facts.email}</a
+      > or call {facts.phone}.
+    </p>
+
+    <h2 class={h2}>What we collect, and why</h2>
+
+    <h3 class="mt-8 text-[1.05rem] font-semibold">The booking form</h3>
+    <p class={p}>
+      When you send a request we receive your name, phone number and whatever you
+      write in the message: route, date, time and any requirements for the
+      journey. This is needed to agree and carry out the trip, so the legal basis
+      is performance of a contract. Requests are kept for up to a year so the
+      history of a journey can be reconstructed in a dispute, then deleted.
+    </p>
+    <p class={p}>
+      Requests reach us by email. If you write on WhatsApp or Telegram, that
+      conversation stays in those services under their own policies, which we
+      cannot influence.
+    </p>
+
+    <h3 class="mt-8 text-[1.05rem] font-semibold">The visit counter</h3>
+    <p class={p}>
+      The footer shows a visitor count. It sets no cookies and does not store
+      your IP address: a visitor is distinguished by an irreversible hash of the
+      IP address, the browser and a secret key held on the server. That cannot be
+      turned back into an identity, and we do not try. The basis is our
+      legitimate interest in knowing how busy our own site is.
+    </p>
+
+    <h3 class="mt-8 text-[1.05rem] font-semibold">Ahrefs analytics</h3>
+    <p class={p}>
+      We use Ahrefs Web Analytics for visit statistics. It runs{" "}
+      <strong>without cookies</strong> and collects anonymised data: page address,
+      referrer, device type and country. It does not build a profile of you. The
+      basis is legitimate interest.
+    </p>
+
+    <h3 class="mt-8 text-[1.05rem] font-semibold">Google Ads and cookies</h3>
+    <p class={p}>
+      If you consent in the banner, Google Ads sets the cookies{" "}
+      <code class="rounded bg-surface px-1.5 py-0.5 text-[0.85em]">_gcl_aw</code> and{" "}
+      <code class="rounded bg-surface px-1.5 py-0.5 text-[0.85em]">_gcl_au</code>.
+      They exist to show which advert led to a booking. They last up to 90 days.
+      The only legal basis here is your consent.
+    </p>
+    <p class={p}>
+      Without consent these cookies are not set at all. Technically this is
+      enforced by Google Consent Mode v2: until you decide, the tag runs in a
+      restricted mode and uses no browser storage.
+    </p>
+    <p class={p}>
+      Google Ireland Limited acts as an independent controller for the data it
+      receives. Data may be transferred outside the EEA; Google relies on the
+      European Commission's standard contractual clauses for this.
+    </p>
+
+    <h2 class={h2}>Withdrawing consent</h2>
+    <p class={p}>
+      At any time, without giving a reason. Click{" "}
+      <a
+        class="cursor-pointer font-semibold text-brand-ink hover:underline"
+        href="#"
+        data-consent-reopen>{t("consent.reopen")}</a
+      > and the same banner opens again so you can change your answer. Withdrawing
+      is as easy as giving consent.
+    </p>
+    <p class={p}>
+      Cookies already set can be deleted in your browser settings. Withdrawal
+      does not affect the lawfulness of processing before it.
+    </p>
+
+    <h2 class={h2}>Who the data is shared with</h2>
+    <ul class={ul}>
+      <li class={li}>
+        <strong>Zone Media OÜ</strong> — website hosting and email, Estonia.
+        Acts as a processor on our instructions.
+      </li>
+      <li class={li}>
+        <strong>Ahrefs Pte. Ltd.</strong> — anonymised visit statistics.
+      </li>
+      <li class={li}>
+        <strong>Google Ireland Limited</strong> — only with your consent, to
+        measure advertising performance.
+      </li>
+    </ul>
+    <p class={p}>
+      We do not sell personal data and do not pass it to third parties for their
+      own marketing.
+    </p>
+
+    <h2 class={h2}>Your rights</h2>
+    <p class={p}>Under the GDPR you have the right to:</p>
+    <ul class={ul}>
+      <li class={li}>receive a copy of the data we hold about you;</li>
+      <li class={li}>have inaccurate data corrected;</li>
+      <li class={li}>request erasure of your data;</li>
+      <li class={li}>restrict processing or object to it;</li>
+      <li class={li}>withdraw consent you previously gave;</li>
+      <li class={li}>receive your data in a machine-readable format.</li>
+    </ul>
+    <p class={p}>
+      To exercise any of these, write to{" "}
+      <a class="font-semibold text-brand-ink hover:underline" href={`mailto:${facts.email}`}
+        >{facts.email}</a
+      >. We reply within one month.
+    </p>
+    <p class={p}>
+      If our answer does not satisfy you, you may complain to the Estonian Data
+      Protection Inspectorate (Andmekaitse Inspektsioon,{" "}
+      <a
+        class="font-semibold text-brand-ink hover:underline"
+        href="https://www.aki.ee/en"
+        target="_blank"
+        rel="noopener">aki.ee</a
+      >) or to the supervisory authority in your country of residence.
+    </p>
+
+    <h2 class={h2}>Changes</h2>
+    <p class={p}>
+      If we start collecting data differently, this page will be updated and the
+      date at the top will change. It is worth checking for substantive changes
+      before sending a request.
+    </p>
+
+    {
+      !googleAds.id && (
+        <p class="mt-12 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-[0.88rem] text-ink-dim">
+          Note: advertising cookies are <strong>not currently in use</strong> on this
+          site — Google Ads is not connected and the consent banner is not shown.
+          The Google Ads section describes what will happen once it is.
+        </p>
+      )
+    }
+  </article>
+</Base>

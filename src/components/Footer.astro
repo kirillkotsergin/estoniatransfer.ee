@@ -1,7 +1,15 @@
 ---
 import Messengers from "./Messengers.astro";
 import ReviewButton from "./ReviewButton.astro";
-import { useTranslations, facts, localePath, reviewsWord, type Lang, type UIKey } from "../i18n/ui";
+import {
+  useTranslations,
+  facts,
+  googleAds,
+  localePath,
+  reviewsWord,
+  type Lang,
+  type UIKey,
+} from "../i18n/ui";
 import { footerLinks } from "../data/routes";
 
 interface Props {
@@ -204,6 +212,31 @@ const row = "group flex items-baseline justify-between gap-4 text-ink-muted tran
                 href={`${localePath(lang, "/")}#car`}>{t("nav.car")}</a
               >
             </li>
+            <li>
+              <a
+                class="text-ink-muted transition-colors hover:text-brand-ink"
+                href={localePath(lang, "/privacy/")}>{t("footer.privacy")}</a
+              >
+            </li>
+            {/* Отзыв согласия должен быть так же доступен, как и его выдача,
+                иначе оно не считается свободно данным. Ссылку перехватывает
+                скрипт в ConsentBanner.astro и открывает баннер заново.
+
+                Рендерится только когда есть что отзывать: нет googleAds.id —
+                нет cookie, нет баннера, и пункт вёл бы в никуда. */}
+            {
+              googleAds.id && (
+                <li>
+                  <a
+                    class="cursor-pointer text-ink-muted transition-colors hover:text-brand-ink"
+                    href="#"
+                    data-consent-reopen
+                  >
+                    {t("consent.reopen")}
+                  </a>
+                </li>
+              )
+            }
             <li>
               <a
                 class="text-ink-muted transition-colors hover:text-brand-ink"
