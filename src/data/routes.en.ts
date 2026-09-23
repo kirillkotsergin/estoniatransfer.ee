@@ -1728,14 +1728,19 @@ export const en: Record<string, RouteCopy> = {
 
   // ───────────────────────── Guide: how to reach the border ─────────────────────────
   "kak-dobratsya-do-granicy": {
-    title: "How to get from Tallinn to the Russian border: a guide",
+    // Narva leads and is named as a place, not as "the border": "how to get
+    // from Tallinn to Narva" is the most searched of the three legs, and the
+    // page previously answered it only with the word "border". Koidula and
+    // Luhamaa stay in the title — the page covers all three, and the stats
+    // block says so.
+    title: "How to Get from Tallinn to Narva, Koidula and Luhamaa",
     description:
-      "Coach, train, car or transfer: what each costs and how far you walk to the Narva, Koidula and Luhamaa crossings. Opening hours, GoSwift queue, Narva hotels.",
+      "How to get from Tallinn to Narva, Koidula and Luhamaa: coach, train, car or private transfer. Prices, journey times, crossing hours and the GoSwift queue.",
     ogDescription:
       "Every way to reach the border crossings from Tallinn: prices, journey times, opening hours and the GoSwift queue.",
     breadcrumb: "How to reach the border",
     h1: "How to get from Tallinn to the Russian border: Narva, Koidula, Luhamaa",
-    badge: "Guide · updated 17 August 2026",
+    badge: "Guide · updated 23 September 2026",
     footer: { label: "How to reach the border" },
     stats: [
       { value: "210 km", label: "to Narva" },
@@ -1811,6 +1816,66 @@ export const en: Record<string, RouteCopy> = {
         "<strong>What to read as the main column.</strong> Not the price but «where it drops you»: two kilometres from Narva station to the checkpoint with suitcases turn a cheap ticket into a miserable finish, and to Koidula and Luhamaa nothing scheduled reaches the gates at all.",
     },
     blocks: [
+      /**
+       * Section targeting "how to get from Tallinn to Narva" — the most
+       * searched of the three legs. Added 23.09.2026 INSTEAD of a separate
+       * page, deliberately: a page of its own would be the third covering
+       * the same ground (/en/transfer-tallinn-narva/ already exists), Google
+       * would treat them as duplicates and all three would lose.
+       *
+       * So the carriers are NOT repeated here — they are below, in "Each
+       * option on its own", and duplicating them within one page is as
+       * harmful as duplicating them across pages. This covers only what is
+       * specific to Narva: city or crossing, the two kilometres, and
+       * counting backwards from closing time.
+       *
+       * Figures come from the table above rather than being written afresh;
+       * within one page they have no right to disagree.
+       */
+      {
+        eyebrow: "This leg",
+        title: "Tallinn to Narva: what to decide before buying a ticket",
+        lead:
+          "The busiest of the three directions, and the only one where you cross on foot. That makes the choice about more than the fare: what decides it is two kilometres that no ticket mentions.",
+        headings: true,
+        items: [
+          {
+            title: "Are you going to Narva the city, or to the crossing?",
+            text:
+              "This matters more than price. Narva's railway station and bus terminal are both in the centre; the Narva-1 crossing is roughly another two kilometres beyond them. If the city is your destination, there is no question — the train and the coach put you exactly where you want to be, and paying for a car is pointless. If the border is your destination, those two kilometres are your problem, and you solve them with whatever luggage you brought.",
+            specs: [
+              ["Narva station to the crossing", "≈ 2 km on foot"],
+              ["A transfer drops you", "at the checkpoint itself"],
+            ],
+          },
+          {
+            title: "How much luggage you have",
+            text:
+              "With a backpack it barely matters — two flat kilometres take half an hour. Two suitcases per person changes the picture completely, and changes it twice: first in Tallinn, where you still have to reach Balti jaam or the coach terminal, then again in Narva. A journey that looks like a single ticket turns out to be three separate moves with your bags.",
+          },
+          {
+            title: "What time you need to be at the crossing",
+            text:
+              "Narva-1 operates from 07:00 to 19:00, and you should count backwards from that, not forwards from a convenient departure. The queue is unpredictable: on public holidays and through the summer it eats hours. A service arriving in Narva late in the afternoon technically makes it, and in practice can leave you at a closed crossing booking an unplanned hotel — there is a section on Narva hotels below, and that is exactly why it exists.",
+            specs: [
+              ["Narva-1 hours", "07:00 – 19:00, pedestrians only"],
+              ["Allow for the queue", "hours in summer and on holidays, not minutes"],
+            ],
+          },
+          {
+            title: "Train, coach and car on this leg",
+            text:
+              "Briefly, using the figures from the table above. The Lux Express coach is the cheapest option, from €9 and about 3 h 15 min to the bus station. The Elron train is faster than the coach at roughly 2 h 50 min to the station, and costs €13–23. A private transfer is 2 h 30 min and €130 for the whole car, but runs from your door to the barrier itself, without two changes carrying suitcases. For four people it comes out below four tickets; travelling alone and light, it is clearly more expensive — and that is the honest answer.",
+            specs: [
+              ["Lux Express coach", "from €9 · ≈ 3 h 15 min · to the bus station"],
+              ["Elron train", "€13–23 · ≈ 2 h 50 min · to the station"],
+              ["Private transfer", "€130 per car · ≈ 2 h 30 min · to the crossing"],
+            ],
+          },
+        ],
+        note:
+          "<strong>The short version.</strong> Travelling light and heading into the city — take the coach or the train, there is nothing to pay extra for. Heading to the border with luggage, children, or straight from the airport — price the whole journey including those two kilometres, not the ticket.",
+      },
       {
         eyebrow: "In detail",
         title: "Each option on its own",
@@ -1926,6 +1991,47 @@ export const en: Record<string, RouteCopy> = {
         ],
         note:
           '<strong>A tip.</strong> Before public holidays the rooms go quickly. If you can see you will not clear control before 19:00, book the night in advance. The full list of the town\'s hotels is at <a href="https://visitnarva.ee/" target="_blank" rel="noopener nofollow">visitnarva.ee</a>.',
+      },
+      /**
+       * Operator credentials on the page itself. They already sit in the
+       * footer of all 23 pages, but that is small print under a copyright
+       * line; here they are in context, on the page where the reader is
+       * deciding who to travel with.
+       *
+       * The service card is described as the DRIVER's, not the company's,
+       * which keeps the sentence true. It does not go into the structured
+       * data at all — the reason is in facts.legal.
+       *
+       * Numbers come from facts.legal rather than being typed here: a figure
+       * typed into prose eventually disagrees with the footer and the markup.
+       */
+      {
+        eyebrow: "The operator",
+        title: "Who runs the service",
+        lead:
+          "Carrying passengers for payment is a licensed activity in Estonia, and the numbers below are verifiable in public registers. Ask any operator you arrange a border run with for theirs: someone who cannot produce them is working outside the law, and you would have no insurance if something went wrong.",
+        layout: "cards",
+        place: "bottom",
+        items: [
+          {
+            title: "Legal entity",
+            specs: [
+              ["Name", facts.legal.name],
+              ["Registry code", facts.legal.registryCode],
+            ],
+            text: "Entered in the Estonian Commercial Register. The code can be checked at ariregister.rik.ee.",
+          },
+          {
+            title: "Passenger transport licence",
+            specs: [["Number", facts.legal.transportLicence]],
+            text: "Issued to the company. Without it, carrying passengers for payment is not permitted and insurance does not apply during the journey.",
+          },
+          {
+            title: "The driver",
+            specs: [["Service card", facts.legal.serviceCard]],
+            text: `The same person every time, speaking English and Russian. The car is a ${facts.car} with four passenger seats.`,
+          },
+        ],
       },
     ],
     price: {
