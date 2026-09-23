@@ -191,7 +191,7 @@ export const GET: APIRoute = ({ site }) => {
 - Водитель: **${facts.driverFull.ru}** (${facts.driverFull.et}), стаж ${facts.driverYears} лет, карта обслуживающего лица **${facts.legal.serviceCard}**.
 - Автомобиль: ${facts.car}, ${facts.seats} пассажирских места.
 - Телефон, WhatsApp и Telegram: ${facts.phone}. Почта: ${facts.email}.
-- Оплата: наличными водителю или банковским переводом, в евро. Картой — нельзя. Предоплаты нет.
+- Оплата: ${facts.payment.ru}, в евро. Предоплаты нет — расчёт после поездки.
 
 ---
 

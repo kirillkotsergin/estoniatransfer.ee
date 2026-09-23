@@ -277,7 +277,7 @@ export const en: Record<string, RouteCopy> = {
     },
     answer: [
       `<strong>In short.</strong> Narva to Tallinn costs <strong>${eur("narva")}</strong> for the whole car — up to four passengers with luggage. It is 210 km from the border to Tallinn, about <strong>2 hours 30 minutes</strong>. The car waits on the Estonian side of the checkpoint, not at a bus station across town.`,
-      "<strong>Waiting is not billed.</strong> Nobody can say in advance how long the queue will take, so we do not ask for an exact hour: give us an approximate one and the driver will wait. <strong>No prepayment</strong>, and you can settle <strong>in euros or in roubles</strong>, in cash or by transfer.",
+      "<strong>Waiting is not billed.</strong> Nobody can say in advance how long the queue will take, so we do not ask for an exact hour: give us an approximate one and the driver will wait. <strong>No prepayment</strong>, and you can settle <strong>in euros or in roubles</strong>, in cash, by card or by transfer.",
       'On the signs the Estonian checkpoint is marked Narva-1; the Russian side across the river is Ivangorod. Need the other direction, from Tallinn to the border? That is the <a href="/en/transfer-tallinn-narva/">Tallinn — Narva</a> page, at the same price.',
     ],
     price: {
@@ -305,7 +305,7 @@ export const en: Record<string, RouteCopy> = {
         ],
       ],
       note:
-        "<strong>Paying.</strong> Cash to the driver — <strong>in euros or in roubles</strong> — or by bank transfer. On the way back that matters more than it sounds: Russian bank cards do not work in Estonia and there may be no exchange office at the crossing. No prepayment: the ride first, the settlement after.",
+        "<strong>Paying.</strong> Cash to the driver — <strong>in euros or in roubles</strong> — by card or by bank transfer. On the way back that matters more than it sounds: Russian bank cards do not work in Estonia and there may be no exchange office at the crossing. No prepayment: the ride first, the settlement after.",
       extra: [
         {
           title: "Why the return trip is booked in advance",
@@ -482,7 +482,7 @@ export const en: Record<string, RouteCopy> = {
         },
         {
           q: "Can I pay in roubles?",
-          a: "Yes. We take both euros and roubles, in cash or by transfer. There is no need to hunt for an exchange office after the border — there may not be one at the crossing, and Russian bank cards do not work in Estonia. We take no prepayment in any currency.",
+          a: "Yes. We take both euros and roubles, in cash, by card or by transfer. There is no need to hunt for an exchange office after the border — there may not be one at the crossing, and Russian bank cards do not work in Estonia. We take no prepayment in any currency.",
         },
         {
           q: "Will you take me straight to Tallinn airport?",
@@ -798,7 +798,7 @@ export const en: Record<string, RouteCopy> = {
     },
     answer: [
       `<strong>In short.</strong> Koidula to Tallinn costs <strong>${eur("koidula")}</strong> for the whole car — up to four passengers with luggage. It is 270 km via Tartu, about <strong>3 hours 5 minutes</strong>. The car waits on the Estonian side of the checkpoint, at the exit from its grounds.`,
-      "<strong>Waiting is not billed.</strong> Nobody can say how long the queue on the Russian side will hold you, so we do not need an exact hour: give us an approximate one and the driver will wait. <strong>No prepayment</strong>, and you can settle <strong>in euros or in roubles</strong>, in cash or by transfer.",
+      "<strong>Waiting is not billed.</strong> Nobody can say how long the queue on the Russian side will hold you, so we do not need an exact hour: give us an approximate one and the driver will wait. <strong>No prepayment</strong>, and you can settle <strong>in euros or in roubles</strong>, in cash, by card or by transfer.",
       'The Russian side of this crossing is called Kunichina Gora; the Estonian side is Koidula. Need the other direction, from Tallinn to the border? That is the <a href="/en/transfer-tallinn-koidula/">Tallinn — Koidula</a> page, at the same price.',
     ],
     price: {
@@ -827,7 +827,7 @@ export const en: Record<string, RouteCopy> = {
         ],
       ],
       note:
-        "<strong>Paying.</strong> Cash to the driver — <strong>in euros or in roubles</strong> — or by bank transfer. There is no exchange office and no cash machine at Koidula, and Russian bank cards are not accepted in Estonia, so roubles help here more often than it sounds. No prepayment: the ride first, the settlement after.",
+        "<strong>Paying.</strong> Cash to the driver — <strong>in euros or in roubles</strong> — by card or by bank transfer. There is no exchange office and no cash machine at Koidula, and Russian bank cards are not accepted in Estonia, so roubles help here more often than it sounds. No prepayment: the ride first, the settlement after.",
       extra: [
         {
           title: "Why you cannot simply hail a car at Koidula",
@@ -879,7 +879,7 @@ export const en: Record<string, RouteCopy> = {
         },
         {
           title: "Drop-off wherever you need",
-          text: "An airport terminal, a berth in the port, a station, a hotel or your front door — we drive to the address, not to the nearest main street. We unload the suitcases ourselves; you settle after the ride, in euros or roubles, in cash or by transfer.",
+          text: "An airport terminal, a berth in the port, a station, a hotel or your front door — we drive to the address, not to the nearest main street. We unload the suitcases ourselves; you settle after the ride, in euros or roubles, in cash, by card or by transfer.",
         },
       ],
     },
@@ -1006,7 +1006,7 @@ export const en: Record<string, RouteCopy> = {
         },
         {
           q: "Can I pay in roubles?",
-          a: "Yes. We take both euros and roubles, in cash or by transfer. There is no exchange office or cash machine at Koidula and Russian bank cards do not work in Estonia, so you will not have to change money for the transfer. We take no prepayment in any currency.",
+          a: "Yes. We take both euros and roubles, in cash, by card or by transfer. There is no exchange office or cash machine at Koidula and Russian bank cards do not work in Estonia, so you will not have to change money for the transfer. We take no prepayment in any currency.",
         },
         {
           q: "Can I leave Koidula by train or coach?",
@@ -1296,7 +1296,7 @@ export const en: Record<string, RouteCopy> = {
     },
     answer: [
       `<strong>In short.</strong> Luhamaa to Tallinn costs <strong>${eur("luhamaa")}</strong> for the whole car — up to four passengers with luggage. It is 280 km via Võru and Tartu, about <strong>3 hours 10 minutes</strong>. The car waits on the Estonian side, at the exit from the checkpoint grounds.`,
-      "<strong>Waiting is not billed.</strong> Nobody predicts the queue on the Russian side, so an exact hour is not needed: give us an approximate one and the driver will wait. <strong>No prepayment</strong>, and you can settle <strong>in euros or in roubles</strong>, in cash or by transfer.",
+      "<strong>Waiting is not billed.</strong> Nobody predicts the queue on the Russian side, so an exact hour is not needed: give us an approximate one and the driver will wait. <strong>No prepayment</strong>, and you can settle <strong>in euros or in roubles</strong>, in cash, by card or by transfer.",
       'The Russian side of this crossing is Shumilkino; the Estonian one is Luhamaa. Need the other direction, from Tallinn to the border? That is the <a href="/en/transfer-tallinn-luhamaa/">Tallinn — Luhamaa</a> page, at the same price.',
     ],
     price: {
@@ -1325,7 +1325,7 @@ export const en: Record<string, RouteCopy> = {
         ],
       ],
       note:
-        "<strong>Paying.</strong> Cash to the driver — <strong>in euros or in roubles</strong> — or by bank transfer. There is no exchange office, cash machine or shop at Luhamaa, and Russian bank cards are not accepted in Estonia: roubles are effectively the only money that works here. No prepayment: the ride first, the settlement after.",
+        "<strong>Paying.</strong> Cash to the driver — <strong>in euros or in roubles</strong> — by card or by bank transfer. There is no exchange office, cash machine or shop at Luhamaa, and Russian bank cards are not accepted in Estonia: roubles are effectively the only money that works here. No prepayment: the ride first, the settlement after.",
       extra: [
         {
           title: "Why nothing can be «sorted out on the spot» here",
@@ -1377,7 +1377,7 @@ export const en: Record<string, RouteCopy> = {
         },
         {
           title: "Drop-off wherever you need",
-          text: "An airport terminal, a berth in the port, a station, a hotel or your front door — we drive to the address, not to the nearest main street. We unload the suitcases ourselves; you settle after the ride, in euros or roubles, in cash or by transfer.",
+          text: "An airport terminal, a berth in the port, a station, a hotel or your front door — we drive to the address, not to the nearest main street. We unload the suitcases ourselves; you settle after the ride, in euros or roubles, in cash, by card or by transfer.",
         },
       ],
     },
@@ -1514,7 +1514,7 @@ export const en: Record<string, RouteCopy> = {
         },
         {
           q: "Can I pay in roubles?",
-          a: "Yes. We take both euros and roubles, in cash or by transfer. There is no exchange office or cash machine at Luhamaa and Russian bank cards do not work in Estonia, so you will not have to change money for the ride. We take no prepayment in any currency.",
+          a: "Yes. We take both euros and roubles, in cash, by card or by transfer. There is no exchange office or cash machine at Luhamaa and Russian bank cards do not work in Estonia, so you will not have to change money for the ride. We take no prepayment in any currency.",
         },
         {
           q: "Will you take me straight to Tallinn airport?",

@@ -197,6 +197,26 @@ export const facts = {
    */
   driverYears: 9,
   /**
+   * Способы оплаты. Вынесены сюда 24.09.2026, когда владелец сказал, что
+   * карту принимает, — и выяснилось, что «картой нельзя» было написано в
+   * восьми местах: в paymentAccepted микроразметки, в FAQ трёх страниц, на
+   * «О сервисе» в двух языках и в обоих файлах для моделей.
+   *
+   * Восемь мест — это восемь шансов, что при следующей смене условий одно
+   * забудут. Теперь строка одна, и все восемь собираются из неё.
+   *
+   * ⚠️ `accepted` уходит в `paymentAccepted` разметки, то есть это
+   * машиночитаемое утверждение об условиях сделки. Перестанете принимать
+   * карту — правьте здесь первым делом: неверное там не просто неточность,
+   * а обещание, которое пассажир прочитает в выдаче и на него рассчитает.
+   */
+  payment: {
+    ru: "наличными водителю, картой или банковским переводом",
+    en: "in cash to the driver, by card or by bank transfer",
+    /** Для paymentAccepted в schema.org — перечисление через запятую. */
+    accepted: { ru: "Наличные, банковская карта, банковский перевод", en: "Cash, credit card, bank transfer" },
+  },
+  /**
    * Профиль в Google Business (заведён владельцем, подтверждён 13.09.2026).
    *
    * `profile` — канонический адрес карточки, подтверждён владельцем 13.09.2026.
@@ -352,7 +372,7 @@ export const ui = {
     "perks.2": "Встреча в аэропорту и круизном порту — водитель ждёт с табличкой",
     "perks.3": "Задержали самолёт — ждём столько, сколько нужно, без доплаты",
     "perks.4": "Детское кресло привезём по запросу, за багаж не доплачиваете",
-    "perks.5": "Расчёт наличными водителю или переводом, предоплату не берём",
+    "perks.5": "Расчёт наличными, картой или переводом, предоплату не берём",
 
     "routes.eyebrow": "Цены",
     "routes.title": "Трансфер Нарва, Койдула и Лухамаа: направления и цены",
@@ -564,7 +584,7 @@ export const ui = {
     "perks.2": "Pickup at the airport and cruise port — the driver waits with a name board",
     "perks.3": "If your flight is delayed we wait as long as needed, at no extra cost",
     "perks.4": "A child seat on request, and no surcharge for luggage",
-    "perks.5": "Pay the driver in cash or by bank transfer; no prepayment required",
+    "perks.5": "Pay in cash, by card or by bank transfer; no prepayment required",
 
     "routes.eyebrow": "Prices",
     "routes.title": "Transfer to Narva, Koidula and Luhamaa: routes and fares",
