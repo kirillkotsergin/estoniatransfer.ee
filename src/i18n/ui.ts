@@ -388,6 +388,9 @@ export const ui = {
     "route.order": "Оставить заявку",
     "route.more": "Куда ещё возим",
     "route.sources": "Источники",
+    "route.checked": "Цены и факты на этой странице проверены",
+    "route.checkedNote":
+      "Режим работы переходов и правила пересечения границы меняются — перед поездкой сверяйтесь с politsei.ee.",
     "table.service": "Услуга",
     "table.price": "Цена",
     "table.details": "Подробности",
@@ -596,6 +599,9 @@ export const ui = {
     "route.order": "Send a request",
     "route.more": "Where else we drive",
     "route.sources": "Sources",
+    "route.checked": "Prices and facts on this page were last checked",
+    "route.checkedNote":
+      "Crossing hours and border rules change — check politsei.ee before you travel.",
     "table.service": "Service",
     "table.price": "Price",
     "table.details": "Details",
