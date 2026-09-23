@@ -1,6 +1,6 @@
 ---
 import { Picture } from "astro:assets";
-import { useTranslations, type Lang } from "../i18n/ui";
+import { facts, useTranslations, type Lang } from "../i18n/ui";
 
 interface Props {
   lang: Lang;
@@ -15,6 +15,11 @@ const t = useTranslations(lang);
  *
  * Подписи — по имени файла, из словаря ниже. Для неизвестного имени берётся
  * общая подпись: галерея не сломается, если добавить четвёртое фото.
+ *
+ * Название машины во всех подписях — из facts.car, не набрано здесь. До
+ * 23.09.2026 тут стояло «Toyota Corolla Hybrid», а в facts — «Toyota
+ * Corolla»: один автомобиль описывался двумя разными строками, и alt
+ * расходился с разметкой. Меняете машину — правите facts.car, и только его.
  */
 const modules = import.meta.glob<{ default: ImageMetadata }>(
   "../assets/car/*.{jpg,jpeg,png,webp,avif}",
@@ -23,12 +28,12 @@ const modules = import.meta.glob<{ default: ImageMetadata }>(
 
 const captions: Record<string, { ru: string; en: string }> = {
   "car-1": {
-    ru: "Toyota Corolla Hybrid — вид спереди",
-    en: "Toyota Corolla Hybrid — front view",
+    ru: `${facts.car} — вид спереди`,
+    en: `${facts.car} — front view`,
   },
   "car-2": {
-    ru: "Toyota Corolla Hybrid — вид сзади",
-    en: "Toyota Corolla Hybrid — rear view",
+    ru: `${facts.car} — вид сзади`,
+    en: `${facts.car} — rear view`,
   },
   "car-3": {
     ru: "Задний ряд: два больших чемодана и четыре места",
@@ -41,8 +46,8 @@ const photos = Object.entries(modules)
   .map(([path, mod]) => {
     const name = path.split("/").pop()!.replace(/\.\w+$/, "");
     const cap = captions[name] ?? {
-      ru: "Toyota Corolla Hybrid — автомобиль трансфера",
-      en: "Toyota Corolla Hybrid — the transfer car",
+      ru: `${facts.car} — автомобиль трансфера`,
+      en: `${facts.car} — the transfer car`,
     };
     return { src: mod.default, alt: cap[lang], name };
   });

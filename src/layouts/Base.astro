@@ -135,8 +135,8 @@ const canonical = new URL(localePath(lang, path), site).href;
       property="og:image:alt"
       content={
         lang === "ru"
-          ? "Toyota Corolla EstoniaTransfer — трансфер из Таллинна к границе"
-          : "Toyota Corolla EstoniaTransfer — transfer from Tallinn to the border"
+          ? `${facts.car} EstoniaTransfer — трансфер из Таллинна к границе`
+          : `${facts.car} EstoniaTransfer — transfer from Tallinn to the border`
       }
     />
     <meta name="twitter:card" content="summary_large_image" />

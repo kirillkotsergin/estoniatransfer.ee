@@ -163,9 +163,9 @@ export const en: Record<string, RouteCopy> = {
     car: {
       eyebrow: "The car",
       title: "What you travel in and who drives",
-      caption: "Toyota Corolla — the actual car that will come for you",
+      caption: `${facts.car} — the actual car that will come for you`,
       text: [
-        "Toyota Corolla: four passenger seats, climate control and a boot that swallows two large suitcases plus hand luggage. This is the driver's own car, not a rotating fleet vehicle, so the interior is clean. Winter tyres in winter, working air conditioning in summer — the road to Narva is long enough for both to matter.",
+        `${facts.car}: four passenger seats, climate control and a boot that swallows two large suitcases plus hand luggage. This is the driver's own car, not a rotating fleet vehicle, so the interior is clean. Winter tyres in winter, working air conditioning in summer — the road to Narva is long enough for both to matter.`,
         "Kirill is at the wheel, and he is the one answering WhatsApp and Telegram. You arrange things directly with the person who will drive you: no dispatcher, nothing lost in retelling. He speaks Russian and gets by in English.",
       ],
     },
@@ -400,9 +400,9 @@ export const en: Record<string, RouteCopy> = {
     car: {
       eyebrow: "The car",
       title: "The car waiting for you at the border",
-      caption: "Toyota Corolla — the actual car that will come for you",
+      caption: `${facts.car} — the actual car that will come for you`,
       text: [
-        "Toyota Corolla: four passenger seats, two large suitcases plus hand luggage in the boot, working climate control. After a few hours in a queue that is more than a formality — the cabin is warm in winter and cool in summer, and you can finally sit down. In winter the car is on winter tyres: the road from Narva runs across open country where the snow drifts.",
+        `${facts.car}: four passenger seats, two large suitcases plus hand luggage in the boot, working climate control. After a few hours in a queue that is more than a formality — the cabin is warm in winter and cool in summer, and you can finally sit down. In winter the car is on winter tyres: the road from Narva runs across open country where the snow drifts.`,
         "Kirill is at the wheel — the same person who answers WhatsApp and Telegram, and the one who will actually arrive. There is no dispatcher in between: you arrange everything with the driver himself. He speaks Russian, gets by in English, knows the road to the crossing and takes it for granted that the hour you clear the queue is an estimate.",
       ],
     },
@@ -640,9 +640,9 @@ export const en: Record<string, RouteCopy> = {
     car: {
       eyebrow: "The car",
       title: "What you travel in",
-      caption: "Toyota Corolla — the boot takes two large suitcases",
+      caption: `${facts.car} — the boot takes two large suitcases`,
       text: [
-        "Toyota Corolla: four passenger seats, climate control, a boot for two large suitcases and hand luggage. Koidula is nearly an hour further than Narva, so winter tyres in winter and working air conditioning in summer are not a formality here.",
+        `${facts.car}: four passenger seats, climate control, a boot for two large suitcases and hand luggage. Koidula is nearly an hour further than Narva, so winter tyres in winter and working air conditioning in summer are not a formality here.`,
         "Kirill is at the wheel and he answers WhatsApp and Telegram himself: you deal with the driver directly, without a dispatcher. He speaks Russian and gets by in English. A stop or a drop-off in Tartu is possible on the way — mention it in advance.",
       ],
     },
@@ -882,9 +882,9 @@ export const en: Record<string, RouteCopy> = {
     car: {
       eyebrow: "The car",
       title: "The car waiting for you at Koidula",
-      caption: "Toyota Corolla — the actual car that will come for you",
+      caption: `${facts.car} — the actual car that will come for you`,
       text: [
-        "Toyota Corolla: four passenger seats, two large suitcases plus hand luggage in the boot, working climate control. On this route that is not a formality: the drive from Koidula is nearly an hour longer than the Narva one, and it starts where you have already spent hours at the border. In winter the car is on winter tyres — the first stretch runs on the local Setomaa roads, which are not the first to be cleared.",
+        `${facts.car}: four passenger seats, two large suitcases plus hand luggage in the boot, working climate control. On this route that is not a formality: the drive from Koidula is nearly an hour longer than the Narva one, and it starts where you have already spent hours at the border. In winter the car is on winter tyres — the first stretch runs on the local Setomaa roads, which are not the first to be cleared.`,
         "Kirill is at the wheel — the same person who answers WhatsApp and Telegram, and the one who will actually arrive. No dispatcher in between: you arrange everything with the driver himself. He speaks Russian, gets by in English, and takes it for granted that the hour you clear the queue is an estimate.",
       ],
     },
@@ -1137,9 +1137,9 @@ export const en: Record<string, RouteCopy> = {
     car: {
       eyebrow: "The car",
       title: "What you travel in",
-      caption: "Toyota Corolla — four seats and two suitcases for 280 kilometres",
+      caption: `${facts.car} — four seats and two suitcases for 280 kilometres`,
       text: [
-        "Toyota Corolla: four passenger seats, climate control, a boot for two large suitcases and hand luggage. At 280 kilometres this is the longest of our Estonian routes, so the car runs on winter tyres in winter and with working air conditioning in summer. We stop halfway, and that time is already allowed for.",
+        `${facts.car}: four passenger seats, climate control, a boot for two large suitcases and hand luggage. At 280 kilometres this is the longest of our Estonian routes, so the car runs on winter tyres in winter and with working air conditioning in summer. We stop halfway, and that time is already allowed for.`,
         "Kirill is at the wheel and he answers WhatsApp and Telegram himself. He speaks Russian and gets by in English. A child seat comes on request; if you travel with a pet, mention it in advance.",
       ],
     },
@@ -1381,9 +1381,9 @@ export const en: Record<string, RouteCopy> = {
     car: {
       eyebrow: "The car",
       title: "The car waiting for you on the Riga — Pskov road",
-      caption: "Toyota Corolla — the actual car that will come for you",
+      caption: `${facts.car} — the actual car that will come for you`,
       text: [
-        "Toyota Corolla: four passenger seats, two large suitcases plus hand luggage, working climate control. On this route it matters more than on the others: 280 kilometres is the longest of the three drives, and it begins where there is nowhere to wait in the warm. In winter the car is on winter tyres — the stretch from the border to Võru runs across open country where the snow drifts.",
+        `${facts.car}: four passenger seats, two large suitcases plus hand luggage, working climate control. On this route it matters more than on the others: 280 kilometres is the longest of the three drives, and it begins where there is nowhere to wait in the warm. In winter the car is on winter tyres — the stretch from the border to Võru runs across open country where the snow drifts.`,
         "Kirill is at the wheel — the same person who answers WhatsApp and Telegram, and the one who will actually arrive. No dispatcher in between: you arrange everything with the driver himself. He speaks Russian, gets by in English, and takes it for granted that the hour you clear the border is an estimate.",
       ],
     },
@@ -1643,9 +1643,9 @@ export const en: Record<string, RouteCopy> = {
     car: {
       eyebrow: "The car",
       title: "What you travel in",
-      caption: "Toyota Corolla — the same car as on the Tallinn routes",
+      caption: `${facts.car} — the same car as on the Tallinn routes`,
       text: [
-        "Toyota Corolla: four passenger seats, climate control, two large suitcases in the boot. From Tartu the drive takes about an hour, but it runs on local roads through Setomaa and Võru, so winter tyres in winter matter as much here as on the long routes.",
+        `${facts.car}: four passenger seats, climate control, two large suitcases in the boot. From Tartu the drive takes about an hour, but it runs on local roads through Setomaa and Võru, so winter tyres in winter matter as much here as on the long routes.`,
         "Kirill is at the wheel and he answers WhatsApp and Telegram himself — you deal with the driver directly, without a dispatcher. He speaks Russian and gets by in English. A child seat comes on request.",
       ],
     },
@@ -2038,7 +2038,7 @@ export const en: Record<string, RouteCopy> = {
       eyebrow: "Transfer",
       title: `A private transfer: €${facts.routes[0].price}–${facts.routes[1].price} per car`,
       lead:
-        "This is what we do. A Toyota Corolla, departure at any hour of the day and a drop-off at the checkpoint itself rather than at a station two kilometres away. We collect you from an address, from Tallinn airport or from the cruise port, and help with the luggage.",
+        `This is what we do. A ${facts.car}, departure at any hour of the day and a drop-off at the checkpoint itself rather than at a station two kilometres away. We collect you from an address, from Tallinn airport or from the cruise port, and help with the luggage.`,
       caption: "Transfer fares from Tallinn to the border crossings",
       rows: [
         ["Tallinn — Narva", eur("narva"), "210 km, about 2 h 30 min, pedestrian crossing"],
