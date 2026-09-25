@@ -226,7 +226,12 @@ if checks; then
   CHANGED=$(node tools/changed-urls.mjs "$SITEMAP_BEFORE" dist/sitemap.xml) || true
   if [ -n "$CHANGED" ]; then
     # shellcheck disable=SC2086 — пути без пробелов, нужно именно разбиение
-    bash tools/indexnow.sh $CHANGED 2>&1 | tail -4 | sed 's/^/  /'
+    # Вывод целиком, без tail: indexnow.sh печатает список адресов и три
+    # кода ответа. До 25.09.2026 здесь стоял `tail -4`, и из списка было
+    # видно только последний адрес — выглядело так, будто отправлен один
+    # /en/…, хотя уходили все. Дважды из-за этого русские страницы
+    # отправляли повторно руками.
+    bash tools/indexnow.sh $CHANGED 2>&1 | sed 's/^/  /'
   else
     echo "  изменившихся адресов нет — отправлять нечего"
   fi

@@ -41,7 +41,7 @@ export const answers: Record<Lang, Answer[]> = {
     },
     {
       q: "Сколько стоит трансфер Таллинн — Койдула?",
-      a: `${price("koidula")} € за машину, 270 км через Тарту, около 3 часов 5 минут. Койдула — автомобильный переход: границу пересекают, не выходя из салона, но очередь на выезд бронируется заранее в системе GoSwift. Из Тарту до Койдулы — ${facts.fromTartu.price} € и около часа.`,
+      a: `${price("koidula")} € за машину, 270 км через Тарту, около 3 часов 5 минут. Койдула — автомобильный переход, очередь на выезд бронируется заранее в системе GoSwift; наша машина довозит до пункта пропуска, контроль проходите сами. Из Тарту до Койдулы — ${facts.fromTartu.price} € и около часа.`,
     },
     {
       q: "Через какие переходы можно проехать на машине, а где только пешком?",
@@ -68,7 +68,7 @@ export const answers: Record<Lang, Answer[]> = {
     },
     {
       q: "How much is the Tallinn — Koidula transfer?",
-      a: `€${price("koidula")} per car, 270 km via Tartu, about 3 hours 5 minutes. Koidula is a road crossing: you cross without leaving the car, but the exit queue has to be booked in advance in the GoSwift system. From Tartu to Koidula it is €${facts.fromTartu.price} and about an hour.`,
+      a: `€${price("koidula")} per car, 270 km via Tartu, about 3 hours 5 minutes. Koidula is a road crossing with the exit queue booked in advance in GoSwift; our car takes you to the checkpoint and you go through the controls yourself. From Tartu to Koidula it is €${facts.fromTartu.price} and about an hour.`,
     },
     {
       q: "Which crossings can I drive through and which are on foot?",

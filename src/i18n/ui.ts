@@ -514,7 +514,7 @@ export const ui = {
       "До Нарвы около 2 часов 30 минут, до Койдулы примерно 3 часа, до Лухамаа — 3 часа 10 минут. В снегопад и в плотном движении дольше, поэтому к открытию перехода выезжаем с запасом.",
     "faq.q3": "Можно пересечь границу, не выходя из машины?",
     "faq.a3":
-      "Через Койдулу и Лухамаа — да, это автомобильные переходы, но очередь на выезд бронируется заранее в системе GoSwift. Через Нарву границу проходят пешком. Режим работы переходов меняется, поэтому сверяйте его перед поездкой.",
+      "С нашим трансфером — нет: эстонская машина границу не пересекает. Довозим до пункта пропуска, контроль вы проходите сами, а на российской стороне, если нужно, встречает вторая машина. На своём автомобиле проехать можно через Койдулу и Лухамаа — очередь на выезд бронируется заранее в GoSwift, а паспортный контроль проходят в зданиях пункта пропуска. Нарву пересекают только пешком. Режим работы переходов меняется, поэтому сверяйте его перед поездкой.",
     "faq.q4": "Вы встречаете в аэропорту и порту?",
     "faq.a4":
       "Да. Оставьте номер рейса или название судна — водитель отследит прибытие и будет ждать с табличкой у выхода. Задержка рейса цену не меняет и заказ не отменяет.",
@@ -725,7 +725,7 @@ export const ui = {
       "About 2 hours 30 minutes to Narva, roughly 3 hours to Koidula and 3 hours 10 minutes to Luhamaa. Snow and heavy traffic make it longer, so we leave with time in hand when the crossing opens.",
     "faq.q3": "Can I cross the border without leaving the car?",
     "faq.a3":
-      "Through Koidula and Luhamaa, yes — these are car crossings, though the exit queue has to be booked in advance in the GoSwift system. Narva is crossed on foot. Opening hours change, so check them before you travel.",
+      "Not with our transfer: the Estonian car does not cross the border. We drive you to the checkpoint, you go through the controls yourself, and on the Russian side a second car can meet you. In your own car you can drive through Koidula and Luhamaa — the exit queue is booked in advance in GoSwift, and passport control takes place inside the checkpoint buildings. Narva is crossed on foot only. Opening hours change, so check them before you travel.",
     "faq.q4": "Do you meet passengers at the airport and the port?",
     "faq.a4":
       "Yes. Leave the flight number or the ship's name and the driver will track the arrival and wait with a name board. A delayed flight changes neither the price nor the booking.",

@@ -546,7 +546,7 @@ export const en: Record<string, RouteCopy> = {
     kmNote: "via Tartu",
     answer: [
       `<strong>In short.</strong> The Tallinn to Koidula transfer costs <strong>${eur("koidula")}</strong> for the whole car — up to four passengers with luggage. The drive takes about <strong>3 hours 5 minutes</strong>, 270 km through Tartu.`,
-      "Unlike pedestrian-only Narva, Koidula is a road crossing: you cross without leaving the car. The exit queue is booked in the GoSwift system and the checkpoint works during the day only. <em>Hours and rules change — check them before you travel.</em>",
+      "Unlike pedestrian-only Narva, Koidula is a road crossing, but passport control takes place inside the checkpoint buildings, and our car does not cross: we drive you to the checkpoint and you continue on your own. For private cars the exit queue is booked in the GoSwift system and the checkpoint works during the day only. <em>Hours and rules change — check them before you travel.</em>",
       `Already in Tartu? The road from there is half as long and cheaper — <a href="/en/transfer-tartu-koidula-luhamaa/">${tartu} instead of ${eur("koidula")}</a>.`,
     ],
     price: {
