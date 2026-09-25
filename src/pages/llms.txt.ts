@@ -17,7 +17,7 @@ import type { APIRoute } from "astro";
 import { landings } from "../data/routes";
 import { facts, siteUpdated } from "../i18n/ui";
 import { answers } from "../data/answers";
-import { pricedRows, pricelistUpdated, formatPrice, formatKm, formatTime } from "../data/pricelist";
+import { pricedRows, pricelistUpdated, pricelistPaths, formatPrice, formatKm, formatTime } from "../data/pricelist";
 
 export const GET: APIRoute = ({ site }) => {
   const origin = site?.origin ?? "https://estoniatransfer.ee";
@@ -122,7 +122,7 @@ ${routeLines.join("\n")}
 
 ## Все направления одной таблицей
 
-Полный прайс — на странице [Направления и цены](${origin}/marshruty/): погранпереходы, поездки по Эстонии, в Латвию и Литву, российская сторона. Цена за автомобиль целиком.
+Полный прайс — на странице [Направления и цены](${origin}${pricelistPaths.ru}): погранпереходы, поездки по Эстонии, в Латвию и Литву, российская сторона. Цена за автомобиль целиком.
 
 ${pricedRows
   .map((r) => `- ${r.from.ru} — ${r.to.ru}: ${formatPrice(r.price, r.currency, "ru").replace(" ", " ")}, ${formatKm(r, "ru")}, ${formatTime(r, "ru")}.`)
@@ -161,7 +161,7 @@ ${pageLines.join("\n")}
 ## English version
 
 ${enLines.join("\n")}
-- [Routes and prices](${origin}/en/marshruty/): every route in one table — border crossings, Estonia, Latvia and Lithuania, the Russian side.
+- [Routes and prices](${origin}/en${pricelistPaths.en}): every route in one table — border crossings, Estonia, Latvia and Lithuania, the Russian side.
 - Home — ${origin}/en/
 
 ## Условия использования этого файла

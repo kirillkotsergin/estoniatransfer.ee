@@ -11,6 +11,7 @@ import {
   type UIKey,
 } from "../i18n/ui";
 import { footerLinks } from "../data/routes";
+import { pricelistPaths } from "../data/pricelist";
 
 interface Props {
   lang: Lang;
@@ -148,7 +149,7 @@ const row = "group flex items-baseline justify-between gap-4 text-ink-muted tran
         </ul>
         <a
           class="mt-4 inline-flex items-center gap-1.5 text-[0.9rem] font-semibold text-brand-ink"
-          href={localePath(lang, "/marshruty/")}
+          href={localePath(lang, pricelistPaths[lang])}
         >
           {/* Страница с полным прайсом (25.09.2026). До неё ссылка вела на
               блок цен главной, где только три маршрута из Таллинна. */}

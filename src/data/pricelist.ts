@@ -51,6 +51,14 @@ import { facts, type Lang } from "../i18n/ui";
  */
 export const pricelistUpdated = "2026-09-25";
 
+/**
+ * Адрес страницы по языкам, без языкового префикса. Слаг переведён — у
+ * английской версии свой, /en/routes/ (решение владельца 25.09.2026; первые
+ * часы она жила на /en/marshruty/, оттуда 301 в public/.htaccess). Отсюда
+ * берут адрес страница, подвал, карта сайта и llms.txt — меняется здесь.
+ */
+export const pricelistPaths: Record<Lang, string> = { ru: "/marshruty/", en: "/routes/" };
+
 export type Currency = "EUR" | "RUB";
 type Text = Record<Lang, string>;
 

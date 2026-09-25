@@ -8,8 +8,9 @@
  * уже были. Откуда какая цифра — в шапке src/data/pricelist.ts.
  *
  * Один шаблон на два языка: страницы src/pages/marshruty.astro и
- * src/pages/en/marshruty.astro только передают `lang`. Слаг один на оба
- * языка, как у гида и «О сервисе», — hreflang строится из одного `path`.
+ * src/pages/en/routes.astro только передают `lang`. Слаг у языков разный —
+ * первый такой на сайте (25.09.2026): адреса в `pricelistPaths`, а Base
+ * строит canonical, hreflang и переключатель языков из `paths`.
  *
  * Обычной страницей, а не записью в `landings`, по той же причине, что и
  * «О сервисе»: RouteCopy требует FAQ, одну услугу и одну пару городов, а
@@ -34,6 +35,7 @@ import {
   priceGroups,
   pricedRows,
   pricelistUpdated,
+  pricelistPaths,
   formatKm,
   formatTime,
   formatPrice,
@@ -45,7 +47,7 @@ interface Props {
 }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-const path = "/marshruty/";
+const path = pricelistPaths[lang];
 const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
 const url = new URL(localePath(lang, path), site).href;
 const home = localePath(lang, "/");
@@ -351,7 +353,7 @@ const h3 = "text-[1.1rem] font-semibold tracking-tight";
 const cardText = "mt-2.5 text-[0.95rem] leading-relaxed text-ink-muted";
 ---
 
-<Base lang={lang} path={path} title={s.title} description={s.description}>
+<Base lang={lang} path={path} paths={pricelistPaths} title={s.title} description={s.description}>
   <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />
 
   {/* ─────────────── крошки ─────────────── */}

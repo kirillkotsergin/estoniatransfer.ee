@@ -38,6 +38,11 @@ AddType image/x-icon .ico
   # он отдавал ленту последних записей WordPress. Ленты у нас нет, но 301 на
   # карту сайта возвращает сигнал себе, а 404 его просто теряет.
   RewriteRule ^sitemap(_index\.xml|\.txt|-index\.xml|\.xml\.gz|\.rss)$ /sitemap.xml [R=301,L]
+
+  # Английский прайс переехал с /en/marshruty/ на /en/routes/ (25.09.2026) —
+  # слаг переведён по решению владельца. Старый адрес успел уйти в IndexNow и
+  # в карту сайта, поэтому 301, а не 404: сигнал переходит на новый адрес.
+  RewriteRule ^en/marshruty/?$ /en/routes/ [R=301,L]
 </IfModule>
 
 <IfModule mod_deflate.c>

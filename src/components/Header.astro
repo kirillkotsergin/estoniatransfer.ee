@@ -8,8 +8,10 @@ interface Props {
   path?: string;
   /** языки, на которых существует текущая страница — для переключателя */
   langs?: Lang[];
+  /** свой путь у языка, если слаг переведён — см. `paths` в Base.astro */
+  paths?: Partial<Record<Lang, string>>;
 }
-const { lang, path = "/", langs } = Astro.props;
+const { lang, path = "/", langs, paths } = Astro.props;
 const t = useTranslations(lang);
 const home = localePath(lang, "/");
 ---
@@ -52,7 +54,7 @@ const home = localePath(lang, "/");
         шапки пустовала. С md отступ убираем — там ml-auto уже у навигации, а
         два auto-отступа в одной строке делят свободное место пополам и уводят
         навигацию к середине. */}
-    <div class="ml-auto shrink-0 md:ml-0"><LangSwitcher lang={lang} path={path} langs={langs} /></div>
+    <div class="ml-auto shrink-0 md:ml-0"><LangSwitcher lang={lang} path={path} langs={langs} paths={paths} /></div>
 
     {/* Мессенджеры вплотную к телефону: заказ идёт в них, а не через форму, и
         путь к ним не должен начинаться с прокрутки до подвала. Ссылки прямые —

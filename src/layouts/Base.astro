@@ -38,6 +38,14 @@ interface Props {
    * данных — hreflang не должен ссылаться на перевод, которого нет.
    */
   langs?: Lang[];
+  /**
+   * Свой путь у отдельных языков, если слаг переведён: прайс лежит на
+   * /marshruty/ по-русски и на /en/routes/ по-английски (25.09.2026).
+   * Путь без языкового префикса. Кого нет в списке — у того общий `path`.
+   * От него строятся canonical, hreflang и переключатель языков, поэтому
+   * задавать его нужно здесь, а не править ссылки по отдельности.
+   */
+  paths?: Partial<Record<Lang, string>>;
 }
 
 const allLangs = Object.keys(languages) as Lang[];
@@ -50,7 +58,9 @@ const {
   ogType = "website",
   noindex = false,
   langs = allLangs,
+  paths,
 } = Astro.props;
+const pathFor = (l: Lang) => paths?.[l] ?? path;
 const t = useTranslations(lang);
 const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
 
@@ -75,7 +85,7 @@ const ogImage = await getImage({
 const ogImageUrl = new URL(ogImage.src, site).href;
 const pageTitle = title ?? t("meta.title");
 const pageDesc = description ?? t("meta.description");
-const canonical = new URL(localePath(lang, path), site).href;
+const canonical = new URL(localePath(lang, pathFor(lang)), site).href;
 ---
 
 <!doctype html>
@@ -115,7 +125,7 @@ const canonical = new URL(localePath(lang, path), site).href;
     {
       !noindex &&
         langs.map((l) => (
-          <link rel="alternate" hreflang={l} href={new URL(localePath(l, path), site).href} />
+          <link rel="alternate" hreflang={l} href={new URL(localePath(l, pathFor(l)), site).href} />
         ))
     }
     {
@@ -123,7 +133,7 @@ const canonical = new URL(localePath(lang, path), site).href;
         <link
           rel="alternate"
           hreflang="x-default"
-          href={new URL(localePath(defaultLang, path), site).href}
+          href={new URL(localePath(defaultLang, pathFor(defaultLang)), site).href}
         />
       )
     }
@@ -411,7 +421,7 @@ const canonical = new URL(localePath(lang, path), site).href;
       >{lang === "ru" ? "Перейти к содержанию" : "Skip to content"}</a
     >
 
-    <Header lang={lang} path={path} langs={langs} />
+    <Header lang={lang} path={path} langs={langs} paths={paths} />
     <main id="main">
       <slot />
     </main>

@@ -11,8 +11,10 @@ interface Props {
    * hreflang в <head> при этом перечисляет только существующие версии.
    */
   langs?: Lang[];
+  /** свой путь у языка, если слаг переведён — см. `paths` в Base.astro */
+  paths?: Partial<Record<Lang, string>>;
 }
-const { lang, path = "/", langs } = Astro.props;
+const { lang, path = "/", langs, paths } = Astro.props;
 const t = useTranslations(lang);
 const codes = Object.keys(languages) as Lang[];
 const available = langs ?? codes;
@@ -47,7 +49,7 @@ const available = langs ?? codes;
       codes.map((code) => (
         <li>
           <a
-            href={localePath(code, available.includes(code) ? path : "/")}
+            href={localePath(code, available.includes(code) ? (paths?.[code] ?? path) : "/")}
             hreflang={code}
             lang={code}
             aria-current={code === lang ? "true" : undefined}

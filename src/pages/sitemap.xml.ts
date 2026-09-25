@@ -18,7 +18,7 @@
  */
 import type { APIRoute } from "astro";
 import { landings } from "../data/routes";
-import { pricelistUpdated } from "../data/pricelist";
+import { pricelistUpdated, pricelistPaths } from "../data/pricelist";
 import { languages, localePath, defaultLang, siteUpdated, type Lang } from "../i18n/ui";
 
 const allLangs = Object.keys(languages) as Lang[];
@@ -27,6 +27,8 @@ interface Entry {
   path: string;
   /** языки, на которых страница существует */
   langs: Lang[];
+  /** свой путь у языка, если слаг переведён (как paths в Base.astro) */
+  paths?: Partial<Record<Lang, string>>;
   lastmod: string;
   changefreq: string;
   priority: string;
@@ -34,7 +36,8 @@ interface Entry {
 
 export const GET: APIRoute = ({ site }) => {
   const origin = site?.origin ?? "https://estoniatransfer.ee";
-  const abs = (lang: Lang, path: string) => new URL(localePath(lang, path), origin).href;
+  const abs = (lang: Lang, e: Entry) =>
+    new URL(localePath(lang, e.paths?.[lang] ?? e.path), origin).href;
 
   const entries: Entry[] = [
     { path: "/", langs: allLangs, lastmod: siteUpdated, changefreq: "monthly", priority: "1.0" },
@@ -83,7 +86,8 @@ export const GET: APIRoute = ({ site }) => {
      * dateModified в разметке страницы.
      */
     {
-      path: "/marshruty/",
+      path: pricelistPaths.ru,
+      paths: pricelistPaths,
       langs: allLangs,
       lastmod: pricelistUpdated,
       changefreq: "monthly",
@@ -107,14 +111,14 @@ export const GET: APIRoute = ({ site }) => {
           e.langs.length > 1
             ? [
                 ...e.langs.map(
-                  (l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${abs(l, e.path)}"/>`
+                  (l) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${abs(l, e)}"/>`
                 ),
-                `    <xhtml:link rel="alternate" hreflang="x-default" href="${abs(defaultLang, e.path)}"/>`,
+                `    <xhtml:link rel="alternate" hreflang="x-default" href="${abs(defaultLang, e)}"/>`,
               ]
             : [];
         return [
           "  <url>",
-          `    <loc>${abs(lang, e.path)}</loc>`,
+          `    <loc>${abs(lang, e)}</loc>`,
           `    <lastmod>${e.lastmod}</lastmod>`,
           `    <changefreq>${e.changefreq}</changefreq>`,
           // русская версия приоритетнее английской: аудитория русскоязычная

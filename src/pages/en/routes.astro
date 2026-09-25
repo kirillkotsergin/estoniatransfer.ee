@@ -1,0 +1,15 @@
+---
+/**
+ * "Routes and prices", English. The whole page lives in
+ * src/layouts/PriceList.astro, the data in src/data/pricelist.ts.
+ *
+ * Unlike the guide and the about page, the slug is translated: /routes/
+ * here, /marshruty/ in Russian (25.09.2026). Both paths live in
+ * `pricelistPaths`, and Base builds canonical and hreflang from them. The
+ * page spent its first hours at /en/marshruty/ — a 301 in public/.htaccess
+ * sends that address here.
+ */
+import PriceList from "../../layouts/PriceList.astro";
+---
+
+<PriceList lang="en" />
