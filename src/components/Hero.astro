@@ -1,5 +1,6 @@
 ---
 import BrandIcon from "./BrandIcon.astro";
+import TrustBar from "./TrustBar.astro";
 import { useTranslations, facts, type Lang } from "../i18n/ui";
 
 interface Props {
@@ -54,5 +55,8 @@ const t = useTranslations(lang);
       </a>
     </div>
 
+    {/* Факты доверия — сразу под кнопками, на том же фоне с пятнами: стекло
+        карточек читается только поверх цвета. */}
+    <TrustBar lang={lang} />
   </div>
 </section>

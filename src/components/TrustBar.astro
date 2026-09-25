@@ -1,0 +1,151 @@
+---
+/**
+ * Полоса доверия под первым экраном главной: оценка в Google, лицензия,
+ * фиксированная цена, машина. Заведена 25.09.2026.
+ *
+ * Все четыре факта — из `facts`, руками здесь не набрано ни одной цифры:
+ * оценка и число отзывов, номер лицензии, машина правятся в ui.ts и
+ * меняются здесь сами.
+ *
+ * ⚠️ Оценка Google — ТОЛЬКО видимый текст со ссылкой на карточку. В
+ * микроразметку `aggregateRating` отсюда не идёт и идти не должен: это
+ * отзывы с чужой площадки, а для LocalBusiness Google звёзд за отзывы о себе
+ * на своём сайте не даёт и за самоприсвоенный рейтинг снимает расширенные
+ * сниппеты со всего сайта. Подробно — в шапке src/data/reviews.ts.
+ *
+ * Подписи — <p>, а не заголовки: это четыре коротких факта в одной полосе,
+ * а не разделы страницы (правило раздела 5.3 CLAUDE.md).
+ */
+import { facts, reviewsWord, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const g = facts.google;
+const reviews = g.reviews !== null ? ` · ${g.reviews} ${reviewsWord(lang, g.reviews)}` : "";
+
+const items = {
+  ru: [
+    {
+      icon: "star",
+      title: `${g.rating}.0 в Google`,
+      text: `Оценка настоящих пассажиров${reviews}`,
+      href: g.profile,
+    },
+    {
+      icon: "shield",
+      title: "Лицензированный перевозчик",
+      text: `Лицензия ${facts.legal.transportLicence}, ${facts.legal.issuer}`,
+    },
+    {
+      icon: "tag",
+      title: "Фиксированная цена",
+      text: "Без счётчика: сумму подтверждаем до поездки",
+    },
+    {
+      icon: "car",
+      title: facts.car,
+      text: "Своя машина водителя, детское кресло бесплатно",
+    },
+  ],
+  en: [
+    {
+      icon: "star",
+      title: `${g.rating}.0 on Google`,
+      text: `Rated by real passengers${reviews}`,
+      href: g.profile,
+    },
+    {
+      icon: "shield",
+      title: "Licensed carrier",
+      text: `Licence ${facts.legal.transportLicence}, ${facts.legal.issuer}`,
+    },
+    {
+      icon: "tag",
+      title: "Fixed price",
+      text: "No meter: the fare is confirmed before the trip",
+    },
+    {
+      icon: "car",
+      title: facts.car,
+      text: "The driver's own car, child seat free of charge",
+    },
+  ],
+}[lang];
+
+// Иконки контурные, 24×24, одной толщины линии — чтобы четыре карточки
+// читались как набор, а не как сборная солянка из разных библиотек.
+const paths: Record<string, string> = {
+  shield: "M12 3l7 3v5.5c0 4.3-2.9 8-7 9.5-4.1-1.5-7-5.2-7-9.5V6l7-3zM8.8 12.2l2.2 2.2 4.3-4.4",
+  tag: "M3.5 12.6V4.5a1 1 0 011-1h8.1l7.9 7.9a1.5 1.5 0 010 2.1l-6 6a1.5 1.5 0 01-2.1 0L3.5 12.6zM8.2 8.2h.01",
+  car: "M5 16.5h14M6.5 16.5v1.8M17.5 16.5v1.8M4.5 16.5v-4l2-5.2a1.5 1.5 0 011.4-1h8.2a1.5 1.5 0 011.4 1l2 5.2v4M4.5 12.5h15M8 14.5h.01M16 14.5h.01",
+};
+const label = lang === "ru" ? "Почему нам доверяют" : "Why passengers trust us";
+---
+
+<ul
+  class="reveal mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+  style="--d:4"
+  aria-label={label}
+>
+  {
+    items.map((it) => {
+      const body = (
+        <>
+          <span
+            class="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-ink-soft"
+            aria-hidden="true"
+          >
+            {it.icon === "star" ? (
+              <svg viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                <path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L1.5 7.7l5.9-.9L10 1.5z" />
+              </svg>
+            ) : (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="size-5"
+              >
+                <path d={paths[it.icon]} />
+              </svg>
+            )}
+          </span>
+          <span class="min-w-0">
+            <span class="flex flex-wrap items-center gap-x-2 font-semibold leading-snug tracking-tight">
+              {it.title}
+              {it.icon === "star" && (
+                // Звёзды — украшение: оценка уже сказана цифрой в заголовке
+                <span class="text-[0.85rem] tracking-[0.08em] text-brand-ink" aria-hidden="true">
+                  {"★".repeat(g.rating)}
+                </span>
+              )}
+            </span>
+            <span class="mt-1 block text-[0.88rem] leading-snug text-ink-muted">{it.text}</span>
+          </span>
+        </>
+      );
+      const box = "glass flex h-full items-start gap-3.5 rounded-[var(--radius-card)] px-4 py-4";
+      return (
+        <li>
+          {it.href ? (
+            <a
+              href={it.href}
+              target="_blank"
+              rel="noopener"
+              class={`${box} transition-colors hover:border-brand/45`}
+            >
+              {body}
+            </a>
+          ) : (
+            <div class={box}>{body}</div>
+          )}
+        </li>
+      );
+    })
+  }
+</ul>
