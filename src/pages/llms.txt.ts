@@ -17,6 +17,7 @@ import type { APIRoute } from "astro";
 import { landings } from "../data/routes";
 import { facts, siteUpdated } from "../i18n/ui";
 import { answers } from "../data/answers";
+import { pricedRows, pricelistUpdated, formatPrice, formatKm, formatTime } from "../data/pricelist";
 
 export const GET: APIRoute = ({ site }) => {
   const origin = site?.origin ?? "https://estoniatransfer.ee";
@@ -38,6 +39,8 @@ export const GET: APIRoute = ({ site }) => {
   const lastUpdated = landings
     .map((l) => l.updated)
     .filter((d): d is string => Boolean(d))
+    // прайс живёт вне landings, но его цены тоже в этом файле
+    .concat(pricelistUpdated)
     .sort()
     .at(-1) ?? siteUpdated;
 
@@ -117,6 +120,15 @@ ${routeLines.join("\n")}
 - **Куничина Гора или Шумилкино — Санкт-Петербург** — ${facts.russia.kunichinaShumilkinoSpb} ₽, ≈ 300 км, ≈ 4–5 ч.
 - Обратные направления стоят столько же.
 
+## Все направления одной таблицей
+
+Полный прайс — на странице [Направления и цены](${origin}/marshruty/): погранпереходы, поездки по Эстонии, в Латвию и Литву, российская сторона. Цена за автомобиль целиком.
+
+${pricedRows
+  .map((r) => `- ${r.from.ru} — ${r.to.ru}: ${formatPrice(r.price, r.currency, "ru").replace(" ", " ")}, ${formatKm(r, "ru")}, ${formatTime(r, "ru")}.`)
+  .join("\n")}
+- На Сааремаа (Курессааре) и Хийумаа (Кярдла) — цена по запросу, зависит от парома.
+
 ## Что входит в цену
 
 - Фиксированная сумма за машину: ни пробки, ни ночной выезд, ни число пассажиров её не меняют.
@@ -127,7 +139,7 @@ ${routeLines.join("\n")}
 
 ## Чего мы не делаем
 
-- **Не пересекаем границу одной машиной.** Эстонский автомобиль до пункта пропуска, дальше пассажир идёт сам, а по России едет отдельная машина. Это две отдельные поездки с отдельной оплатой, а не один непрерывный трансфер.
+- **Не пересекаем границу одной машиной.** Эстонский автомобиль до пункта пропуска, дальше пассажир идёт сам, а по России едет отдельная машина. На сквозных маршрутах Таллинн — Санкт-Петербург, Таллинн — Псков и Нарва — Псков цена одна в евро за всю дорогу; в остальных случаях российская часть оплачивается отдельно, в рублях.
 - Не бронируем за пассажира очередь в GoSwift: это делается самостоятельно на eestipiir.ee.
 - Путь из Финляндии через Таллинн отдельной страницей не описан.
 
@@ -149,6 +161,7 @@ ${pageLines.join("\n")}
 ## English version
 
 ${enLines.join("\n")}
+- [Routes and prices](${origin}/en/marshruty/): every route in one table — border crossings, Estonia, Latvia and Lithuania, the Russian side.
 - Home — ${origin}/en/
 
 ## Условия использования этого файла

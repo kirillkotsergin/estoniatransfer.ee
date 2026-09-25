@@ -768,6 +768,10 @@ export const cities = {
   narva: { ru: "Нарва", en: "Narva" },
   koidula: { ru: "Койдула", en: "Koidula" },
   luhamaa: { ru: "Лухамаа", en: "Luhamaa" },
+  // Пярну и Рига — с прайсом /marshruty/ (25.09.2026), по запросу владельца:
+  // самые частые направления оттуда, которых форма раньше не знала.
+  parnu: { ru: "Пярну", en: "Pärnu" },
+  riga: { ru: "Рига", en: "Riga" },
   // Российская сторона: пункты пропуска и города, куда идут поездки оттуда
   ivangorod: { ru: "Ивангород", en: "Ivangorod" },
   kunichina: { ru: "Куничина Гора", en: "Kunichina Gora" },
@@ -788,6 +792,8 @@ export const fromOrder: CityId[] = [
   "narva",
   "koidula",
   "luhamaa",
+  "parnu",
+  "riga",
   "ivangorod",
   "kunichina",
   "shumilkino",
@@ -800,6 +806,8 @@ export const toOrder: CityId[] = [
   "luhamaa",
   "tallinn",
   "tartu",
+  "parnu",
+  "riga",
   "pskov",
   "spb",
   "ivangorod",

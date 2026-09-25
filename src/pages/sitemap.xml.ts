@@ -18,6 +18,7 @@
  */
 import type { APIRoute } from "astro";
 import { landings } from "../data/routes";
+import { pricelistUpdated } from "../data/pricelist";
 import { languages, localePath, defaultLang, siteUpdated, type Lang } from "../i18n/ui";
 
 const allLangs = Object.keys(languages) as Lang[];
@@ -74,6 +75,19 @@ export const GET: APIRoute = ({ site }) => {
       lastmod: "2026-09-24",
       changefreq: "yearly",
       priority: "0.5",
+    },
+    /*
+     * «Направления и цены» — третья страница вне `landings` (25.09.2026):
+     * тридцать маршрутов одной таблицей не укладываются в RouteCopy. Оба
+     * языка. lastmod — из pricelistUpdated, того же поля, что и
+     * dateModified в разметке страницы.
+     */
+    {
+      path: "/marshruty/",
+      langs: allLangs,
+      lastmod: pricelistUpdated,
+      changefreq: "monthly",
+      priority: "0.9",
     },
     ...landings.map((r) => ({
       path: `/${r.slug}/`,

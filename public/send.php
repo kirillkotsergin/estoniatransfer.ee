@@ -81,7 +81,7 @@ $queue = ($_POST['queue'] ?? '') === '1';
 // Список городов продублирован в src/i18n/ui.ts (cities). Расходиться им нельзя:
 // форма отдаст id, которого здесь нет, и заявка вернётся с 422.
 $allowedCities = [
-    'tallinn', 'tartu', 'narva', 'koidula', 'luhamaa',
+    'tallinn', 'tartu', 'narva', 'koidula', 'luhamaa', 'parnu', 'riga',
     'ivangorod', 'kunichina', 'shumilkino', 'pskov', 'spb',
 ];
 $cityNames = [
@@ -90,6 +90,8 @@ $cityNames = [
     'narva' => 'Нарва',
     'koidula' => 'Койдула',
     'luhamaa' => 'Лухамаа',
+    'parnu' => 'Пярну',
+    'riga' => 'Рига',
     'ivangorod' => 'Ивангород',
     'kunichina' => 'Куничина Гора',
     'shumilkino' => 'Шумилкино',

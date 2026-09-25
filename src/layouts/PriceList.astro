@@ -1,0 +1,626 @@
+---
+/**
+ * «Направления и цены» — прайс-лист всех маршрутов одной страницей.
+ *
+ * Заведена 25.09.2026 по образцу таблицы estonia-transfer.ee/ru/marshruty/:
+ * та же логика (разделы по направлениям, в строке — маршрут, километры,
+ * время, цена), но своя вёрстка, свои тексты и наши цены там, где они у нас
+ * уже были. Откуда какая цифра — в шапке src/data/pricelist.ts.
+ *
+ * Один шаблон на два языка: страницы src/pages/marshruty.astro и
+ * src/pages/en/marshruty.astro только передают `lang`. Слаг один на оба
+ * языка, как у гида и «О сервисе», — hreflang строится из одного `path`.
+ *
+ * Обычной страницей, а не записью в `landings`, по той же причине, что и
+ * «О сервисе»: RouteCopy требует FAQ, одну услугу и одну пару городов, а
+ * здесь их тридцать. Поэтому в sitemap.xml.ts она дописана руками.
+ *
+ * Заказ — двумя путями. Кнопка в строке открывает WhatsApp с вписанным
+ * маршрутом (клик Google Ads посчитает сам, цель определяется по началу
+ * адреса `facts.whatsapp`). Внизу — обычная форма заявки: она знает не все
+ * города прайса, а только `fromOrder` / `toOrder` (Рига и Пярну добавлены
+ * вместе с этой страницей), остальное — через мессенджер.
+ *
+ * Микроразметка: OfferCatalog с вложенными каталогами по разделам, у
+ * каждого оффера Service с парой «откуда — куда», километрами и минутами —
+ * тем же способом, что в SiteSchema.astro на главной. Строки без цены
+ * (острова) в разметку не идут: нет цены — нет Offer.
+ */
+import Base from "./Base.astro";
+import OrderForm from "../components/OrderForm.astro";
+import { facts, localePath, useTranslations, type Lang } from "../i18n/ui";
+import { landingLangs } from "../data/routes";
+import {
+  priceGroups,
+  pricedRows,
+  pricelistUpdated,
+  formatKm,
+  formatTime,
+  formatPrice,
+  type PriceRow,
+} from "../data/pricelist";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const path = "/marshruty/";
+const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
+const url = new URL(localePath(lang, path), site).href;
+const home = localePath(lang, "/");
+
+const price = (id: string) => {
+  const row = pricedRows.find((r) => r.id === id)!;
+  return formatPrice(row.price, row.currency, lang);
+};
+
+/**
+ * Тексты страницы. Цифры в title и description берутся из прайса, а не
+ * набраны руками: поменяется тариф — поменяется и сниппет. Длина проверяется
+ * сборкой (скрипт в разделе 5.3 CLAUDE.md): title до 60, description 140–160.
+ */
+const s = {
+  ru: {
+    // 52 знака
+    title: "Трансфер по Эстонии и Прибалтике: направления и цены",
+    description: `Цены за машину: Таллинн — Нарва ${price("tallinn-narva")}, Койдула ${price("tallinn-koidula")}, Рига ${price("tallinn-riga")}, Вильнюс ${price("tallinn-vilnius")}. Трансфер по Эстонии, в Латвию, Литву и к границе с Россией, от двери до двери.`,
+    h1: "Трансфер по Эстонии и Прибалтике: все направления и цены",
+    breadcrumbs: "Хлебные крошки",
+    crumb: "Направления и цены",
+    eyebrow: "Цены",
+    lead: "Цена указана за машину целиком, а не за пассажира: поедет один человек или четверо — сумма одна. Подаём к любому адресу, точную стоимость подтверждаем до выезда, и после этого она уже не меняется.",
+    waHero: "Здравствуйте! Нужен трансфер. Маршрут, дата и время: ",
+    waRow: (from: string, to: string) => `Здравствуйте! Нужен трансфер ${from} — ${to}. Дата и время: `,
+    checked: "Цены проверены",
+    sections: "Разделы прайса",
+    from: "от",
+    eur: "Цены в евро",
+    rub: "Цены в рублях",
+    colRoute: "Маршрут",
+    colKm: "Расстояние",
+    colTime: "В пути",
+    colOrder: "Заказ",
+    order: "Заказать",
+    orderLabel: (from: string, to: string) => `Заказать трансфер ${from} — ${to} в WhatsApp`,
+    catalog: "Направления и цены трансфера",
+    transfer: "Трансфер",
+    distance: "Расстояние",
+    duration: "Время в пути",
+    termsEyebrow: "Условия",
+    termsTitle: "Как считается цена и что в неё входит",
+    terms: [
+      [
+        "За машину, а не за место",
+        `Сумма не зависит от числа пассажиров. В машине ${facts.seats} пассажирских места и багажник на два больших чемодана плюс ручную кладь.`,
+      ],
+      [
+        "Цена фиксируется заранее",
+        "В таблице — цена по типовым адресам. Под ваши адреса и время подтверждаем итоговую сумму сообщением до выезда, и после этого её не меняют ни пробки, ни ночной выезд.",
+      ],
+      [
+        "Что написать в заявке",
+        "Откуда и куда — адресами, а не только городами. Дату и время, число пассажиров и чемоданов. Для встречи в аэропорту — номер рейса.",
+      ],
+      [
+        "Встреча в аэропорту и порту",
+        "Водитель ждёт с табличкой в зоне прилёта и сам следит за рейсом. Самолёт задержали — ждём, сколько нужно, без доплаты.",
+      ],
+      [
+        "Детское кресло и багаж",
+        "Кресло или бустер привезём по запросу — назовите возраст ребёнка. За багаж не доплачиваете; лыжи, велосипед или крупный груз — предупредите заранее.",
+      ],
+      [
+        "Остановки и оплата",
+        `Остановка на кофе по пути — без доплаты, второй адрес согласуем заранее. Расчёт ${facts.payment.ru}; предоплаты нет.`,
+      ],
+    ],
+    howTitle: "Как заказать трансфер",
+    step: "Шаг",
+    steps: [
+      [
+        "Напишите маршрут",
+        "Кнопка «Заказать» в строке таблицы откроет WhatsApp с уже вписанным направлением — останется добавить дату и время. Или заполните форму внизу страницы.",
+      ],
+      [
+        "Получите подтверждение",
+        "В ответ — итоговая цена и время подачи. Отвечает сам водитель, без диспетчера и пересказа.",
+      ],
+      [
+        "Поездка",
+        "В назначенное время машина у двери, в аэропорту — водитель с табличкой. Расчёт после поездки.",
+      ],
+    ],
+    ctaTitle: "Нужного маршрута нет в таблице?",
+    ctaText:
+      "Таблица — самые частые направления. Любые другие адреса по Эстонии, Латвии и Литве посчитаем за несколько минут: напишите, откуда и куда нужно ехать, или оставьте заявку в форме.",
+    // Латиница в русской версии — только в видимом тексте, не в заголовках
+    // (решение владельца 13.09.2026): так маршрут ищут по билетам и картам.
+    latin:
+      "Те же направления латиницей, как на указателях и в билетах: Tallinn, Tartu, Narva, Koidula, Luhamaa, Pärnu, Haapsalu, Kuressaare, Rīga, Vilnius, Kaunas, Klaipėda.",
+  },
+  en: {
+    // 53 characters
+    title: "Transfers in Estonia & the Baltics: routes and prices",
+    description: `Prices per car: Tallinn — Narva ${price("tallinn-narva")}, Koidula ${price("tallinn-koidula")}, Riga ${price("tallinn-riga")}, Vilnius ${price("tallinn-vilnius")}. Private transfers across Estonia, to Latvia, Lithuania and the Russian border.`,
+    h1: "Private transfers in Estonia and the Baltics: every route and price",
+    breadcrumbs: "Breadcrumb",
+    crumb: "Routes and prices",
+    eyebrow: "Prices",
+    lead: "Every price is for the whole car, not per seat: one passenger or four, the fare stays the same. We pick up at any address, confirm the exact price before departure, and it does not change after that.",
+    waHero: "Hello! I need a transfer. Route, date and time: ",
+    waRow: (from: string, to: string) => `Hello! I need a transfer ${from} — ${to}. Date and time: `,
+    checked: "Prices checked on",
+    sections: "Price list sections",
+    from: "from",
+    eur: "Prices in euros",
+    rub: "Prices in roubles",
+    colRoute: "Route",
+    colKm: "Distance",
+    colTime: "Journey",
+    colOrder: "Book",
+    order: "Book",
+    orderLabel: (from: string, to: string) => `Book a transfer ${from} — ${to} on WhatsApp`,
+    catalog: "Transfer routes and fares",
+    transfer: "Transfer",
+    distance: "Distance",
+    duration: "Journey time",
+    termsEyebrow: "Terms",
+    termsTitle: "How the price works and what it covers",
+    terms: [
+      [
+        "Per car, not per seat",
+        `The fare does not depend on how many of you travel. The car seats ${facts.seats} passengers, with room for two large suitcases and hand luggage.`,
+      ],
+      [
+        "The price is fixed in advance",
+        "The table shows fares between typical addresses. For your exact addresses and time we confirm the final price by message before departure — traffic or a night-time start will not change it.",
+      ],
+      [
+        "What to include in your request",
+        "Pickup and drop-off as addresses, not just towns. The date and time, the number of passengers and suitcases. For an airport pickup, your flight number.",
+      ],
+      [
+        "Airport and port pickups",
+        "The driver waits in arrivals with a name board and tracks your flight. If it is delayed, we wait as long as it takes at no extra charge.",
+      ],
+      [
+        "Child seats and luggage",
+        "A child seat or booster on request — just tell us the child's age. Luggage is included; mention skis, a bike or anything bulky in advance.",
+      ],
+      [
+        "Stops and payment",
+        `A coffee stop on the way costs nothing extra; a second pickup address we agree beforehand. You pay ${facts.payment.en}, with no prepayment.`,
+      ],
+    ],
+    howTitle: "How to book",
+    step: "Step",
+    steps: [
+      [
+        "Send us your route",
+        "The Book button in any row opens WhatsApp with that route already typed in — just add the date and time. Or use the form at the bottom of the page.",
+      ],
+      [
+        "Get a confirmation",
+        "You receive the final price and the pickup time. The driver replies in person — no dispatcher in between.",
+      ],
+      [
+        "Travel",
+        "The car is at your door at the agreed time, or the driver is in arrivals with a name board. You pay after the ride.",
+      ],
+    ],
+    ctaTitle: "Your route is not in the table?",
+    ctaText:
+      "The table lists the routes people ask for most. Any other addresses in Estonia, Latvia or Lithuania we can quote in minutes — tell us where from and where to, or send the form.",
+    latin: "",
+  },
+}[lang];
+
+const checkedDate = new Date(pricelistUpdated)
+  .toLocaleDateString(lang === "ru" ? "ru-RU" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })
+  .replace(/\s*г\.$/, "");
+
+/** Готовое сообщение в мессенджер: пассажиру остаётся вписать дату */
+const wa = (text: string) => `${facts.whatsapp}?text=${encodeURIComponent(text)}`;
+
+/**
+ * Ссылка на страницу маршрута на языке этой страницы. Нет перевода — нет
+ * ссылки: у российских страниц английской версии нет, и /en/… отдал бы 404.
+ */
+const rowHref = (r: PriceRow) => {
+  if (!r.href) return null;
+  const slug = r.href.replace(/^\/|\/$/g, "");
+  return landingLangs(slug).includes(lang) ? localePath(lang, r.href) : null;
+};
+
+/** Самая низкая цена раздела — для карточек навигации: «от 79 €». */
+const minPrice = (rows: PriceRow[]) =>
+  Math.min(...rows.map((r) => r.price).filter((p): p is number => p !== null));
+
+const perks = ["perks.1", "perks.2", "perks.3", "perks.4", "perks.5"] as const;
+
+// ───────────── микроразметка ─────────────
+
+/** Та же заглушка бизнеса, что в RouteLanding.astro: полное описание — на главной */
+const org = {
+  "@type": ["LocalBusiness", "TaxiService"],
+  "@id": `${site}/#business`,
+  name: "EstoniaTransfer",
+  legalName: facts.legal.name,
+  telephone: facts.phoneHref.replace("tel:", ""),
+  email: facts.email,
+  url: new URL(home, site).href,
+};
+
+const quantity = (name: string, value: number, unitCode: "KMT" | "MIN") => ({
+  "@type": "PropertyValue",
+  name,
+  value: { "@type": "QuantitativeValue", value, unitCode },
+});
+
+const offer = (r: PriceRow, currency: string) => {
+  const name = `${s.transfer} ${r.from[lang]} — ${r.to[lang]}`;
+  const href = rowHref(r);
+  return {
+    "@type": "Offer",
+    "@id": `${url}#${r.id}`,
+    name,
+    price: String(r.price),
+    priceCurrency: currency,
+    availability: "https://schema.org/InStock",
+    // Есть своя страница маршрута — оффер ведёт на неё, нет — на строку таблицы
+    url: href ? new URL(href, site).href : `${url}#${r.id}`,
+    offeredBy: { "@id": org["@id"] },
+    itemOffered: {
+      "@type": "Service",
+      name,
+      serviceType: "Private transfer",
+      provider: { "@id": org["@id"] },
+      departureLocation: { "@type": "Place", name: r.from[lang] },
+      arrivalLocation: { "@type": "Place", name: r.to[lang] },
+      additionalProperty: [
+        quantity(s.distance, r.km, "KMT"),
+        quantity(s.duration, r.minutes, "MIN"),
+      ],
+    },
+  };
+};
+
+const schema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    org,
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${url}#breadcrumb`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: t("bc.home"), item: new URL(home, site).href },
+        { "@type": "ListItem", position: 2, name: s.crumb, item: url },
+      ],
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${url}#webpage`,
+      url,
+      name: s.title,
+      description: s.description,
+      inLanguage: lang,
+      isPartOf: { "@id": `${site}/#website` },
+      about: { "@id": org["@id"] },
+      breadcrumb: { "@id": `${url}#breadcrumb` },
+      mainEntity: { "@id": `${url}#catalog` },
+      dateModified: pricelistUpdated,
+    },
+    {
+      "@type": "OfferCatalog",
+      "@id": `${url}#catalog`,
+      name: s.catalog,
+      url,
+      numberOfItems: pricedRows.length,
+      itemListElement: priceGroups.map((g) => ({
+        "@type": "OfferCatalog",
+        name: g.title[lang],
+        itemListElement: g.rows.filter((r) => r.price !== null).map((r) => offer(r, g.currency)),
+      })),
+    },
+  ],
+};
+
+// Повторяющиеся наборы классов — в константы, как в RouteLanding.astro
+const wrap = "mx-auto max-w-6xl px-5";
+const eyebrow = "reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink";
+const h2 =
+  "reveal mt-4 text-[clamp(1.75rem,3.2vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em]";
+const lead = "reveal mt-4 max-w-3xl leading-relaxed text-ink-muted";
+const th = "px-4 py-3 text-[0.78rem] font-semibold uppercase tracking-wide text-ink-dim";
+const td = "px-4 py-3.5 align-top max-sm:p-0";
+// Мобильный вид строки: таблица остаётся таблицей для парсера, а на узком
+// экране строка складывается в карточку. Первая линия — маршрут и цена
+// (ширина маршрута рассчитана так, чтобы рядом влезла только цена), вторая —
+// километры, время и кнопка. Четыре колонки на 320 px не помещаются, а
+// горизонтальная прокрутка прячет именно цену — последнюю колонку.
+const tr =
+  "scroll-mt-24 border-b border-line max-sm:flex max-sm:flex-wrap max-sm:items-baseline max-sm:gap-x-3 max-sm:gap-y-1.5 max-sm:py-4";
+const meta = "whitespace-nowrap tabular-nums text-ink-muted max-sm:text-[0.88rem]";
+const card = "glass rounded-[var(--radius-card)] p-6";
+const h3 = "text-[1.1rem] font-semibold tracking-tight";
+const cardText = "mt-2.5 text-[0.95rem] leading-relaxed text-ink-muted";
+---
+
+<Base lang={lang} path={path} title={s.title} description={s.description}>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />
+
+  {/* ─────────────── крошки ─────────────── */}
+  <nav class={`${wrap} pt-6`} aria-label={s.breadcrumbs}>
+    <ol class="flex flex-wrap items-center gap-2 text-[0.85rem] text-ink-dim">
+      <li><a class="transition-colors hover:text-brand-ink" href={home}>{t("bc.home")}</a></li>
+      <li aria-hidden="true">→</li>
+      <li class="text-ink-muted" aria-current="page">{s.crumb}</li>
+    </ol>
+  </nav>
+
+  {/* ─────────────── герой ─────────────── */}
+  <section class="relative overflow-hidden">
+    <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div class="blob left-[-8%] top-[-20%] size-[26rem] bg-brand/35"></div>
+      <div class="blob right-[-6%] top-[6%] size-[22rem] bg-[#7aa2ff]/25"></div>
+    </div>
+
+    <div class={`relative ${wrap} pb-14 pt-8 sm:pb-16 sm:pt-10`}>
+      <p class={eyebrow}>{s.eyebrow}</p>
+      <h1
+        class="reveal mt-4 max-w-4xl text-balance text-[clamp(2.1rem,5.2vw,3.6rem)] font-semibold leading-[1.05] tracking-[-0.03em]"
+        style="--d:1"
+      >
+        {s.h1}
+      </h1>
+      <p class="reveal mt-6 max-w-2xl text-[1.06rem] leading-relaxed text-ink-muted" style="--d:2">
+        {s.lead}
+      </p>
+
+      <div class="reveal mt-8 flex flex-wrap items-center gap-3" style="--d:3">
+        <a
+          href={wa(s.waHero)}
+          target="_blank"
+          rel="noopener"
+          class="rounded-2xl bg-brand px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-brand-hover"
+        >
+          {t("route.wa")}
+        </a>
+        <a
+          href="#order"
+          class="rounded-2xl border border-line-strong/60 px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-surface"
+        >
+          {t("route.order")}
+        </a>
+        <a class="font-semibold text-brand-ink hover:underline" href={facts.phoneHref}>
+          {facts.phone}
+        </a>
+      </div>
+
+      <p class="reveal mt-4 text-[0.88rem] text-ink-dim" style="--d:3">
+        {s.checked} {checkedDate}.
+      </p>
+
+      {/* Навигация по разделам: у страницы четыре таблицы, и без неё до
+          рублёвых цен пришлось бы листать через три других раздела. */}
+      <nav class="reveal mt-10" style="--d:4" aria-label={s.sections}>
+        <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {
+            priceGroups.map((g) => (
+              <li>
+                <a
+                  href={`#${g.id}`}
+                  class="glass group flex h-full flex-col rounded-[var(--radius-card)] px-5 py-4 transition-colors hover:border-brand/45"
+                >
+                  <span class="font-semibold tracking-tight group-hover:text-brand-ink">
+                    {g.title[lang]}
+                  </span>
+                  <span class="mt-1 text-[0.9rem] text-ink-dim">
+                    {s.from} {formatPrice(minPrice(g.rows), g.currency, lang)}
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      {/* Тот же общий блок, что на страницах маршрутов. Подпись — <p>, а не
+          заголовок: это подпись к списку внутри героя, не раздел страницы. */}
+      <div class="reveal mt-8 max-w-3xl" style="--d:5">
+        <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">
+          {t("perks.title")}
+        </p>
+        <ul class="mt-3 grid gap-2.5 sm:grid-cols-2">
+          {
+            perks.map((k) => (
+              <li class="flex items-start gap-2.5 text-[0.95rem]">
+                <span
+                  class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-ink"
+                  aria-hidden="true"
+                >
+                  <svg viewBox="0 0 20 20" fill="none" class="size-3.5">
+                    <path
+                      d="M4.5 10.5l3.2 3.2 7.8-7.8"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+                <span class="text-ink-muted">{t(k)}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  {/* ─────────────── таблицы по разделам ─────────────── */}
+  {
+    priceGroups.map((g, i) => (
+      <section
+        id={g.id}
+        class:list={[
+          "scroll-mt-24 border-t border-line py-16 sm:py-20",
+          i % 2 === 0 && "bg-surface",
+        ]}
+      >
+        <div class={wrap}>
+          <p class={eyebrow}>{g.currency === "EUR" ? s.eur : s.rub}</p>
+          <h2 class={h2} style="--d:1">
+            {g.title[lang]}
+          </h2>
+          <p class={lead} style="--d:2">
+            {g.lead[lang]}
+          </p>
+
+          <table class="mt-8 w-full border-collapse text-left text-[0.95rem] max-sm:block">
+            <caption class="pb-3 text-left text-[0.85rem] text-ink-dim max-sm:block">
+              {g.caption[lang]}
+            </caption>
+            <thead class="max-sm:sr-only">
+              <tr class="border-b border-line-strong/40">
+                <th scope="col" class={th}>{s.colRoute}</th>
+                <th scope="col" class={th}>{s.colKm}</th>
+                <th scope="col" class={th}>{s.colTime}</th>
+                <th scope="col" class={`${th} text-right`}>
+                  {t("table.price")}
+                </th>
+                <th scope="col" class={th}>
+                  <span class="sr-only">{s.colOrder}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="max-sm:block">
+              {g.rows.map((r) => {
+                const href = rowHref(r);
+                const from = r.from[lang];
+                const to = r.to[lang];
+                return (
+                  <tr id={r.id} class={tr}>
+                    <th scope="row" class={`${td} font-semibold max-sm:basis-[calc(100%-6.75rem)]`}>
+                      {href ? (
+                        <a
+                          class="underline decoration-line-strong/50 underline-offset-4 transition-colors hover:text-brand-ink hover:decoration-brand-ink"
+                          href={href}
+                        >
+                          {from} → {to}
+                        </a>
+                      ) : (
+                        <>
+                          {from} → {to}
+                        </>
+                      )}
+                      {r.note && (
+                        <span class="mt-0.5 block text-[0.85rem] font-normal text-ink-dim">
+                          {r.note[lang]}
+                        </span>
+                      )}
+                    </th>
+                    <td class={`${td} ${meta} max-sm:order-3`}>{formatKm(r, lang)}</td>
+                    <td class={`${td} ${meta} max-sm:order-4`}>{formatTime(r, lang)}</td>
+                    <td
+                      class:list={[
+                        td,
+                        "whitespace-nowrap text-right tabular-nums max-sm:order-2 max-sm:w-[6rem]",
+                        r.price === null
+                          ? "text-ink-muted"
+                          : "text-[1.05rem] font-semibold tracking-tight",
+                      ]}
+                    >
+                      {formatPrice(r.price, g.currency, lang)}
+                    </td>
+                    <td class={`${td} text-right max-sm:order-5 max-sm:ml-auto`}>
+                      <a
+                        href={wa(s.waRow(from, to))}
+                        target="_blank"
+                        rel="noopener"
+                        aria-label={s.orderLabel(from, to)}
+                        class="inline-flex whitespace-nowrap rounded-xl bg-brand px-3.5 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:bg-brand-hover max-sm:py-1.5"
+                      >
+                        {s.order}
+                      </a>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))
+  }
+
+  {/* ─────────────── условия ─────────────── */}
+  <section id="usloviya" class="scroll-mt-24 border-t border-line py-16 sm:py-20">
+    <div class={wrap}>
+      <p class={eyebrow}>{s.termsEyebrow}</p>
+      <h2 class={h2} style="--d:1">{s.termsTitle}</h2>
+      <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          s.terms.map(([title, text]) => (
+            <div class={card}>
+              <h3 class={h3}>{title}</h3>
+              <p class={cardText}>{text}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* ─────────────── как заказать ─────────────── */}
+  <section class="border-t border-line bg-surface py-16 sm:py-20">
+    <div class={wrap}>
+      <p class={eyebrow}>{t("how.eyebrow")}</p>
+      <h2 class={h2} style="--d:1">{s.howTitle}</h2>
+      <ol class="mt-8 grid gap-4 sm:grid-cols-3">
+        {
+          s.steps.map(([title, text], i) => (
+            <li class={card}>
+              <span class="text-[0.82rem] font-semibold text-brand-ink">
+                {s.step} {i + 1}
+              </span>
+              <h3 class={`mt-1.5 ${h3}`}>{title}</h3>
+              <p class={cardText}>{text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  {/* ─────────────── заявка ─────────────── */}
+  <section class="relative overflow-hidden border-t border-line py-16 sm:py-20">
+    <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div class="blob left-[-6%] top-[12%] size-[24rem] bg-brand/25"></div>
+    </div>
+    <div class={`relative ${wrap} grid items-start gap-10 lg:grid-cols-2 lg:gap-14`}>
+      <div>
+        <h2 class="reveal text-[clamp(1.75rem,3.2vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em]">
+          {s.ctaTitle}
+        </h2>
+        <p class="reveal mt-4 max-w-lg text-ink-muted" style="--d:1">{s.ctaText}</p>
+        {
+          s.latin && (
+            <p class="reveal mt-4 max-w-lg text-[0.9rem] text-ink-dim" style="--d:2">
+              {s.latin}
+            </p>
+          )
+        }
+      </div>
+
+      {/* Мессенджеры и телефон — внутри карточки формы, второй раз рядом их
+          не ставим. */}
+      <OrderForm lang={lang} offset={false} />
+    </div>
+  </section>
+</Base>
