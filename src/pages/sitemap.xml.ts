@@ -19,6 +19,7 @@
 import type { APIRoute } from "astro";
 import { landings } from "../data/routes";
 import { pricelistUpdated, pricelistPaths } from "../data/pricelist";
+import { rulesPages } from "../data/rules";
 import { languages, localePath, defaultLang, siteUpdated, type Lang } from "../i18n/ui";
 
 const allLangs = Object.keys(languages) as Lang[];
@@ -93,6 +94,18 @@ export const GET: APIRoute = ({ site }) => {
       changefreq: "monthly",
       priority: "0.9",
     },
+    /*
+     * Правила границы в обе стороны (01.10.2026) — тоже вне `landings`:
+     * справка без услуги и цены. Только по-русски. lastmod — из `updated`,
+     * того же поля, что dateModified и строка «Правила сверены».
+     */
+    ...rulesPages.map((r) => ({
+      path: `/${r.slug}/`,
+      langs: ["ru"] as Lang[],
+      lastmod: r.updated,
+      changefreq: "monthly",
+      priority: "0.8",
+    })),
     ...landings.map((r) => ({
       path: `/${r.slug}/`,
       langs: Object.keys(r.copy) as Lang[],

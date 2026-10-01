@@ -13,6 +13,7 @@ import {
 import { footerLinks } from "../data/routes";
 import { pricelistPaths } from "../data/pricelist";
 import { borderPath } from "../data/border";
+import { rulesPages } from "../data/rules";
 
 interface Props {
   lang: Lang;
@@ -229,6 +230,18 @@ const row = "group flex items-baseline justify-between gap-4 text-ink-muted tran
                   </a>
                 </li>
               )
+            }
+            {/* Правила границы в обе стороны (01.10.2026), тоже только по-русски.
+                Подписи — поле nav в src/data/rules.ts. */}
+            {
+              lang === "ru" &&
+                rulesPages.map((r) => (
+                  <li>
+                    <a class="text-ink-muted transition-colors hover:text-brand-ink" href={`/${r.slug}/`}>
+                      {r.nav}
+                    </a>
+                  </li>
+                ))
             }
             <li>
               <a

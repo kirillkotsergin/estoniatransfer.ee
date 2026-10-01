@@ -1,0 +1,286 @@
+---
+/**
+ * Страница правил границы — «что нельзя вывозить в Россию» и «что можно
+ * ввезти в Эстонию». Данные и тексты — src/data/rules.ts, здесь только вёрстка.
+ *
+ * Обычной страницей, а не записью в `landings`: RouteCopy требует offers,
+ * цену и форму заявки, а это справка без услуги. Поэтому страницы дописаны в
+ * sitemap.xml.ts руками (из того же rulesPages) — как «О сервисе» и прайс.
+ *
+ * Разметка: Article (а не Service — услуги здесь нет), BreadcrumbList и
+ * FAQPage. Вопросы FAQ и в разметке, и на странице берутся из одного массива —
+ * правило всего сайта. Источники уходят в `citation`: модели и поисковики
+ * видят, на что опирается текст.
+ *
+ * Плашки предупреждений — не заголовки (<p>, а не <h3>): иначе оглавление
+ * страницы для поисковика засорилось бы «Внимание» и «Запрещено».
+ */
+import Base from "./Base.astro";
+import BorderCta from "../components/BorderCta.astro";
+import { facts } from "../i18n/ui";
+import type { RulesPage } from "../data/rules";
+
+interface Props {
+  page: RulesPage;
+}
+const { page } = Astro.props;
+const lang = "ru" as const;
+const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
+const path = `/${page.slug}/`;
+const url = `${site}${path}`;
+
+const months = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+const [y, m, d] = page.updated.split("-").map(Number);
+const checkedDate = `${d} ${months[m - 1]} ${y}`;
+
+/** HTML из данных — в простой текст для разметки */
+const plain = (s: string) => s.replace(/<[^>]+>/g, "");
+
+const org = {
+  "@type": ["LocalBusiness", "TaxiService"],
+  "@id": `${site}/#business`,
+  name: "EstoniaTransfer",
+  legalName: facts.legal.name,
+  url: `${site}/`,
+  logo: { "@type": "ImageObject", url: `${site}/icon-512.png`, width: 512, height: 512 },
+};
+
+const schema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Главная", item: `${site}/` },
+        { "@type": "ListItem", position: 2, name: page.breadcrumb, item: url },
+      ],
+    },
+    {
+      "@type": "Article",
+      "@id": `${url}#article`,
+      mainEntityOfPage: url,
+      url,
+      headline: page.h1,
+      description: page.description,
+      inLanguage: lang,
+      // Страницы новые, дата первой публикации настоящая — 01.10.2026.
+      // Дальше двигается только dateModified (поле updated).
+      datePublished: "2026-10-01",
+      dateModified: page.updated,
+      author: org,
+      publisher: org,
+      isPartOf: { "@id": `${site}/#website` },
+      citation: page.sources.map((s) => ({ "@type": "CreativeWork", name: s.label, url: s.href })),
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${url}#faq`,
+      mainEntity: page.faq.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: plain(f.a) },
+      })),
+    },
+  ],
+};
+
+const wrap = "mx-auto max-w-6xl px-5";
+const h2 = "scroll-mt-24 text-[clamp(1.5rem,2.8vw,2.1rem)] font-semibold leading-tight tracking-[-0.02em]";
+const prose = "leading-relaxed text-ink-muted [&_a]:font-semibold [&_a]:text-brand-ink [&_a:hover]:underline [&_strong]:font-semibold [&_strong]:text-ink";
+
+/**
+ * Три тона плашек. Контраст посчитан по WCAG (правило сайта — от 4.5:1):
+ * ink-muted #4a4f57 на #fdecea — 7.21, заголовок #b42318 на #fdecea — 5.75,
+ * #8a3c00 на brand-soft — 7.06. Цвет заголовка повторяет смысл, но не
+ * единственный носитель: тон назван словами в самом заголовке.
+ *
+ * ⚠️ Ссылки внутри плашек — #9c3a00, а не brand-ink: обычный #c44a00 даёт на
+ * красной подложке 4.24, на brand-soft 4.45 — ниже нормы. #9c3a00 — 6.08 и 6.38.
+ */
+const alertProse =
+  "leading-relaxed text-ink-muted [&_strong]:font-semibold [&_strong]:text-ink [&_a]:font-semibold [&_a]:text-[#9c3a00] [&_a]:underline";
+const tone = {
+  danger: { box: "border-[#f5c2bc] bg-[#fdecea]", title: "text-[#b42318]", icon: "M12 8v5m0 3.5v.01M10.3 3.9 2.6 17.3A2 2 0 0 0 4.3 20.3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" },
+  warning: { box: "border-brand/40 bg-brand-soft", title: "text-[#8a3c00]", icon: "M12 9v4m0 3.5v.01M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z" },
+  info: { box: "border-line bg-surface", title: "text-ink", icon: "M12 11v5m0-8.5v.01M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z" },
+} as const;
+---
+
+<Base lang={lang} path={path} langs={["ru"]} title={page.title} description={page.description} ogType="article">
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)}></script>
+
+  <nav class={`${wrap} pt-6`} aria-label="Хлебные крошки">
+    <ol class="flex flex-wrap items-center gap-2 text-[0.85rem] text-ink-dim">
+      <li><a class="transition-colors hover:text-brand-ink" href="/">Главная</a></li>
+      <li aria-hidden="true">→</li>
+      <li class="text-ink-muted" aria-current="page">{page.breadcrumb}</li>
+    </ol>
+  </nav>
+
+  <section class="relative overflow-hidden">
+    <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div class="blob left-[-8%] top-[-20%] size-[26rem] bg-brand/30"></div>
+      <div class="blob right-[-6%] top-[6%] size-[22rem] bg-[#7aa2ff]/20"></div>
+    </div>
+    <div class={`relative ${wrap} pb-12 pt-8 sm:pb-14 sm:pt-10`}>
+      <p class="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">{page.eyebrow}</p>
+      <h1 class="mt-4 max-w-4xl text-balance text-[clamp(2rem,4.8vw,3.4rem)] font-semibold leading-[1.08] tracking-[-0.03em]">
+        {page.h1}
+      </h1>
+      <p class="mt-6 max-w-3xl text-[1.06rem] leading-relaxed text-ink-muted">{page.lead}</p>
+      <p class="mt-4 text-[0.9rem] text-ink-dim">
+        Правила сверены с официальными источниками <time datetime={page.updated}>{checkedDate}</time>
+      </p>
+
+      <dl class="mt-9 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          page.facts.map((f) => (
+            <div class="glass rounded-[var(--radius-card)] px-5 py-4">
+              <dt class="text-[1.35rem] font-semibold tracking-tight">{f.value}</dt>
+              <dd class="mt-1 text-[0.9rem] leading-snug text-ink-muted">{f.label}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <div class={`${wrap} grid gap-10 pb-14 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-14`}>
+    {/* Оглавление. Подпись — <p>, а не заголовок; роль заголовка берёт
+        aria-label у <nav>. На широком экране липнет к краю при прокрутке. */}
+    <nav aria-label="Содержание" class="lg:sticky lg:top-24 lg:self-start">
+      <p class="text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink-dim">Содержание</p>
+      <ol class="mt-3 grid gap-1.5 border-l border-line pl-4 text-[0.92rem]">
+        {
+          page.sections.map((s) => (
+            <li>
+              <a class="text-ink-muted transition-colors hover:text-brand-ink" href={`#${s.id}`}>{s.title}</a>
+            </li>
+          ))
+        }
+        <li><a class="text-ink-muted transition-colors hover:text-brand-ink" href="#faq">Частые вопросы</a></li>
+      </ol>
+    </nav>
+
+    <article class="min-w-0 max-w-3xl">
+      {
+        page.sections.map((s, i) => (
+          <section class={i === 0 ? "" : "mt-14"} aria-labelledby={s.id}>
+            <h2 id={s.id} class={h2}>{s.title}</h2>
+            {s.blocks.map((b) => {
+              if ("p" in b) return <p class={`mt-4 ${prose}`} set:html={b.p} />;
+              if ("h3" in b) return <h3 class="mt-8 text-[1.2rem] font-semibold tracking-tight">{b.h3}</h3>;
+              if ("list" in b) {
+                const items = b.list.map((li) => <li set:html={li} />);
+                return b.ordered ? (
+                  <ol class={`mt-4 grid list-decimal gap-2 pl-6 ${prose}`}>{items}</ol>
+                ) : (
+                  <ul class={`mt-4 grid list-disc gap-2 pl-6 ${prose}`}>{items}</ul>
+                );
+              }
+              if ("table" in b)
+                return (
+                  <div class="mt-6">
+                    <div class="overflow-x-auto rounded-[var(--radius-card)] border border-line">
+                      <table class="w-full border-collapse text-left text-[0.95rem]">
+                        <thead class="bg-surface">
+                          <tr>
+                            {b.table.head.map((h) => (
+                              <th scope="col" class="px-4 py-3 text-[0.78rem] font-semibold uppercase tracking-wide text-ink-dim">{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {b.table.rows.map(([a, v]) => (
+                            <tr class="border-t border-line align-top">
+                              <td class="px-4 py-3.5 text-ink-muted">{a}</td>
+                              <td class="px-4 py-3.5 font-semibold">{v}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {b.table.note && <p class="mt-3 text-[0.9rem] leading-relaxed text-ink-dim">{b.table.note}</p>}
+                  </div>
+                );
+              const t = tone[b.alert.tone];
+              return (
+                <div class={`mt-6 rounded-[var(--radius-card)] border p-5 sm:p-6 ${t.box}`} role={b.alert.tone === "danger" ? "note" : undefined}>
+                  <p class={`flex items-start gap-2.5 font-semibold leading-snug ${t.title}`}>
+                    <svg class="mt-0.5 size-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d={t.icon} stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span>{b.alert.title}</span>
+                  </p>
+                  {b.alert.list && (
+                    <ul class={`mt-3 grid list-disc gap-1.5 pl-6 text-[0.97rem] ${alertProse}`}>
+                      {b.alert.list.map((li) => <li set:html={li} />)}
+                    </ul>
+                  )}
+                  {b.alert.text && <p class={`mt-3 text-[0.97rem] ${alertProse}`} set:html={b.alert.text} />}
+                </div>
+              );
+            })}
+          </section>
+        ))
+      }
+
+      <section id="faq" class="mt-16 scroll-mt-24" aria-labelledby="faq-title">
+        <h2 id="faq-title" class={h2}>Частые вопросы</h2>
+        <div class="mt-6 grid gap-3">
+          {
+            page.faq.map((f) => (
+              <details class="glass group rounded-2xl px-5 py-4">
+                <summary class="flex items-start justify-between gap-4 text-[1.02rem] font-semibold tracking-tight">
+                  <span>{f.q}</span>
+                  <span class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-ink transition-transform group-open:rotate-45" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none" class="size-3.5">
+                      <path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+                    </svg>
+                  </span>
+                </summary>
+                <p class="mt-3 text-[0.95rem] leading-relaxed text-ink-muted">{f.a}</p>
+              </details>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="mt-14" aria-labelledby="sources">
+        <h2 id="sources" class={h2}>Источники</h2>
+        <ul class={`mt-4 grid gap-2 ${prose}`}>
+          {
+            page.sources.map((s) => (
+              <li>
+                <a href={s.href} target="_blank" rel="noopener nofollow">{s.label}</a>
+                <span aria-hidden="true"> ↗</span>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="mt-5 text-[0.9rem] leading-relaxed text-ink-dim">
+          Это справка, а не юридическая консультация. Санкционные списки и нормы меняются — перед каждой
+          поездкой сверяйтесь с сайтом EMTA, а по спорной вещи спросите таможню письменно.
+        </p>
+      </section>
+
+      <section class="mt-14" aria-labelledby="related">
+        <h2 id="related" class={h2}>Ещё по теме</h2>
+        <ul class="mt-5 grid gap-3 sm:grid-cols-2">
+          {
+            page.related.map((r) => (
+              <li>
+                <a href={r.href} class="glass group flex h-full flex-col rounded-2xl px-5 py-4 transition-colors hover:bg-white">
+                  <span class="font-semibold tracking-tight group-hover:text-brand-ink">{r.label}</span>
+                  <span class="mt-1 text-[0.92rem] text-ink-muted">{r.note}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </article>
+  </div>
+
+  <BorderCta />
+</Base>

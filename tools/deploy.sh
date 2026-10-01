@@ -45,6 +45,7 @@ SMOKE_PATHS=(
   "/sitemap.xml" "/robots.txt" "/llms.txt" "/favicon.ico" "/hits.php"
   # раздел сводок об очереди: его отдаёт PHP, сборка о нём не скажет ничего
   "/granica-narva-ivangorod/" "/granica-narva-ivangorod/sitemap.xml" "/admin/"
+  "/tamozhnya-iz-estonii-v-rossiyu/" "/tamozhnya-iz-rossii-v-estoniyu/"
 )
 
 # Редиректы: <адрес>|<максимум переходов>|<куда обязан привести>.
