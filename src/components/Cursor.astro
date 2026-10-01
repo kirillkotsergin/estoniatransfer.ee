@@ -1,0 +1,244 @@
+---
+/**
+ * Курсор «Капля» (02.10.2026). Стили — конец global.css.
+ *
+ * Идея: капля с весом. Точка стоит ровно под указателем, без задержки, —
+ * целиться ею так же точно, как системной стрелкой. Кольцо идёт за точкой на
+ * пружине, на скорости вытягивается по направлению движения с сохранением
+ * площади и, остановившись, снова становится кругом. Под ним меняется:
+ *   - кнопка или короткая ссылка — кольцо обтекает элемент, принимает его
+ *     скругление и чуть тянется к указателю («магнит»);
+ *   - большая карточка-ссылка — мягкая линза 64 px вместо обтекания;
+ *   - текст — каретка высотой в строку;
+ *   - поле ввода — капля прячется, возвращается системная каретка.
+ * Цвет по контексту: WhatsApp — зелёный, Telegram — синий, на тёмных полосах
+ * night — белый. На пустом месте — инверсия (mix-blend-mode: difference).
+ *
+ * Чего здесь нет намеренно:
+ *  - на сенсорных экранах и с prefers-reduced-motion скрипт не включается
+ *    вовсе: системный курсор остаётся;
+ *  - разметки в HTML нет — элементы создаёт скрипт; без JS ничего не
+ *    подменяется;
+ *  - цикл requestAnimationFrame останавливается, когда капля успокоилась:
+ *    в покое и при загрузке страницы курсор не тратит ни кадра — Lighthouse
+ *    мышь не двигает и этого скрипта не видит.
+ *
+ * is:inline: обычный классический скрипт, как остальные на сайте.
+ */
+---
+
+<script is:inline>
+  (function () {
+    "use strict";
+    if (!window.matchMedia) return;
+    if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    var root = document.documentElement;
+    var dot = document.createElement("div");
+    var blob = document.createElement("div");
+    dot.className = "cur-dot is-hidden";
+    blob.className = "cur-blob is-hidden";
+    dot.setAttribute("aria-hidden", "true");
+    blob.setAttribute("aria-hidden", "true");
+    document.body.appendChild(blob);
+    document.body.appendChild(dot);
+
+    var BASE = 34; // диаметр кольца в покое
+    var px = -100, py = -100; // указатель
+    var cur = { x: -100, y: -100, w: BASE, h: BASE, r: BASE / 2 };
+    var tgt = { x: -100, y: -100, w: BASE, h: BASE, r: BASE / 2 };
+    var vx = 0, vy = 0;
+    var press = 1, pressTo = 1;
+    var mode = "default", hit = null, hitPad = 6, hitRadius = 10, caretH = 22;
+    var started = false, outside = false, scrolling = false;
+    var raf = 0, last = 0, scrollTimer = 0;
+
+    var INTERACTIVE = 'a[href], button, summary, label, [role="button"], [data-cursor]';
+    var FIELD = 'input, textarea, select, [contenteditable="true"], iframe';
+    var TEXT = "p, h1, h2, h3, h4, li, dd, dt, td, th, figcaption, blockquote, time";
+
+    function tintOf(el) {
+      var href = el.getAttribute("href") || "";
+      if (href.indexOf("wa.me") !== -1) return "#25d366";
+      if (href.indexOf("t.me") !== -1) return "#26a5e4";
+      if (el.closest(".bg-night")) return "#ffffff";
+      return "#0b0b0c";
+    }
+
+    // Что под указателем и какой формой его встретить
+    function resolve(el) {
+      if (!el || el.nodeType !== 1) return { mode: "default" };
+      if (el.closest(FIELD)) return { mode: "native" };
+      var h = el.closest(INTERACTIVE);
+      if (h) {
+        var r = h.getBoundingClientRect();
+        return { mode: r.width <= 360 && r.height <= 96 ? "magnetic" : "lens", el: h };
+      }
+      var t = el.closest(TEXT);
+      if (t) {
+        var cs = getComputedStyle(t);
+        var lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * 1.4;
+        return { mode: "caret", lh: Math.max(16, Math.min(lh, 64)) };
+      }
+      return { mode: "default" };
+    }
+
+    function setHidden(on) {
+      dot.classList.toggle("is-hidden", on);
+      blob.classList.toggle("is-hidden", on);
+    }
+
+    function apply(ctx) {
+      mode = ctx.mode;
+      hit = ctx.el || null;
+      var shown = mode === "native" ? "default" : mode;
+      blob.setAttribute("data-mode", shown);
+      dot.setAttribute("data-mode", shown);
+      if (hit) {
+        blob.style.setProperty("--cur-tint", tintOf(hit));
+        var rect = hit.getBoundingClientRect();
+        hitPad = rect.height < 32 ? 8 : 6;
+        var br = parseFloat(getComputedStyle(hit).borderTopLeftRadius) || 0;
+        hitRadius = br ? br + hitPad : 10;
+      }
+      if (ctx.lh) caretH = ctx.lh;
+      setHidden(mode === "native" || outside);
+      kick();
+    }
+
+    function targets() {
+      if (hit && !hit.isConnected) apply({ mode: "default" });
+      if (mode === "magnetic") {
+        var r = hit.getBoundingClientRect();
+        var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        // центр элемента плюс небольшой крен к указателю — «магнит»
+        tgt.x = cx + (px - cx) * 0.12;
+        tgt.y = cy + (py - cy) * 0.12;
+        tgt.w = r.width + hitPad * 2;
+        tgt.h = r.height + hitPad * 2;
+        tgt.r = Math.min(hitRadius, tgt.h / 2);
+      } else if (mode === "lens") {
+        tgt.x = px; tgt.y = py; tgt.w = tgt.h = 64; tgt.r = 32;
+      } else if (mode === "caret") {
+        tgt.x = px; tgt.y = py; tgt.w = 3; tgt.h = caretH; tgt.r = 2;
+      } else {
+        tgt.x = px; tgt.y = py; tgt.w = tgt.h = BASE; tgt.r = BASE / 2;
+      }
+    }
+
+    function frame(now) {
+      var dt = last ? Math.min((now - last) / 1000, 0.05) : 1 / 60;
+      last = now;
+      targets();
+
+      // Экспоненциальное сглаживание с поправкой на dt: одинаково на 60 и 144 Гц
+      var kPos = 1 - Math.exp(-dt * (mode === "caret" ? 32 : 15));
+      var kSize = 1 - Math.exp(-dt * 18);
+      var nx = cur.x + (tgt.x - cur.x) * kPos;
+      var ny = cur.y + (tgt.y - cur.y) * kPos;
+      vx = (nx - cur.x) / dt;
+      vy = (ny - cur.y) / dt;
+      cur.x = nx;
+      cur.y = ny;
+      cur.w += (tgt.w - cur.w) * kSize;
+      cur.h += (tgt.h - cur.h) * kSize;
+      cur.r += (tgt.r - cur.r) * kSize;
+      press += (pressTo - press) * (1 - Math.exp(-dt * 26));
+
+      // Вытягивание по скорости с сохранением площади — только у свободной капли
+      var stretch = mode === "default" ? Math.min(Math.sqrt(vx * vx + vy * vy) / 2600, 0.6) : 0;
+      var sx = (1 + stretch) * press, sy = press / (1 + stretch);
+      var ang = stretch > 0.01 ? Math.atan2(vy, vx) : 0;
+
+      blob.style.width = cur.w + "px";
+      blob.style.height = cur.h + "px";
+      blob.style.borderRadius = cur.r + "px";
+      blob.style.transform =
+        "translate3d(" + (cur.x - cur.w / 2) + "px," + (cur.y - cur.h / 2) + "px,0) rotate(" +
+        ang + "rad) scale(" + sx + "," + sy + ")";
+
+      var settled =
+        Math.abs(tgt.x - cur.x) < 0.1 && Math.abs(tgt.y - cur.y) < 0.1 &&
+        Math.abs(tgt.w - cur.w) < 0.1 && Math.abs(tgt.h - cur.h) < 0.1 &&
+        Math.abs(pressTo - press) < 0.002;
+      if (settled && !scrolling) {
+        raf = 0;
+        last = 0;
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    function kick() {
+      if (!raf) raf = requestAnimationFrame(frame);
+    }
+
+    document.addEventListener(
+      "pointermove",
+      function (e) {
+        if (e.pointerType !== "mouse") return;
+        px = e.clientX;
+        py = e.clientY;
+        // точка — прямо в обработчике, без ожидания кадра: минимальная задержка
+        dot.style.transform = "translate3d(" + px + "px," + py + "px,0)";
+        if (!started) {
+          started = true;
+          cur.x = tgt.x = px;
+          cur.y = tgt.y = py;
+          root.classList.add("has-cursor");
+          apply(resolve(e.target));
+        }
+        if (outside) {
+          outside = false;
+          setHidden(mode === "native");
+        }
+        kick();
+      },
+      { passive: true }
+    );
+
+    document.addEventListener(
+      "pointerover",
+      function (e) {
+        if (!started || e.pointerType !== "mouse") return;
+        var c = resolve(e.target);
+        if (c.mode !== mode || (c.el || null) !== hit) apply(c);
+      },
+      { passive: true }
+    );
+
+    // Указатель ушёл за пределы окна
+    document.addEventListener("mouseout", function (e) {
+      if (!e.relatedTarget) {
+        outside = true;
+        setHidden(true);
+      }
+    });
+
+    // Нажатие — капля сплющивается, отпустили — пружинит обратно
+    document.addEventListener("pointerdown", function (e) {
+      if (e.pointerType === "mouse") { pressTo = 0.82; kick(); }
+    }, { passive: true });
+    document.addEventListener("pointerup", function () { pressTo = 1; kick(); }, { passive: true });
+
+    // Прокрутка двигает страницу под неподвижной мышью: кольцо следит за
+    // элементом в кадре, а после остановки заново смотрит, что под ним.
+    window.addEventListener(
+      "scroll",
+      function () {
+        if (!started) return;
+        scrolling = true;
+        kick();
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(function () {
+          scrolling = false;
+          var c = resolve(document.elementFromPoint(px, py));
+          if (c.mode !== mode || (c.el || null) !== hit) apply(c);
+          kick();
+        }, 90);
+      },
+      { passive: true }
+    );
+  })();
+</script>

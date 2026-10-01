@@ -209,3 +209,85 @@
    текст карточек и подвала. Вместо неё — MobileBar.astro, полоса из двух
    кнопок внизу экрана на телефоне; отступ под неё задан у <body> в Base.astro.
    На широком экране связь и так видна в липкой шапке. */
+
+/* ---------- курсор «Капля» (Cursor.astro), 02.10.2026 ----------
+   Точка — точно под указателем, кольцо — на пружине, тянется по скорости и
+   принимает форму кнопки, ссылки или строки текста под собой.
+
+   Включается только скриптом и только для мыши (pointer: fine) без
+   prefers-reduced-motion: класс has-cursor ставится на <html> после первого
+   движения мыши. Нет класса — нет и подмены системного курсора: если скрипт
+   не загрузился, страница остаётся с обычной стрелкой.
+
+   Поля ввода оставляют системный курсор — в форме заявки нужна каретка
+   браузера, а не наша. */
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
+html.has-cursor :is(input, textarea, select, [contenteditable="true"]) {
+  cursor: auto !important;
+}
+
+.cur-dot,
+.cur-blob {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  will-change: transform;
+  /* курсор не участвует в раскладке страницы — пересчёт его размера
+     не задевает остальное */
+  contain: layout style paint;
+}
+
+/* Точка и кольцо по умолчанию — белые в режиме difference: инвертируют то,
+   что под ними, поэтому видны и на белом, и на night, и на фото. */
+.cur-dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: #fff;
+  mix-blend-mode: difference;
+  transition: opacity 0.15s var(--ease-out);
+}
+
+.cur-blob {
+  border: 1.5px solid #fff;
+  mix-blend-mode: difference;
+  transition:
+    background-color 0.2s var(--ease-out),
+    border-color 0.2s var(--ease-out),
+    opacity 0.2s var(--ease-out);
+}
+
+/* Над кнопкой или ссылкой: обычное наложение и подкраска цветом контекста
+   (--cur-tint: тёмный, белый на night, зелёный WhatsApp, синий Telegram). */
+.cur-blob[data-mode="magnetic"],
+.cur-blob[data-mode="lens"] {
+  mix-blend-mode: normal;
+  border-color: color-mix(in srgb, var(--cur-tint, #0b0b0c) 55%, transparent);
+  background: color-mix(in srgb, var(--cur-tint, #0b0b0c) 9%, transparent);
+}
+.cur-blob[data-mode="lens"] {
+  border-color: color-mix(in srgb, var(--cur-tint, #0b0b0c) 35%, transparent);
+  background: color-mix(in srgb, var(--cur-tint, #0b0b0c) 6%, transparent);
+}
+
+/* Над текстом — каретка: залитая полоса в режиме difference */
+.cur-blob[data-mode="caret"] {
+  background: #fff;
+  border-color: transparent;
+}
+.cur-dot[data-mode="caret"],
+.cur-dot[data-mode="lens"] {
+  opacity: 0;
+}
+
+/* Указатель ушёл за окно или в поле ввода — капля прячется */
+.cur-dot.is-hidden,
+.cur-blob.is-hidden {
+  opacity: 0;
+}

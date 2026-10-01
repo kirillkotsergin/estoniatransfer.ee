@@ -4,6 +4,7 @@ import { getImage, Font } from "astro:assets";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import MobileBar from "../components/MobileBar.astro";
+import Cursor from "../components/Cursor.astro";
 import ConsentBanner from "../components/ConsentBanner.astro";
 import ogSource from "../assets/car/car-1.jpg";
 import {
@@ -438,6 +439,7 @@ const canonical = new URL(localePath(lang, pathFor(lang)), site).href;
     </main>
     <Footer lang={lang} />
     <MobileBar lang={lang} />
+    <Cursor />
     {/* Тем же условием, что и сам тег: нет googleAds.id — нет cookie, и
         спрашивать не о чем. Впишете AW-… — баннер и Consent Mode включатся
         вместе с тегом, править больше нечего. */}
