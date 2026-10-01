@@ -1,26 +1,20 @@
 ---
 /**
- * Первый экран главной (обновлён 02.10.2026): текст слева, фото справа; на
- * телефоне — полоса фото над заголовком. Раньше здесь был только текст, и
- * правая половина экрана на десктопе пустовала.
+ * Первый экран главной. На телефоне — полоса фото над заголовком, на
+ * десктопе (от lg) фото нет — решение владельца 02.10.2026: одна колонка,
+ * текст и кнопки по центру, под ними карточки доверия.
  *
- * Фото — самый крупный элемент первого экрана (LCP), поэтому:
- *  - loading="eager" и fetchpriority="high", без .reveal: анимация появления
- *    держала бы его прозрачным и отодвинула LCP;
- *  - арт-дирекция через <source media>: десктопу — кадр 4:5, заранее
- *    обрезанный к передней части машины; телефону — полный кадр 16:9. Один
- *    <Picture> с object-cover обрезал бы 4:5 из альбомного файла уже в
- *    браузере: машина ушла бы за край, а файл 800w растягивался бы до
- *    ~1240 px по ширине — мыльно и тяжелее, чем нужно;
- *  - AVIF и WebP, ширины 480/800/1200 — каждое устройство берёт один файл.
+ * Фото на телефоне — самый крупный элемент первого экрана (LCP): eager,
+ * fetchpriority="high", без .reveal, плюс preload в <head> (HeroPreload.astro).
+ * Варианты — heroImage.ts, один источник для <picture> и preload.
+ * Для десктопа в <picture> стоит пустой GIF: скрытый <img> иначе всё равно
+ * скачал бы фото.
  *
- * Стеклянные плашки поверх фото: цена Нарвы и оценка Google — обе из facts,
- * цифр руками здесь нет.
+ * Стеклянные плашки поверх фото: цена Нарвы и оценка Google — из facts.
  */
-import { getImage } from "astro:assets";
 import BrandIcon from "./BrandIcon.astro";
 import TrustBar from "./TrustBar.astro";
-import hero from "../assets/car/car-1.jpg";
+import { heroSources, heroMedia, blankImage } from "./heroImage";
 import { useTranslations, facts, type Lang } from "../i18n/ui";
 
 interface Props {
@@ -30,30 +24,9 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 const narva = facts.routes.find((r) => r.id === "narva")!;
 
-// 640 добавлен к 480/800/1200 (02.10.2026): телефон с DPR 1.75 просит ~612 px,
-// десктоп — 540 px, и без него оба качали 800w — на четверть-половину тяжелее.
-const widths = [480, 640, 800, 1200];
-const formats = ["avif", "webp"] as const;
-
-/** srcset из нарезанных при сборке вариантов. ratio — высота к ширине, если кадр режем. */
-async function srcset(format: (typeof formats)[number], ratio?: number) {
-  const imgs = await Promise.all(
-    widths.map((w) =>
-      getImage({
-        src: hero,
-        width: w,
-        ...(ratio ? { height: Math.round(w * ratio), fit: "cover" as const, position: "right" } : {}),
-        format,
-        quality: format === "avif" ? 55 : 70,
-      })
-    )
-  );
-  return imgs.map((img, i) => `${img.src} ${widths[i]}w`).join(", ");
-}
-
-const desk = { avif: await srcset("avif", 5 / 4), webp: await srcset("webp", 5 / 4) };
-const mob = { avif: await srcset("avif"), webp: await srcset("webp") };
-const fallback = await getImage({ src: hero, width: 800, format: "jpg", quality: 72 });
+// Те же варианты, что предзагружает HeroPreload.astro в <head>: один источник
+// в heroImage.ts, разойтись адресам нельзя.
+const { mob, fallback } = await heroSources();
 
 const copy = {
   ru: {
@@ -84,27 +57,26 @@ const chip =
   </div>
 
   <div class="relative mx-auto max-w-6xl px-5 pb-16 pt-5 sm:pb-20 sm:pt-8 lg:pt-14">
-    {/* items-start, а не items-center: по центру колонка текста сдвигалась
-        на половину разницы высот, когда шрифт подменялся, — это сдвиг
-        макета (CLS). Визуальный баланс держит отступ lg:pt-10 у текста. */}
-    <div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14">
-      {/* Фото. На телефоне — первым, полосой над заголовком (order-first);
-          на десктопе — справа. */}
-      <div class="relative lg:order-last">
+    {/* На десктопе фото нет (решение владельца 02.10.2026): одна колонка,
+        текст по центру. На телефоне — полоса фото над заголовком. */}
+    <div class="grid gap-8 lg:gap-0">
+      {/* Фото — только до lg. lg:hidden прячет блок, а пустой GIF в <source>
+          для десктопа не даёт браузеру скачать сам файл: скрытый <img>
+          иначе всё равно грузится. */}
+      <div class="relative lg:hidden">
         <picture>
-          <source media="(min-width: 1024px)" type="image/avif" srcset={desk.avif} sizes="(min-width: 1152px) 540px, 46vw" />
-          <source media="(min-width: 1024px)" type="image/webp" srcset={desk.webp} sizes="(min-width: 1152px) 540px, 46vw" />
-          <source type="image/avif" srcset={mob.avif} sizes="calc(100vw - 2.5rem)" />
-          <source type="image/webp" srcset={mob.webp} sizes="calc(100vw - 2.5rem)" />
+          <source media={heroMedia.desk.media} srcset={blankImage} />
+          <source type="image/avif" srcset={mob.avif} sizes={heroMedia.mob.sizes} />
+          <source type="image/webp" srcset={mob.webp} sizes={heroMedia.mob.sizes} />
           <img
-            src={fallback.src}
+            src={fallback}
             alt={copy.alt}
             width="1200"
             height="675"
             loading="eager"
             fetchpriority="high"
             decoding="async"
-            class="aspect-video w-full rounded-[var(--radius-card)] bg-surface object-cover shadow-[0_24px_60px_-28px_rgb(11_11_12/0.45)] lg:aspect-[4/5]"
+            class="aspect-video w-full rounded-[var(--radius-card)] bg-surface object-cover shadow-[0_24px_60px_-28px_rgb(11_11_12/0.45)]"
           />
         </picture>
 
@@ -125,24 +97,24 @@ const chip =
         </a>
       </div>
 
-      <div class="lg:pt-10">
+      <div class="lg:mx-auto lg:max-w-4xl lg:pt-6 lg:text-center">
         <p class="reveal text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
           {t("hero.eyebrow")}
         </p>
 
         <h1
-          class="reveal mt-4 text-balance text-[clamp(2.2rem,5.6vw,3.75rem)] font-semibold leading-[1.04] tracking-[-0.035em] sm:mt-5"
+          class="reveal mt-4 text-balance text-[clamp(2.2rem,5.6vw,4.4rem)] font-semibold leading-[1.04] tracking-[-0.035em] sm:mt-5"
           style="--d:1"
         >
           {t("hero.title.1")}<br />
           <span class="text-brand-ink">{t("hero.title.2")}</span>
         </h1>
 
-        <p class="reveal mt-5 max-w-xl text-[1.04rem] leading-relaxed text-ink-muted sm:mt-6" style="--d:2">
+        <p class="reveal mt-5 max-w-xl text-[1.04rem] leading-relaxed text-ink-muted sm:mt-6 lg:mx-auto lg:max-w-2xl lg:text-[1.1rem]" style="--d:2">
           {t("hero.lead")}
         </p>
 
-        <div class="reveal mt-8 flex flex-wrap items-center gap-3" style="--d:3">
+        <div class="reveal mt-8 flex flex-wrap items-center gap-3 lg:justify-center" style="--d:3">
           <a
             href="#order"
             class="rounded-2xl bg-brand px-6 py-3.5 font-semibold text-ink shadow-[0_10px_24px_-12px_rgb(255_106_0/0.7)] transition hover:-translate-y-0.5 hover:bg-brand-hover"

@@ -1,0 +1,25 @@
+---
+/**
+ * Предзагрузка фото героя — в самое начало <head> (через slot="head" в Base).
+ *
+ * Зачем, если у <img> уже fetchpriority="high": в HTML перед героем стоят
+ * ~47 КБ встроенного CSS, и браузер узнаёт о картинке только на 56-м
+ * килобайте документа. Preload в начале <head> отдаёт ему адрес с первым же
+ * пакетом. Только AVIF (type): браузер без AVIF пропустит preload и возьмёт
+ * WebP из <picture> сам. Только для телефона (media): на десктопе фото
+ * нет с 02.10.2026.
+ */
+import { heroSources, heroMedia } from "./heroImage";
+
+const src = await heroSources();
+---
+
+<link
+  rel="preload"
+  as="image"
+  type="image/avif"
+  imagesrcset={src.mob.avif}
+  imagesizes={heroMedia.mob.sizes}
+  media={heroMedia.mob.media}
+  fetchpriority="high"
+/>

@@ -93,6 +93,9 @@ const canonical = new URL(localePath(lang, pathFor(lang)), site).href;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* Предзагрузки страницы (фото героя на главной) — как можно выше в
+        <head>: до них ниже идут ~47 КБ встроенного CSS. */}
+    <slot name="head" />
     <title>{pageTitle}</title>
     {/* Onest: @font-face и переменная --font-onest с подстроенным запасным
         шрифтом. Настройки и почему без preload — в astro.config.mjs. */}

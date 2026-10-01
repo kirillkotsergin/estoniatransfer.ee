@@ -8,11 +8,13 @@ import Faq from "../../components/Faq.astro";
 import Answers from "../../components/Answers.astro";
 import SiteSchema from "../../components/SiteSchema.astro";
 import CtaBand from "../../components/CtaBand.astro";
+import HeroPreload from "../../components/HeroPreload.astro";
 
 const lang = "en" as const;
 ---
 
 <Base lang={lang} path="/">
+  <HeroPreload slot="head" />
   <Hero lang={lang} />
   <Routes lang={lang} />
   <Car lang={lang} />
