@@ -1,0 +1,54 @@
+---
+/**
+ * Закрывающий призыв на главной — вторая тёмная полоса (02.10.2026), перед
+ * подвалом. Страница раньше заканчивалась FAQ, и после ответов на вопросы
+ * не было ни одной кнопки — только подвал.
+ *
+ * Кнопки — те же адреса, что везде (facts.whatsapp, facts.phoneHref), поэтому
+ * конверсию Google Ads по ним обработчик в Base.astro засчитает сам.
+ *
+ * Контраст на night: белый 17.46, night-muted 8.33. Зелёная кнопка WhatsApp —
+ * с тёмным текстом: белый на #25d366 даёт 1.98, ink — 9.92.
+ */
+import BrandIcon from "./BrandIcon.astro";
+import { useTranslations, facts, type Lang } from "../i18n/ui";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<section class="relative overflow-hidden bg-night py-16 text-white sm:py-20" aria-labelledby="cta-band">
+  <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+    <div class="blob left-[-10%] bottom-[-40%] size-[28rem] bg-brand/25"></div>
+  </div>
+  <div class="relative mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-x-12 gap-y-8 px-5">
+    <div class="max-w-2xl">
+      <p class="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand">{t("cta.eyebrow")}</p>
+      <h2 id="cta-band" class="mt-4 text-[clamp(1.9rem,3.6vw,2.9rem)] font-semibold leading-tight">
+        {t("cta.title")}
+      </h2>
+      <p class="mt-4 text-[1.04rem] leading-relaxed text-night-muted">{t("cta.text")}</p>
+    </div>
+
+    <div class="flex w-full flex-wrap gap-3 sm:w-auto">
+      <a
+        href={facts.whatsapp}
+        target="_blank"
+        rel="noopener"
+        class="inline-flex flex-1 items-center justify-center gap-2.5 rounded-2xl bg-[#25d366] px-6 py-3.5 font-semibold text-ink transition hover:-translate-y-0.5 hover:bg-[#2ee072] sm:flex-none"
+      >
+        <BrandIcon name="whatsapp" class="size-5 shrink-0" />
+        {t("hero.secondary")}
+      </a>
+      <a
+        href={facts.phoneHref}
+        class="inline-flex flex-1 items-center justify-center rounded-2xl border border-white/25 px-6 py-3.5 font-semibold tabular-nums text-white transition-colors hover:bg-white/10 sm:flex-none"
+      >
+        {facts.phone}
+      </a>
+    </div>
+  </div>
+</section>

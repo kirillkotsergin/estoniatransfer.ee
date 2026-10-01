@@ -1,4 +1,4 @@
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 
 // Статическая сборка: Node нужен только здесь, на сервере его нет и не нужно.
@@ -35,6 +35,34 @@ export default defineConfig({
       prefixDefaultLocale: false,
     },
   },
+  /**
+   * Фирменный шрифт Onest (02.10.2026) — кириллица и латиница, одним
+   * вариативным файлом на подмножество. До этого стоял системный шрифт, и
+   * сайт выглядел по-разному на каждом устройстве: Segoe UI, SF Pro, Roboto.
+   *
+   * Через встроенный Fonts API, а не голым @import CSS из пакета, по двум
+   * причинам:
+   *  - Astro скачивает файлы при сборке и кладёт их в dist — шрифт
+   *    отдаётся со своего домена, как требует CSP (`font-src 'self'`);
+   *  - он генерирует подстроенный запасной шрифт (size-adjust по метрикам
+   *    Onest), поэтому подмена шрифта при загрузке не сдвигает вёрстку: CLS
+   *    остаётся 0. Голый @import этого не умеет.
+   *
+   * Предзагрузки (preload) нет намеренно: она конкурировала бы за канал с
+   * фото в герое, а именно фото теперь самый крупный элемент первого экрана.
+   */
+  fonts: [
+    {
+      provider: fontProviders.fontsource(),
+      name: "Onest",
+      cssVariable: "--font-onest",
+      weights: ["100 900"],
+      styles: ["normal"],
+      subsets: ["cyrillic", "latin"],
+      fallbacks: ["sans-serif"],
+      display: "swap",
+    },
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

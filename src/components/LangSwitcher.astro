@@ -26,10 +26,14 @@ const available = langs ?? codes;
     и по клику вне меню. Внутри — обычные ссылки, поэтому краулер видит
     переходы на другие языки как ссылки, а не как поведение скрипта. */}
 <details class="relative" data-lang-menu>
+  {/* Имя кнопки — «Язык: RU» скрытым текстом, а не aria-label="Язык":
+      aria-label заменял видимое «RU» целиком, и Lighthouse отмечал
+      расхождение подписи и имени (WCAG 2.5.3, Label in Name) — голосовое
+      управление не находило кнопку по тому, что на ней написано. */}
   <summary
     class="flex items-center gap-1.5 rounded-xl border border-line-strong/50 px-3 py-2 text-[0.82rem] font-semibold uppercase tracking-wide text-ink transition-colors hover:bg-surface"
-    aria-label={t("lang.label")}
   >
+    <span class="sr-only">{t("lang.label")}: </span>
     <span>{lang}</span>
     <svg viewBox="0 0 20 20" fill="none" width="14" height="14" class="size-3.5 text-ink-dim" aria-hidden="true">
       <path

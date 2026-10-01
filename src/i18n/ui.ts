@@ -482,6 +482,14 @@ export const ui = {
     "order.title": "Оставьте заявку",
     "order.or": "или сразу в мессенджер",
 
+    // Закрывающая тёмная полоса на главной (CtaBand.astro) и панель связи
+    // внизу экрана на телефоне (MobileBar.astro), 02.10.2026
+    "cta.eyebrow": "Заказ",
+    "cta.title": "Назовём точную цену до выезда",
+    "cta.text":
+      "Напишите дату и маршрут — ответит сам водитель, без диспетчера. Сумму подтверждаем сообщением, предоплаты нет.",
+    "bar.label": "Связаться с водителем",
+
     "fab.label": "Заказать",
     "fab.title": "Заказ трансфера",
     "fab.text": "Выберите удобный способ связи:",
@@ -700,6 +708,12 @@ export const ui = {
     "order.eyebrow": "Request",
     "order.title": "Send a request",
     "order.or": "or message us directly",
+
+    "cta.eyebrow": "Booking",
+    "cta.title": "Get the exact price before you travel",
+    "cta.text":
+      "Send the date and the route — the driver replies directly, with no dispatcher. We confirm the sum in writing, and there is no prepayment.",
+    "bar.label": "Contact the driver",
 
     "fab.label": "Book",
     "fab.title": "Book a transfer",

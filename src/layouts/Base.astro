@@ -1,9 +1,9 @@
 ---
 import "../styles/global.css";
-import { getImage } from "astro:assets";
+import { getImage, Font } from "astro:assets";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import OrderFab from "../components/OrderFab.astro";
+import MobileBar from "../components/MobileBar.astro";
 import ConsentBanner from "../components/ConsentBanner.astro";
 import ogSource from "../assets/car/car-1.jpg";
 import {
@@ -94,6 +94,9 @@ const canonical = new URL(localePath(lang, pathFor(lang)), site).href;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
+    {/* Onest: @font-face и переменная --font-onest с подстроенным запасным
+        шрифтом. Настройки и почему без preload — в astro.config.mjs. */}
+    <Font cssVariable="--font-onest" />
     <meta name="description" content={pageDesc} />
     <meta
       name="robots"
@@ -417,7 +420,9 @@ const canonical = new URL(localePath(lang, pathFor(lang)), site).href;
     }
   </head>
 
-  <body class="bg-page text-ink antialiased">
+  <body class="bg-page text-ink antialiased max-md:pb-[calc(4.75rem+env(safe-area-inset-bottom))]">
+    {/* max-md:pb у body — место под панель связи MobileBar внизу экрана
+        телефона: без него она перекрывала бы конец подвала. 4.75rem — её высота. */}
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-white"
@@ -429,7 +434,7 @@ const canonical = new URL(localePath(lang, pathFor(lang)), site).href;
       <slot />
     </main>
     <Footer lang={lang} />
-    <OrderFab lang={lang} />
+    <MobileBar lang={lang} />
     {/* Тем же условием, что и сам тег: нет googleAds.id — нет cookie, и
         спрашивать не о чем. Впишете AW-… — баннер и Consent Mode включатся
         вместе с тегом, править больше нечего. */}
