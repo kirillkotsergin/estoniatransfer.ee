@@ -238,6 +238,57 @@ function admin_delete(int $id): array
 // Страницы админки
 // ---------------------------------------------------------------------------
 
+/**
+ * Загрузка фото из редактора (fetch, ответ JSON). Возвращает строку Markdown,
+ * которую скрипт редактора вставляет в текст там, где стоит курсор.
+ */
+function admin_upload(): never
+{
+    $alt = admin_clean_line($_POST['alt'] ?? '');
+    $caption = str_replace('"', '«', admin_clean_line($_POST['caption'] ?? ''));
+    if ($alt === '') {
+        admin_json(422, ['error' => 'Нужно описание фото (alt) — по нему фото находят в поиске по картинкам и его слышат незрячие.']);
+    }
+    if (mb_strlen($alt) > 150 || mb_strlen($caption) > 200) {
+        admin_json(422, ['error' => 'Описание — до 150 знаков, подпись — до 200.']);
+    }
+    $file = $_FILES['file'] ?? null;
+    $error = is_array($file) ? (int) $file['error'] : UPLOAD_ERR_NO_FILE;
+    if ($error !== UPLOAD_ERR_OK) {
+        admin_json(422, ['error' => match ($error) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Файл больше, чем принимает сервер (' . ini_get('upload_max_filesize') . ').',
+            UPLOAD_ERR_NO_FILE => 'Выберите фото.',
+            UPLOAD_ERR_PARTIAL => 'Фото загрузилось не до конца — попробуйте ещё раз.',
+            default => 'Сервер не принял файл (код ' . $error . ').',
+        }]);
+    }
+    if ((int) $file['size'] > BLOG_IMG_MAX_BYTES || !is_uploaded_file((string) $file['tmp_name'])) {
+        admin_json(422, ['error' => 'Файл больше 25 МБ или пришёл не как загрузка.']);
+    }
+    try {
+        $img = blog_store_image((string) $file['tmp_name'], $alt);
+    } catch (InvalidArgumentException $e) {
+        admin_json(422, ['error' => $e->getMessage()]);
+    }
+    // «[» и «]» в alt сломали бы разметку строки
+    $md = '![' . str_replace(['[', ']'], ['(', ')'], $alt) . '](' . BLOG_PATH . 'foto/' . $img['name'] . '.webp'
+        . ($caption !== '' ? ' "' . $caption . '"' : '') . ')';
+    admin_json(200, [
+        'ok' => true,
+        'markdown' => $md,
+        'preview' => blog_image_url($img, min(blog_image_widths($img))),
+        'size' => $img['width'] . '×' . $img['height'],
+    ]);
+}
+
+function admin_json(int $code, array $data): never
+{
+    http_response_code($code);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+
 function admin_go(array $query = []): never
 {
     header('Location: /admin/' . ($query ? '?' . http_build_query($query) : ''), true, 303);
@@ -338,6 +389,78 @@ function admin_page(string $title, string $main, ?string $session = null): never
             el.addEventListener('input', update);
             update();
           });
+
+          // Загрузка фото. Перед отправкой фото уменьшается в браузере до 2400 px
+          // по длинной стороне: снимок с телефона весит 3–8 МБ, а у границы
+          // мобильный интернет медленный. Сервер всё равно перекодирует его сам.
+          (function () {
+            var box = document.getElementById('uploader');
+            if (!box) return;
+            var file = document.getElementById('up-file'), alt = document.getElementById('up-alt');
+            var cap = document.getElementById('up-cap'), btn = document.getElementById('up-go');
+            var status = document.getElementById('up-status'), preview = document.getElementById('up-preview');
+            var body = document.getElementById('body');
+
+            function shrink(f) {
+              if (!window.createImageBitmap) return Promise.resolve(f);
+              // imageOrientation: 'from-image' — поворот по EXIF, как фото и снято
+              return createImageBitmap(f, { imageOrientation: 'from-image' }).then(function (bmp) {
+                var k = Math.min(1, 2400 / Math.max(bmp.width, bmp.height));
+                if (k === 1 && f.size < 4e6) return f;
+                var c = document.createElement('canvas');
+                c.width = Math.round(bmp.width * k);
+                c.height = Math.round(bmp.height * k);
+                var ctx = c.getContext('2d');
+                ctx.fillStyle = '#fff'; // прозрачный PNG в JPEG иначе станет чёрным
+                ctx.fillRect(0, 0, c.width, c.height);
+                ctx.drawImage(bmp, 0, 0, c.width, c.height);
+                return new Promise(function (done) {
+                  c.toBlob(function (b) { done(b || f); }, 'image/jpeg', 0.92);
+                });
+              }).catch(function () { return f; });
+            }
+
+            // Вставка отдельным абзацем там, где стоит курсор в тексте
+            function insert(md) {
+              var v = body.value, a = body.selectionStart, b = body.selectionEnd;
+              if (typeof a !== 'number') { a = b = v.length; }
+              var before = v.slice(0, a), after = v.slice(b);
+              var pre = before === '' || /\\n\\n$/.test(before) ? '' : (/\\n$/.test(before) ? '\\n' : '\\n\\n');
+              var post = after === '' || /^\\n\\n/.test(after) ? '' : (/^\\n/.test(after) ? '\\n' : '\\n\\n');
+              body.value = before + pre + md + post + after;
+              var caret = (before + pre + md).length;
+              body.focus();
+              body.setSelectionRange(caret, caret);
+            }
+
+            btn.addEventListener('click', function () {
+              if (!file.files || !file.files[0]) { status.textContent = 'Выберите фото.'; return; }
+              if (!alt.value.trim()) { status.textContent = 'Опишите, что на фото, — без alt не загружаем.'; alt.focus(); return; }
+              btn.disabled = true;
+              status.textContent = 'Уменьшаем и загружаем…';
+              shrink(file.files[0]).then(function (blob) {
+                var fd = new FormData();
+                fd.append('a', 'upload');
+                fd.append('csrf', box.getAttribute('data-csrf'));
+                fd.append('alt', alt.value);
+                fd.append('caption', cap.value);
+                fd.append('file', blob, 'photo.' + (blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg'));
+                return fetch('/admin/', { method: 'POST', body: fd, headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+              }).then(function (res) {
+                return res.json().catch(function () { return { error: 'Сервер ответил не так, как ждали (' + res.status + ').' }; });
+              }).then(function (data) {
+                if (!data.ok) { status.textContent = data.error || 'Не загрузилось.'; return; }
+                insert(data.markdown);
+                preview.src = data.preview;
+                preview.hidden = false;
+                file.value = '';
+                cap.value = '';
+                status.textContent = 'Фото ' + data.size + ' вставлено в текст. Не забудьте сохранить запись.';
+              }).catch(function () {
+                status.textContent = 'Нет связи с сервером — попробуйте ещё раз.';
+              }).then(function () { btn.disabled = false; });
+            });
+          })();
         </script>
         </body>
         </html>
@@ -513,6 +636,19 @@ function admin_edit_page(string $session, array $post, array $errors = []): neve
 
           <aside>
             {$serp}
+            <div class="card" id="uploader" data-csrf="{$csrf}">
+              <h2>Фото в текст</h2>
+              <label for="up-file">Фото <span class="hint">JPEG, PNG или WebP. Большое уменьшим сами, координаты съёмки из файла удаляются.</span></label>
+              <input type="file" id="up-file" accept="image/jpeg,image/png,image/webp">
+              <label for="up-alt">Что на фото (alt) <span class="hint">Для поиска по картинкам и для незрячих. Конкретно: место, время, что видно.</span></label>
+              <input type="text" id="up-alt" value="Фото очереди на границе Нарва — Ивангород" maxlength="150" data-max="125">
+              <span class="count" id="up-alt-count">до 125 знаков</span>
+              <label for="up-cap">Подпись под фото <span class="hint">Необязательно, видна всем.</span></label>
+              <input type="text" id="up-cap" maxlength="200">
+              <div class="row"><button type="button" id="up-go">Загрузить и вставить</button></div>
+              <p class="hint" id="up-status" role="status" aria-live="polite"></p>
+              <img id="up-preview" alt="" hidden style="width:100%;height:auto;border-radius:10px;margin-top:.5rem">
+            </div>
             <div class="card help">
               <h2>Как оформлять текст</h2>
               <p>Пустая строка — новый абзац.</p>
@@ -520,6 +656,7 @@ function admin_edit_page(string $session, array $post, array $errors = []): neve
               <p><code>- пункт списка</code><br><code>1. пункт по порядку</code></p>
               <p><code>**жирный**</code></p>
               <p><code>[текст ссылки](https://politsei.ee)</code><br>или на страницу сайта: <code>[трансфер](/transfer-tallinn-narva/)</code></p>
+              <p>Фото — отдельной строкой, её вставляет загрузка выше: <code>![что на фото](адрес "подпись")</code>. Текст в <code>[…]</code> — это alt, его можно поправить прямо здесь. Первое фото станет картинкой записи в поиске и в мессенджерах.</p>
               <p style="margin-bottom:0">HTML не работает — он покажется как текст.</p>
             </div>
           </aside>
@@ -552,19 +689,34 @@ try {
         admin_login_page('Неверный логин или пароль.');
     }
 
+    $wantsJson = str_contains((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json');
     $session = admin_session();
     if ($session === null) {
+        if ($wantsJson) {
+            admin_json(401, ['error' => 'Сессия закончилась — войдите заново в соседней вкладке и повторите.']);
+        }
         admin_login_page();
     }
 
     if ($isPost) {
+        // Файл больше post_max_size: PHP молча отдаёт пустой $_POST, и без
+        // этой проверки загрузка выглядела бы как «форма устарела».
+        if ($_POST === [] && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+            admin_json(413, ['error' => 'Файл больше, чем принимает сервер (' . ini_get('post_max_size') . ').']);
+        }
         if (!hash_equals(admin_csrf($session), (string) ($_POST['csrf'] ?? ''))) {
+            if ($wantsJson) {
+                admin_json(400, ['error' => 'Форма устарела — обновите страницу и повторите.']);
+            }
             http_response_code(400);
             admin_page('Ошибка', '<div class="msg err">Форма устарела — откройте страницу заново и повторите.</div>', $session);
         }
         if ($action === 'logout') {
             admin_set_cookie('', time() - 3600);
             admin_go();
+        }
+        if ($action === 'upload') {
+            admin_upload();
         }
         if ($action === 'delete') {
             $ping = admin_delete((int) ($_POST['id'] ?? 0));

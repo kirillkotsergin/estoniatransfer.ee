@@ -37,7 +37,13 @@ const BLOG_TZ_RU = 'Europe/Moscow';
 /** Тот же ключ, что в tools/indexnow.sh и public/<ключ>.txt. */
 const BLOG_INDEXNOW_KEY = '8f832852ef7447b79a893e449784ffe2';
 /** Слаги, которые заняты служебными адресами раздела. */
-const BLOG_RESERVED = ['shablon', 'stranica', 'sitemap', 'admin', 'index'];
+const BLOG_RESERVED = ['shablon', 'stranica', 'sitemap', 'admin', 'index', 'foto'];
+/**
+ * Ширины, в которые режется каждое фото. 800 — телефон, 1600 — широкий экран
+ * и плотный дисплей; Google для Article просит картинку от 1200 по ширине.
+ */
+const BLOG_IMG_WIDTHS = [800, 1600];
+const BLOG_IMG_MAX_BYTES = 25 * 1024 * 1024;
 
 /**
  * Вход в админку. Прошит в коде намеренно — решение владельца для первой
@@ -97,6 +103,16 @@ function blog_db(): PDO
         CREATE INDEX IF NOT EXISTS posts_feed ON posts (status, published_at DESC);
         CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS login_failures (ip TEXT NOT NULL, at INTEGER NOT NULL);
+        -- фото записей: файлы в BLOG_DATA/foto/<name>-<ширина>.webp
+        CREATE TABLE IF NOT EXISTS images (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            name       TEXT    NOT NULL UNIQUE,
+            alt        TEXT    NOT NULL,
+            width      INTEGER NOT NULL,  -- самого большого варианта
+            height     INTEGER NOT NULL,
+            widths     TEXT    NOT NULL,  -- «800,1600»: какие варианты лежат на диске
+            created_at INTEGER NOT NULL
+        );
         SQL);
     return $db;
 }
@@ -205,6 +221,208 @@ function blog_unique_slug(string $base, int $selfId = 0): string
 }
 
 // ---------------------------------------------------------------------------
+// Фото
+// ---------------------------------------------------------------------------
+
+/**
+ * Каталог фото — рядом с базой, вне htdocs, по той же причине: выкладка их
+ * не затрёт. Наружу их отдаёт granica-narva-ivangorod/foto.php с кешем на год.
+ */
+function blog_foto_dir(): string
+{
+    $dir = BLOG_DATA . '/foto';
+    if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir)) {
+        throw new RuntimeException('Нет каталога для фото ' . $dir);
+    }
+    return $dir;
+}
+
+/** @return list<int> */
+function blog_image_widths(array $img): array
+{
+    return array_map('intval', explode(',', (string) $img['widths']));
+}
+
+/** Адрес варианта фото; без ширины — самый большой. */
+function blog_image_url(array $img, ?int $width = null): string
+{
+    return BLOG_PATH . 'foto/' . $img['name'] . '-' . ($width ?? max(blog_image_widths($img))) . '.webp';
+}
+
+/**
+ * Фото по ссылке из текста записи: «/granica-narva-ivangorod/foto/<name>.webp»
+ * или с шириной на конце, «…/<name>-800.webp».
+ *
+ * @return array{0: array<string,mixed>, 1: int}|null запись и ширина варианта
+ */
+function blog_image_lookup(string $ref): ?array
+{
+    if (preg_match('~^(?:' . preg_quote(BLOG_PATH, '~') . 'foto/)?([a-z0-9-]{1,100})(?:\.webp)?$~', $ref, $m) !== 1) {
+        return null;
+    }
+    $st = blog_db()->prepare('SELECT * FROM images WHERE name = ?');
+    $st->execute([$m[1]]);
+    if ($img = $st->fetch()) {
+        return [$img, max(blog_image_widths($img))];
+    }
+    if (preg_match('/^(.+)-(\d{3,4})$/', $m[1], $s) === 1) {
+        $st->execute([$s[1]]);
+        $img = $st->fetch();
+        if ($img && in_array((int) $s[2], blog_image_widths($img), true)) {
+            return [$img, (int) $s[2]];
+        }
+    }
+    return null;
+}
+
+/**
+ * Принять загруженный файл: проверить, повернуть по EXIF, нарезать в WebP.
+ *
+ * Оригинал НЕ сохраняется: фото перекодируется заново, и вместе с EXIF уходят
+ * координаты съёмки. Снимок очереди, сделанный с телефона у перехода, иначе
+ * выдал бы на сайте, где именно стоял человек, и модель его телефона.
+ *
+ * Имя файла — из alt латиницей плюс случайный хвост: «foto-ocheredi-na-granice-
+ * narva-ivangorod-3fa9c1d2-1600.webp». Говорящее имя — сигнал для поиска по
+ * картинкам, хвост — чтобы два фото с одинаковым alt не перезаписали друг друга.
+ *
+ * @throws InvalidArgumentException если это не фото или оно не подходит
+ */
+function blog_store_image(string $path, string $alt): array
+{
+    $info = @getimagesize($path);
+    if ($info === false) {
+        throw new InvalidArgumentException('Файл не похож на фото.');
+    }
+    [$w, $h, $type] = $info;
+    $open = match ($type) {
+        IMAGETYPE_JPEG => 'imagecreatefromjpeg',
+        IMAGETYPE_PNG => 'imagecreatefrompng',
+        IMAGETYPE_WEBP => 'imagecreatefromwebp',
+        default => throw new InvalidArgumentException('Нужен JPEG, PNG или WebP. Фото с iPhone (HEIC) браузер обычно переводит в JPEG сам.'),
+    };
+    if ($w < 200 || $h < 100) {
+        throw new InvalidArgumentException('Фото слишком маленькое — нужно хотя бы 200 px по ширине.');
+    }
+    if ($w > 12000 || $h > 12000 || $w * $h > 50_000_000) {
+        throw new InvalidArgumentException('Фото слишком большое по пикселям — уменьшите до 12 000 px по стороне.');
+    }
+    $src = @$open($path);
+    if (!$src instanceof GdImage) {
+        throw new InvalidArgumentException('Фото не открывается — возможно, файл повреждён.');
+    }
+    if ($type === IMAGETYPE_JPEG && function_exists('exif_read_data')) {
+        $exif = @exif_read_data($path);
+        $src = blog_orient($src, (int) ($exif['Orientation'] ?? 1));
+    }
+    $w = imagesx($src);
+    $h = imagesy($src);
+
+    $base = blog_slugify($alt);
+    if (strlen($base) > 50) {
+        $base = rtrim(substr($base, 0, (int) (strrpos(substr($base, 0, 51), '-') ?: 50)), '-');
+    }
+    $name = ($base !== '' ? $base : 'foto') . '-' . bin2hex(random_bytes(4));
+    $dir = blog_foto_dir();
+
+    $widths = [];
+    foreach (BLOG_IMG_WIDTHS as $target) {
+        $tw = min($target, $w);
+        if (in_array($tw, $widths, true)) {
+            continue;
+        }
+        $th = max(1, (int) round($h * $tw / $w));
+        $dst = imagecreatetruecolor($tw, $th);
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+        imagecopyresampled($dst, $src, 0, 0, 0, 0, $tw, $th, $w, $h);
+        $file = "$dir/$name-$tw.webp";
+        // через временный файл: недописанное фото не должно отдаться наружу
+        if (!imagewebp($dst, $file . '.tmp', 80) || !rename($file . '.tmp', $file)) {
+            @unlink($file . '.tmp');
+            throw new RuntimeException('Не удалось записать фото на диск.');
+        }
+        $widths[] = $tw;
+    }
+    $top = max($widths);
+    $row = [
+        'name' => $name,
+        'alt' => $alt,
+        'width' => $top,
+        'height' => max(1, (int) round($h * $top / $w)),
+        'widths' => implode(',', $widths),
+        'created_at' => time(),
+    ];
+    blog_db()->prepare(
+        'INSERT INTO images (name, alt, width, height, widths, created_at) VALUES (:name, :alt, :width, :height, :widths, :created_at)'
+    )->execute(array_combine(array_map(fn($k) => ":$k", array_keys($row)), $row));
+    return $row;
+}
+
+/** Поворот по EXIF Orientation: телефон пишет фото «лёжа» и только помечает, как его повернуть. */
+function blog_orient(GdImage $img, int $o): GdImage
+{
+    $angle = match ($o) {
+        3, 4 => 180,
+        5, 6 => -90, // imagerotate крутит против часовой
+        7, 8 => 90,
+        default => 0,
+    };
+    if ($angle !== 0) {
+        $img = imagerotate($img, $angle, 0);
+    }
+    if (in_array($o, [2, 4, 5, 7], true)) {
+        imageflip($img, IMG_FLIP_HORIZONTAL);
+    }
+    return $img;
+}
+
+/** Строка фото в тексте: «![alt](адрес)» или «![alt](адрес "подпись")». */
+const BLOG_IMG_LINE = '/^!\[([^\]]*)\]\((\S+?)(?:\s+"([^"]*)")?\)$/u';
+
+/**
+ * Фото записи по порядку — для og:image, разметки и карты.
+ *
+ * @return list<array{img: array<string,mixed>, alt: string}>
+ */
+function blog_body_images(string $md): array
+{
+    $out = [];
+    foreach (explode("\n", str_replace(["\r\n", "\r"], "\n", $md)) as $line) {
+        if (preg_match(BLOG_IMG_LINE, trim($line), $m) === 1 && ($found = blog_image_lookup($m[2]))) {
+            $out[] = ['img' => $found[0], 'alt' => trim($m[1]) !== '' ? trim($m[1]) : (string) $found[0]['alt']];
+        }
+    }
+    return $out;
+}
+
+/**
+ * <figure> с адаптивной картинкой.
+ *
+ * - srcset из всех нарезанных ширин, sizes — под колонку текста (max-w-3xl,
+ *   768 px): телефон берёт 800, широкий экран с плотным дисплеем — 1600;
+ * - width и height — настоящие, браузер резервирует место заранее, и текст
+ *   под фото не прыгает при загрузке (CLS);
+ * - lazy у всех, кроме первого фото на странице записи: оно, скорее всего,
+ *   и есть самый крупный элемент первого экрана (LCP), и откладывать его
+ *   загрузку — прямой проигрыш в PageSpeed. Ему, наоборот, fetchpriority=high.
+ */
+function blog_figure(array $img, string $alt, string $caption, bool $eager): string
+{
+    $widths = blog_image_widths($img);
+    $srcset = implode(', ', array_map(fn(int $w) => blog_e(blog_image_url($img, $w)) . " {$w}w", $widths));
+    $load = $eager ? 'fetchpriority="high" decoding="async"' : 'loading="lazy" decoding="async"';
+    $html = '<figure><img src="' . blog_e(blog_image_url($img)) . '" srcset="' . $srcset . '"'
+        . ' sizes="(min-width: 808px) 768px, calc(100vw - 2.5rem)"'
+        . ' width="' . (int) $img['width'] . '" height="' . (int) $img['height'] . '"'
+        . ' alt="' . blog_e($alt !== '' ? $alt : (string) $img['alt']) . '" ' . $load . '>';
+    if ($caption !== '') {
+        $html .= '<figcaption>' . blog_e($caption) . '</figcaption>';
+    }
+    return $html . '</figure>';
+}
+
+// ---------------------------------------------------------------------------
 // Текст записи: упрощённый Markdown
 // ---------------------------------------------------------------------------
 
@@ -224,8 +442,13 @@ function blog_e(string $s): string
  * $base — уровень, который получит «##». На странице записи под H1 это 2, в
  * ленте запись стоит под H3, и там 4. «###» до первого «##» поднимается до
  * $base: скачок H1 → H3 сайт считает ошибкой (CLAUDE.md, 5.3).
+ *
+ * Фото — отдельной строкой «![alt](адрес "подпись")», адрес только свой, из
+ * загрузки в админке: чужие картинки не пропустил бы CSP (img-src 'self'), а
+ * фото без записи в базе не знает своих размеров. Неизвестное фото молча
+ * пропускается. $eagerFirst — первое фото грузить сразу (страница записи).
  */
-function blog_render_body(string $md, int $base = 2): string
+function blog_render_body(string $md, int $base = 2, bool $eagerFirst = false): string
 {
     $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", trim($md)));
     $out = [];
@@ -249,6 +472,14 @@ function blog_render_body(string $md, int $base = 2): string
         $line = trim($raw);
         if ($line === '') {
             $flush();
+            continue;
+        }
+        if (preg_match(BLOG_IMG_LINE, $line, $m) === 1) {
+            $flush();
+            if ($found = blog_image_lookup($m[2])) {
+                $out[] = blog_figure($found[0], trim($m[1]), trim($m[3] ?? ''), $eagerFirst);
+                $eagerFirst = false;
+            }
             continue;
         }
         if (preg_match('/^(#{1,6})\s+(.+)$/u', $line, $m)) {
@@ -288,7 +519,8 @@ function blog_render_body(string $md, int $base = 2): string
 /** Строка: экранирование, потом **жирный** и [ссылки](адрес). */
 function blog_inline(string $s): string
 {
-    $s = blog_e($s);
+    // фото посреди строки не поддерживаются — иначе «!» осталось бы перед ссылкой
+    $s = blog_e(trim((string) preg_replace('/!\[[^\]]*\]\([^)]*\)/u', '', $s)));
     $s = (string) preg_replace_callback(
         '/\[([^\]]+)\]\(([^)\s]+)\)/u',
         function (array $m): string {
@@ -335,6 +567,7 @@ function blog_plain(string $md): string
 
     foreach (explode("\n", str_replace(["\r\n", "\r"], "\n", $md)) as $line) {
         $line = trim($line);
+        $line = trim((string) preg_replace('/!\[[^\]]*\]\([^)]*\)/u', '', $line)); // фото — не текст
         if ($line === '' || preg_match('/^#{1,6}\s+/u', $line) === 1) {
             $flushItems();
             continue;
@@ -564,6 +797,17 @@ final class BlogPage
     }
 
     /**
+     * Заменить content у метатега, который выставил Base.astro: og:image
+     * записи с фото — её первое фото, а не машина, общая на весь сайт.
+     */
+    public function setMeta(string $attr, string $key, string $value): self
+    {
+        $re = '~(<meta ' . $attr . '="' . preg_quote($key, '~') . '" content=")[^"]*(")~';
+        $this->html = (string) preg_replace_callback($re, fn(array $m) => $m[1] . blog_e($value) . $m[2], $this->html, 1);
+        return $this;
+    }
+
+    /**
      * Готовый HTML.
      *
      * @param array<string,string> $text метка => значение, экранируется
@@ -698,6 +942,7 @@ function blog_item_row(array $p): array
 function blog_post_stub(array $p): array
 {
     $url = BLOG_SITE . blog_url($p);
+    $images = blog_body_images((string) $p['body']);
     return [
         '@type' => 'BlogPosting',
         '@id' => $url . '#article',
@@ -705,7 +950,7 @@ function blog_post_stub(array $p): array
         'headline' => blog_cut((string) $p['title'], 110),
         'datePublished' => blog_iso((int) $p['published_at']),
         'dateModified' => blog_iso((int) $p['updated_at']),
-    ];
+    ] + ($images ? ['image' => BLOG_SITE . blog_image_url($images[0]['img'])] : []);
 }
 
 /** Лента: /granica-narva-ivangorod/ и /granica-narva-ivangorod/stranica/N/. */
@@ -798,7 +1043,20 @@ function blog_render_post(string $slug, ?string $preview): never
     $published = (int) ($post['published_at'] ?? time());
     $updated = max((int) $post['updated_at'], $published);
     $p = BlogPage::load('zapis');
-    $og = $p->meta('og:image');
+    $images = blog_body_images((string) $post['body']);
+    if ($images) {
+        // Карточка ссылки в мессенджере и соцсети — с фото очереди, а не с
+        // машиной: ради свежего снимка по ссылке и переходят.
+        $first = $images[0];
+        $p->setMeta('property', 'og:image', BLOG_SITE . blog_image_url($first['img']))
+            ->setMeta('property', 'og:image:width', (string) $first['img']['width'])
+            ->setMeta('property', 'og:image:height', (string) $first['img']['height'])
+            ->setMeta('property', 'og:image:alt', $first['alt'])
+            ->setMeta('name', 'twitter:image', BLOG_SITE . blog_image_url($first['img']));
+        $og = array_map(fn(array $i) => BLOG_SITE . blog_image_url($i['img']), $images);
+    } else {
+        $og = $p->meta('og:image');
+    }
 
     $p->block('UPDATED', $updated - $published > 600)
         ->block('MORE', $others !== [])
@@ -816,7 +1074,7 @@ function blog_render_post(string $slug, ?string $preview): never
             '__POST_MODIFIED_ISO__' => blog_iso($updated),
             '__POST_MODIFIED_WHEN__' => blog_when($updated),
         ],
-        ['__POST_BODY__' => blog_render_body((string) $post['body'], 2)],
+        ['__POST_BODY__' => blog_render_body((string) $post['body'], 2, true)],
         ['__OG_IMAGE__' => $og]
     );
     if ($isPreview) {
@@ -843,7 +1101,7 @@ function blog_sitemap(): never
 {
     blog_conditional(max(blog_touched(), (int) @filemtime(__FILE__)));
     $rows = blog_db()->query(
-        "SELECT slug, updated_at FROM posts WHERE status = 'published' ORDER BY published_at DESC, id DESC"
+        "SELECT slug, body, updated_at FROM posts WHERE status = 'published' ORDER BY published_at DESC, id DESC"
     )->fetchAll();
     $hubMod = blog_touched();
 
@@ -859,14 +1117,19 @@ function blog_sitemap(): never
             '    <loc>' . BLOG_SITE . BLOG_PATH . blog_e((string) $r['slug']) . '/</loc>',
             '    <lastmod>' . blog_iso((int) $r['updated_at']) . '</lastmod>',
             '    <changefreq>weekly</changefreq>',
-            '    <priority>0.6</priority>',
-            '  </url>'
+            '    <priority>0.6</priority>'
         );
+        // фото записи — в карту картинок Google: так снимки очереди находятся
+        // и в поиске по картинкам, даже если краулер до них ещё не дошёл
+        foreach (blog_body_images((string) $r['body']) as $i) {
+            $urls[] = '    <image:image><image:loc>' . blog_e(BLOG_SITE . blog_image_url($i['img'])) . '</image:loc></image:image>';
+        }
+        $urls[] = '  </url>';
     }
     header('Content-Type: application/xml; charset=utf-8');
     echo '<?xml version="1.0" encoding="UTF-8"?>', "\n",
         '<!-- Карта раздела «Граница Нарва — Ивангород». Собирается из базы на каждый запрос. -->', "\n",
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">', "\n",
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">', "\n",
         implode("\n", $urls), "\n",
         '</urlset>', "\n";
     exit;

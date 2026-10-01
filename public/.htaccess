@@ -55,6 +55,8 @@ AddType image/x-icon .ico
   RewriteRule ^granica-narva-ivangorod/([a-z0-9-]+)$ /granica-narva-ivangorod/$1/ [R=301,L]
   RewriteRule ^granica-narva-ivangorod/$ granica-narva-ivangorod/index.php [L]
   RewriteRule ^granica-narva-ivangorod/sitemap\.xml$ granica-narva-ivangorod/index.php?sitemap=1 [L]
+  # фото сводок: лежат вне htdocs, отдаёт foto.php
+  RewriteRule ^granica-narva-ivangorod/foto/([a-z0-9-]+\.webp)$ granica-narva-ivangorod/foto.php?f=$1 [L]
   RewriteRule ^granica-narva-ivangorod/stranica/([0-9]{1,4})/$ granica-narva-ivangorod/index.php?page=$1 [L]
   # QSA — ради ?preview=… у черновиков, ссылку на предпросмотр даёт админка
   RewriteRule ^granica-narva-ivangorod/([a-z0-9-]+)/$ granica-narva-ivangorod/index.php?slug=$1 [L,QSA]
@@ -111,7 +113,11 @@ AddType image/x-icon .ico
   # PHP кешировать нельзя ни в каком виде: hits.php при кеше ответа перестал бы
   # считать посещения, а число в подвале застыло бы у посетителя в браузере.
   # Expires снимаем отдельно — ExpiresDefault ниже иначе выдаёт .php месяц.
-  <FilesMatch "\.php$">
+  #
+  # Исключение одно — foto.php (раздел сводок): он отдаёт фото, у которых имя
+  # и содержимое не меняются никогда, и кеш на год ставит сам. Под общим
+  # no-store браузер качал бы каждое фото заново на каждой странице.
+  <FilesMatch "^(?!foto\.php$).*\.php$">
     Header set Cache-Control "no-store"
     Header unset Expires
   </FilesMatch>
