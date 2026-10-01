@@ -1,0 +1,273 @@
+---
+/**
+ * ШАБЛОН ленты «Граница Нарва — Ивангород», а не страница.
+ *
+ * Собранный файл никому не отдаётся как есть: .htaccess отвечает 404 на
+ * /granica-narva-ivangorod/shablon/, а PHP (public/granica-narva-ivangorod/index.php)
+ * читает его с диска и заполняет метки записями из базы. Поэтому здесь вся
+ * вёрстка и все постоянные тексты, а записей нет.
+ *
+ * Метки (правила подробно — в шапке public/_blog/lib.php):
+ *  - __ИМЯ__ — значение; PHP экранирует его сам, и в тексте, и в атрибутах;
+ *  - __ИМЯ_BEGIN__ … __ИМЯ_END__ — блок: PHP повторяет его по записям,
+ *    оставляет или убирает целиком;
+ *  - метки внутри JSON-LD PHP заменяет на уровне данных, а не текста, —
+ *    кавычка в заголовке записи разметку не сломает.
+ *
+ * Добавляете метку — добавьте её и в PHP, иначе она уедет на сайт как текст.
+ * Проверка после сборки: открыть ленту и поискать в HTML «__».
+ */
+import Base from "../../../layouts/Base.astro";
+import BorderCta from "../../../components/BorderCta.astro";
+import { border, borderFaq, borderPath, borderProse } from "../../../data/border";
+import { facts } from "../../../i18n/ui";
+
+const lang = "ru" as const;
+const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
+const hubUrl = `${site}${borderPath}`;
+// у второй и дальше страниц ленты свой адрес: /granica-narva-ivangorod/stranica/2/
+const pageUrl = `${hubUrl}__HUB_PAGE_PATH__`;
+
+/** Заглушка бизнеса — тот же @id, что у узла на главной (SiteSchema.astro). */
+const org = {
+  "@type": ["LocalBusiness", "TaxiService"],
+  "@id": `${site}/#business`,
+  name: "EstoniaTransfer",
+  legalName: facts.legal.name,
+  url: `${site}/`,
+};
+
+const schema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Главная", item: `${site}/` },
+        { "@type": "ListItem", position: 2, name: border.breadcrumb, item: hubUrl },
+      ],
+    },
+    {
+      "@type": "CollectionPage",
+      "@id": `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: `${border.title}__HUB_PAGE_SUFFIX__`,
+      description: border.description,
+      inLanguage: lang,
+      isPartOf: { "@id": `${site}/#website` },
+      mainEntity: { "@id": `${hubUrl}#blog` },
+      // дата последней правки любой записи; записей нет — поля нет
+      dateModified: "__HUB_MODIFIED__",
+    },
+    {
+      "@type": "Blog",
+      "@id": `${hubUrl}#blog`,
+      url: hubUrl,
+      name: border.h1,
+      description: border.description,
+      inLanguage: lang,
+      publisher: org,
+      // записи этой страницы ленты, список подставляет PHP
+      blogPost: "__HUB_POSTS__",
+    },
+  ],
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": `${hubUrl}#faq`,
+  mainEntity: borderFaq.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
+const wrap = "mx-auto max-w-6xl px-5";
+// Узкая колонка текста, но по левому краю общей сетки — как заголовок и
+// крошки. Колонка по центру уезжала от них вправо на сотню пикселей.
+const narrow = "mx-auto max-w-6xl px-5 *:max-w-3xl";
+const eyebrow = "text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink";
+const h2 = "text-[clamp(1.6rem,3vw,2.3rem)] font-semibold leading-tight tracking-[-0.02em]";
+const link = "[&_a]:font-semibold [&_a]:text-brand-ink [&_a:hover]:underline";
+---
+
+<Base
+  lang={lang}
+  path={`${borderPath}__HUB_PAGE_PATH__`}
+  langs={["ru"]}
+  title={`${border.title}__HUB_PAGE_SUFFIX__`}
+  description={`${border.description}__HUB_DESC_SUFFIX__`}
+>
+  {/* ⚠️ Сразу после <script> текстовую метку не ставить: компилятор Astro
+      падает на ней с «Unexpected token». После скрипта — только элемент. */}
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)}></script>
+
+  <nav class={`${wrap} pt-6`} aria-label="Хлебные крошки">
+    <ol class="flex flex-wrap items-center gap-2 text-[0.85rem] text-ink-dim">
+      <li><a class="transition-colors hover:text-brand-ink" href="/">Главная</a></li>
+      <li aria-hidden="true">→</li>
+      <li class="text-ink-muted" aria-current="page">{border.breadcrumb}</li>
+    </ol>
+  </nav>
+
+  <section class="relative overflow-hidden">
+    <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div class="blob left-[-8%] top-[-20%] size-[26rem] bg-brand/35"></div>
+      <div class="blob right-[-6%] top-[6%] size-[22rem] bg-[#7aa2ff]/25"></div>
+    </div>
+
+    <div class={`relative ${wrap} pb-12 pt-8 sm:pb-16 sm:pt-10`}>
+      <p class={eyebrow}>{border.eyebrow}</p>
+      <h1
+        class="mt-4 max-w-3xl text-balance text-[clamp(2.1rem,5.2vw,3.6rem)] font-semibold leading-[1.05] tracking-[-0.03em]"
+      >
+        {border.h1}__HUB_PAGE_SUFFIX__
+      </h1>
+      <p class="mt-6 max-w-2xl text-[1.06rem] leading-relaxed text-ink-muted">{border.lead}</p>
+
+      <dl class="mt-10 grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3">
+        __HAS_POSTS_BEGIN__
+        <div class="glass rounded-[var(--radius-card)] px-5 py-4">
+          <dt class="text-[0.82rem] text-ink-dim">Последняя сводка</dt>
+          <dd class="mt-1 text-[1.15rem] font-semibold tracking-tight">
+            <time datetime="__HUB_UPDATED_ISO__">__HUB_UPDATED_WHEN__</time>
+          </dd>
+        </div>
+        __HAS_POSTS_END__
+        {
+          border.stats.map((s) => (
+            <div class="glass rounded-[var(--radius-card)] px-5 py-4">
+              <dt class="text-[0.82rem] text-ink-dim">{s.label}</dt>
+              <dd class="mt-1 text-[1.15rem] font-semibold tracking-tight">{s.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  __FIRST_PAGE_BEGIN__
+  __LATEST_BEGIN__
+  <section class={`${narrow} pb-4`} aria-labelledby="latest">
+    <h2 id="latest" class={h2}>Последнее обновление</h2>
+    <article class="glass mt-6 rounded-[var(--radius-card)] p-6 sm:p-8">
+      <p class="text-[0.9rem] text-ink-dim"><time datetime="__LATEST_ISO__">__LATEST_WHEN__</time></p>
+      <h3 class="mt-2 text-[clamp(1.3rem,2.4vw,1.7rem)] font-semibold leading-tight tracking-tight">
+        <a class="transition-colors hover:text-brand-ink" href="__LATEST_URL__">__LATEST_TITLE__</a>
+      </h3>
+      <div class={`mt-5 ${borderProse}`}>__LATEST_BODY__</div>
+      <a
+        class="mt-6 inline-flex items-center gap-1.5 font-semibold text-brand-ink hover:underline"
+        href="__LATEST_URL__"
+        >Открыть сводку <span aria-hidden="true">→</span></a
+      >
+    </article>
+  </section>
+  __LATEST_END__
+  __FIRST_PAGE_END__
+
+  __UPDATES_BEGIN__
+  <section class={`${narrow} py-10`} aria-labelledby="updates">
+    <h2 id="updates" class={h2}>{border.listTitle}</h2>
+
+    __EMPTY_BEGIN__
+    <p class="mt-6 leading-relaxed text-ink-muted">
+      Сводок пока нет — первая появится здесь сразу после публикации. Пока о
+      переходе можно прочитать ниже: режим работы, телефоны и ответы на частые
+      вопросы.
+    </p>
+    __EMPTY_END__
+
+    __LIST_BEGIN__
+    <ol class="mt-6 grid gap-3">
+      __ITEM_BEGIN__
+      <li class="glass rounded-2xl px-5 py-4">
+        <p class="text-[0.85rem] text-ink-dim"><time datetime="__ITEM_ISO__">__ITEM_WHEN__</time></p>
+        <a
+          class="mt-1 block text-[1.08rem] font-semibold leading-snug tracking-tight transition-colors hover:text-brand-ink"
+          href="__ITEM_URL__">__ITEM_TITLE__</a
+        >
+        <p class="mt-1.5 text-[0.95rem] leading-relaxed text-ink-muted">__ITEM_EXCERPT__</p>
+      </li>
+      __ITEM_END__
+    </ol>
+    __LIST_END__
+
+    __PAGER_BEGIN__
+    <nav
+      class="mt-8 flex items-center justify-between gap-4 text-[0.95rem]"
+      aria-label="Страницы ленты"
+    >
+      <span class="min-w-24"
+        >__PREV_BEGIN__<a class="font-semibold text-brand-ink hover:underline" href="__PREV_URL__"
+          >← Новее</a
+        >__PREV_END__</span
+      >
+      <span class="text-ink-dim">Страница __PAGE_NUM__ из __PAGE_TOTAL__</span>
+      <span class="min-w-24 text-right"
+        >__NEXT_BEGIN__<a class="font-semibold text-brand-ink hover:underline" href="__NEXT_URL__"
+          >Раньше →</a
+        >__NEXT_END__</span
+      >
+    </nav>
+    __PAGER_END__
+  </section>
+  __UPDATES_END__
+
+  __FIRST_PAGE_BEGIN__
+  {/* FAQPage только на первой странице ленты — там же и видимые вопросы */}
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)}></script>
+  <section class="border-t border-line bg-surface py-14 sm:py-20" aria-labelledby="crossing">
+    <div class={narrow}>
+      <h2 id="crossing" class={h2}>Как устроена граница Нарва — Ивангород</h2>
+      {border.about.map((p) => <p class={`mt-4 leading-relaxed text-ink-muted ${link}`} set:html={p} />)}
+
+      <h3 class="mt-10 text-[1.2rem] font-semibold tracking-tight">Телефоны пунктов пропуска</h3>
+      <ul class="mt-4 grid gap-2.5">
+        {
+          border.phones.map((ph) => (
+            <li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 border-b border-line pb-2.5">
+              <span class="text-ink-muted">{ph.label}</span>
+              <a
+                class="font-semibold tabular-nums transition-colors hover:text-brand-ink"
+                href={`tel:${ph.value.replace(/[^\d+]/g, "")}`}>{ph.value}</a
+              >
+            </li>
+          ))
+        }
+      </ul>
+      <p class="mt-6 text-[0.9rem] text-ink-dim">{border.checked}</p>
+    </div>
+  </section>
+
+  <section id="faq" class="scroll-mt-24 py-14 sm:py-20" aria-labelledby="faq-title">
+    <div class={narrow}>
+      <h2 id="faq-title" class={h2}>Частые вопросы об очереди на границе</h2>
+      <div class="mt-8 grid gap-3">
+        {
+          borderFaq.map((f) => (
+            <details class="glass group rounded-2xl px-5 py-4">
+              <summary class="flex items-start justify-between gap-4 text-[1.02rem] font-semibold tracking-tight">
+                <span>{f.q}</span>
+                <span
+                  class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-ink transition-transform group-open:rotate-45"
+                  aria-hidden="true"
+                >
+                  <svg viewBox="0 0 20 20" fill="none" class="size-3.5">
+                    <path d="M10 4.5v11M4.5 10h11" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+                  </svg>
+                </span>
+              </summary>
+              <p class="mt-3 text-[0.95rem] leading-relaxed text-ink-muted">{f.a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+  __FIRST_PAGE_END__
+
+  <BorderCta />
+</Base>

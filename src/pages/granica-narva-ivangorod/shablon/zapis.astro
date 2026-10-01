@@ -1,0 +1,165 @@
+---
+/**
+ * ШАБЛОН сводки об очереди — одной записи раздела «Граница Нарва — Ивангород».
+ *
+ * Как и lenta.astro, это не страница: PHP подставляет в метки запись из
+ * базы и отдаёт результат по адресу /granica-narva-ivangorod/<slug>/. Правила
+ * для меток — в шапке lenta.astro и public/_blog/lib.php.
+ *
+ * Что здесь за SEO и откуда оно берётся у каждой новой записи само:
+ *  - title и description собирает PHP (blog_title_tag, blog_description):
+ *    title до 60 знаков, с городами, если их нет в заголовке; description —
+ *    из текста записи, 140–160 знаков, если в админке не задано своё;
+ *  - canonical, og:url и hreflang строит Base.astro из `path` — как везде;
+ *  - BlogPosting с датами публикации и правки, автором и издателем;
+ *    dateModified и lastmod карты раздела берутся из одного поля и не
+ *    расходятся.
+ */
+import Base from "../../../layouts/Base.astro";
+import BorderCta from "../../../components/BorderCta.astro";
+import { border, borderPath, borderProse } from "../../../data/border";
+import { facts } from "../../../i18n/ui";
+
+const lang = "ru" as const;
+const site = Astro.site?.origin ?? "https://estoniatransfer.ee";
+const hubUrl = `${site}${borderPath}`;
+const url = `${hubUrl}__POST_SLUG__/`;
+
+const org = {
+  "@type": ["LocalBusiness", "TaxiService"],
+  "@id": `${site}/#business`,
+  name: "EstoniaTransfer",
+  legalName: facts.legal.name,
+  url: `${site}/`,
+  // логотип издателя Google просит у Article; иконка — та же, что в манифесте
+  logo: { "@type": "ImageObject", url: `${site}/icon-512.png`, width: 512, height: 512 },
+};
+
+const schema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Главная", item: `${site}/` },
+        { "@type": "ListItem", position: 2, name: border.breadcrumb, item: hubUrl },
+        { "@type": "ListItem", position: 3, name: "__POST_TITLE__", item: url },
+      ],
+    },
+    {
+      "@type": "BlogPosting",
+      "@id": `${url}#article`,
+      mainEntityOfPage: { "@id": `${url}#webpage` },
+      url,
+      headline: "__POST_HEADLINE__",
+      description: "__POST_DESCRIPTION__",
+      datePublished: "__POST_PUBLISHED_ISO__",
+      dateModified: "__POST_MODIFIED_ISO__",
+      inLanguage: lang,
+      // og:image страницы — PHP берёт его из <head>, своей картинки у записи нет
+      image: "__OG_IMAGE__",
+      /*
+       * Автор — водитель, тот же узел Person, что на главной и на «О сервисе»
+       * (@id …/#driver). Сводки пишет человек, который сам возит к этому
+       * переходу, и для E-E-A-T это сильнее безымянной организации.
+       * Начнёт писать кто-то ещё — автором поставить организацию.
+       */
+      author: {
+        "@type": "Person",
+        "@id": `${site}/#driver`,
+        name: facts.driverFull.et,
+        alternateName: facts.driverFull.ru,
+        url: `${site}/o-servise/`,
+      },
+      publisher: org,
+      isPartOf: { "@id": `${hubUrl}#blog` },
+      about: { "@type": "Place", name: "Погранпереход Нарва — Ивангород" },
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${url}#webpage`,
+      url,
+      name: "__POST_TITLE_TAG__",
+      description: "__POST_DESCRIPTION__",
+      inLanguage: lang,
+      isPartOf: { "@id": `${site}/#website` },
+      datePublished: "__POST_PUBLISHED_ISO__",
+      dateModified: "__POST_MODIFIED_ISO__",
+    },
+  ],
+};
+
+const wrap = "mx-auto max-w-6xl px-5";
+// Узкая колонка текста, но по левому краю общей сетки — как крошки, шапка и
+// блок трансфера. Колонка по центру уезжала от них вправо на сотню пикселей.
+const narrow = "mx-auto max-w-6xl px-5 *:max-w-3xl";
+const h2 = "text-[clamp(1.6rem,3vw,2.3rem)] font-semibold leading-tight tracking-[-0.02em]";
+---
+
+<Base
+  lang={lang}
+  path={`${borderPath}__POST_SLUG__/`}
+  langs={["ru"]}
+  title="__POST_TITLE_TAG__"
+  description="__POST_DESCRIPTION__"
+  ogType="article"
+>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)}></script>
+
+  <nav class={`${wrap} pt-6`} aria-label="Хлебные крошки">
+    <ol class="flex flex-wrap items-center gap-2 text-[0.85rem] text-ink-dim">
+      <li><a class="transition-colors hover:text-brand-ink" href="/">Главная</a></li>
+      <li aria-hidden="true">→</li>
+      <li><a class="transition-colors hover:text-brand-ink" href={borderPath}>{border.breadcrumb}</a></li>
+      <li aria-hidden="true">→</li>
+      <li class="text-ink-muted" aria-current="page">__POST_TITLE__</li>
+    </ol>
+  </nav>
+
+  <article class={`${narrow} pb-12 pt-8 sm:pt-10`}>
+    <p class="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
+      {border.postEyebrow}
+    </p>
+    <h1
+      class="mt-4 text-balance text-[clamp(1.9rem,4.4vw,3rem)] font-semibold leading-[1.1] tracking-[-0.025em]"
+    >
+      __POST_TITLE__
+    </h1>
+    <p class="mt-5 text-[0.95rem] text-ink-dim">
+      Опубликовано <time datetime="__POST_PUBLISHED_ISO__">__POST_PUBLISHED_WHEN__</time>
+      __UPDATED_BEGIN__<span aria-hidden="true"> · </span>обновлено{" "}
+      <time datetime="__POST_MODIFIED_ISO__">__POST_MODIFIED_WHEN__</time>__UPDATED_END__
+    </p>
+
+    <div class={`mt-8 text-[1.06rem] ${borderProse}`}>__POST_BODY__</div>
+
+    <aside class="glass mt-10 rounded-2xl px-5 py-4 text-[0.95rem] leading-relaxed text-ink-muted">
+      Очередь меняется в течение дня, а эта сводка — на момент публикации. Свежие
+      данные — на странице{" "}
+      <a class="font-semibold text-brand-ink hover:underline" href={borderPath}>«{border.h1}»</a>.
+    </aside>
+  </article>
+
+  __MORE_BEGIN__
+  <section class={`${narrow} pb-14`} aria-labelledby="more">
+    <h2 id="more" class={h2}>Другие сводки об очереди</h2>
+    <ol class="mt-6 grid gap-3">
+      __ITEM_BEGIN__
+      <li class="glass rounded-2xl px-5 py-4">
+        <p class="text-[0.85rem] text-ink-dim"><time datetime="__ITEM_ISO__">__ITEM_WHEN__</time></p>
+        <a
+          class="mt-1 block text-[1.08rem] font-semibold leading-snug tracking-tight transition-colors hover:text-brand-ink"
+          href="__ITEM_URL__">__ITEM_TITLE__</a
+        >
+      </li>
+      __ITEM_END__
+    </ol>
+    <a
+      class="mt-6 inline-flex items-center gap-1.5 font-semibold text-brand-ink hover:underline"
+      href={borderPath}>Все сводки об очереди <span aria-hidden="true">→</span></a
+    >
+  </section>
+  __MORE_END__
+
+  <BorderCta />
+</Base>

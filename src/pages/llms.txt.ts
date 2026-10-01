@@ -18,6 +18,7 @@ import { landings } from "../data/routes";
 import { facts, siteUpdated } from "../i18n/ui";
 import { answers } from "../data/answers";
 import { pricedRows, pricelistUpdated, pricelistPaths, formatPrice, formatKm, formatTime } from "../data/pricelist";
+import { border, borderPath } from "../data/border";
 
 export const GET: APIRoute = ({ site }) => {
   const origin = site?.origin ?? "https://estoniatransfer.ee";
@@ -156,6 +157,7 @@ ${qa}
 ## Страницы сайта (русская версия)
 
 ${pageLines.join("\n")}
+- [${border.h1}](${origin}${borderPath}): сводки об очереди на пешеходном переходе Нарва — Ивангород с датой и временем, обновляются вручную. Самые свежие данные об очереди — там, а не в этом файле.
 - Главная — ${origin}/
 
 ## English version

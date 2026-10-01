@@ -43,6 +43,8 @@ SMOKE_PATHS=(
   "/transfer-ivangorod-spb/"
   "/kak-dobratsya-do-granicy/"
   "/sitemap.xml" "/robots.txt" "/llms.txt" "/favicon.ico" "/hits.php"
+  # раздел сводок об очереди: его отдаёт PHP, сборка о нём не скажет ничего
+  "/granica-narva-ivangorod/" "/granica-narva-ivangorod/sitemap.xml" "/admin/"
 )
 
 # Редиректы: <адрес>|<максимум переходов>|<куда обязан привести>.
@@ -68,6 +70,9 @@ REDIRECT_CHECKS=(
   "https://www.$HOST/|1|$SITE/"
   "http://$HOST/|1|$SITE/"
 
+  # лента сводок без слэша: каталог настоящий, слэш добавляет сам Apache
+  "$SITE/granica-narva-ivangorod|1|$SITE/granica-narva-ivangorod/"
+
   # Два перехода, и меньше не будет: zone.ee переводит на https на уровне
   # сервера, ВЫШЕ .htaccess, сохраняя при этом www в адресе. Проверено —
   # http://estoniatransfer.ee/sitemap_index.xml сначала уезжает на https с тем
@@ -78,8 +83,14 @@ REDIRECT_CHECKS=(
   "http://www.$HOST/|2|$SITE/"
 )
 
-# Несуществующий адрес обязан отдавать 404, а не редирект.
-NOT_FOUND_PATH='/net-takoy-stranicy'
+# Адреса, которые обязаны отдавать 404, а не редирект: несуществующий адрес,
+# а также шаблоны раздела сводок и его PHP-библиотека — шаблон с метками
+# вместо текста, попавший в индекс, это дубль с мусором (.htaccess).
+NOT_FOUND_PATHS=(
+  '/net-takoy-stranicy'
+  '/granica-narva-ivangorod/shablon/lenta/'
+  '/_blog/lib.php'
+)
 
 cd "$(dirname "$0")/.."
 
@@ -139,16 +150,18 @@ checks() {
     fi
   done
 
-  out=$(curl -sS -o /dev/null -L --max-redirs 8 --max-time 25 \
-          -w '%{num_redirects} %{http_code}' "$SITE$NOT_FOUND_PATH" 2>/dev/null) \
-    || out='0 000'
-  read -r hops code <<<"$out"
-  if [ "$code" = "404" ] && [ "$hops" -eq 0 ]; then
-    printf '  %-46s 404 без редиректа\n' "несуществующий адрес"
-  else
-    printf '  %-46s %s после %s переход(ов)\n' "несуществующий адрес" "$code" "$hops"
-    failed=1
-  fi
+  for p in "${NOT_FOUND_PATHS[@]}"; do
+    out=$(curl -sS -o /dev/null -L --max-redirs 8 --max-time 25 \
+            -w '%{num_redirects} %{http_code}' "$SITE$p" 2>/dev/null) \
+      || out='0 000'
+    read -r hops code <<<"$out"
+    if [ "$code" = "404" ] && [ "$hops" -eq 0 ]; then
+      printf '  %-46s 404 без редиректа\n' "$p"
+    else
+      printf '  %-46s %s после %s переход(ов)\n' "$p" "$code" "$hops"
+      failed=1
+    fi
+  done
 
   # Сверка со сборкой прошла до отправки. Здесь проверяется, что сервер карту
   # отдаёт и что каждый <loc> всё ещё сходится с canonical в том HTML, который

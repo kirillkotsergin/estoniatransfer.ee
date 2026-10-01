@@ -1,0 +1,89 @@
+---
+/**
+ * Блок «Едете к переходу в Нарве?» внизу ленты и каждой сводки об очереди.
+ *
+ * Ради него раздел и затевался: человек, который ищет «очередь в
+ * Ивангороде», едет к этому переходу сегодня-завтра. Ссылки ведут на три
+ * посадочные, которые обслуживают именно Нарву, — заодно это перелинковка
+ * от информационных страниц к коммерческим.
+ *
+ * Цены только из facts, подписи доплаты — из ui: ни одной цифры руками.
+ * Тексты карточек повторяют то, что уже обещано на самих посадочных.
+ */
+import { facts, useTranslations } from "../i18n/ui";
+
+const t = useTranslations("ru");
+const narva = facts.routes.find((r) => r.id === "narva")!;
+const wa = `${facts.whatsapp}?text=${encodeURIComponent("Здравствуйте! Нужен трансфер до границы в Нарве.")}`;
+
+const cards = [
+  {
+    href: "/transfer-tallinn-narva/",
+    label: t("routes.narva"),
+    price: `${narva.price} €`,
+    text: "До пункта пропуска Нарва-1 — от двери в Таллинне или из аэропорта.",
+  },
+  {
+    href: "/transfer-narva-tallinn/",
+    label: "Нарва — Таллинн",
+    price: `${narva.price} €`,
+    text: "Встречаем у выхода после контроля в Нарве и везём в Таллинн.",
+  },
+  {
+    href: "/transfer-ivangorod-spb/",
+    label: "Ивангород — Петербург",
+    price: `${facts.russia.ivangorodSpb} ${facts.russia.currency}`,
+    text: "Машина ждёт у выхода с пункта пропуска в Ивангороде.",
+  },
+];
+---
+
+<section class="border-t border-line py-14 sm:py-20" aria-labelledby="border-cta">
+  <div class="mx-auto max-w-6xl px-5">
+    <p class="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">Трансфер</p>
+    <h2
+      id="border-cta"
+      class="mt-4 text-[clamp(1.75rem,3.2vw,2.6rem)] font-semibold leading-tight tracking-[-0.02em]"
+    >
+      Едете к переходу в Нарве?
+    </h2>
+
+    <ul class="mt-8 grid gap-4 md:grid-cols-3">
+      {
+        cards.map((c) => (
+          <li>
+            <a
+              href={c.href}
+              class="glass group flex h-full flex-col rounded-[var(--radius-card)] p-5 transition-colors hover:bg-white"
+            >
+              <span class="flex items-baseline justify-between gap-4">
+                <span class="text-[1.08rem] font-semibold tracking-tight group-hover:text-brand-ink">
+                  {c.label}
+                </span>
+                <span class="shrink-0 font-semibold tabular-nums">{c.price}</span>
+              </span>
+              <span class="mt-2 text-[0.95rem] leading-relaxed text-ink-muted">{c.text}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="mt-4 rounded-[var(--radius-card)] border border-line bg-brand-soft p-5 sm:flex sm:items-center sm:justify-between sm:gap-8">
+      <div>
+        <p class="font-semibold">
+          {t("addon.title")} — +{facts.queueSlot.price} €
+        </p>
+        <p class="mt-1 text-[0.95rem] leading-relaxed text-ink-muted">{t("addon.text")}</p>
+      </div>
+      <a
+        href={wa}
+        target="_blank"
+        rel="noopener"
+        class="mt-4 inline-block shrink-0 rounded-2xl bg-brand px-6 py-3.5 font-semibold text-ink transition-colors hover:bg-brand-hover sm:mt-0"
+      >
+        {t("route.wa")}
+      </a>
+    </div>
+  </div>
+</section>

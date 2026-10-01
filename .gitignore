@@ -17,3 +17,6 @@ id_*
 
 # скриншоты от tools/measure-header.mjs — рабочий мусор, не история
 tools/.screens/
+
+# база сводок об очереди, если раздел запускали локально без ET_BLOG_DATA
+granica-blog/

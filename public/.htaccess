@@ -43,6 +43,21 @@ AddType image/x-icon .ico
   # слаг переведён по решению владельца. Старый адрес успел уйти в IndexNow и
   # в карту сайта, поэтому 301, а не 404: сигнал переходит на новый адрес.
   RewriteRule ^en/marshruty/?$ /en/routes/ [R=301,L]
+
+  # Раздел «Граница Нарва — Ивангород» (01.10.2026). Записи публикуются из
+  # админки без пересборки, поэтому страницы раздела отдаёт PHP —
+  # granica-narva-ivangorod/index.php. Подробности в CLAUDE.md, раздел 3.4.
+  #
+  # Шаблоны раздела и PHP-библиотека наружу не отдаются. Шаблон — это
+  # страница с метками __POST_TITLE__ вместо текста, в индексе ей не место.
+  RewriteRule ^(_blog|granica-narva-ivangorod/shablon)(/|$) - [R=404,L]
+  # Без слэша — на адрес со слэшем, как у всего сайта (trailingSlash: "always")
+  RewriteRule ^granica-narva-ivangorod/([a-z0-9-]+)$ /granica-narva-ivangorod/$1/ [R=301,L]
+  RewriteRule ^granica-narva-ivangorod/$ granica-narva-ivangorod/index.php [L]
+  RewriteRule ^granica-narva-ivangorod/sitemap\.xml$ granica-narva-ivangorod/index.php?sitemap=1 [L]
+  RewriteRule ^granica-narva-ivangorod/stranica/([0-9]{1,4})/$ granica-narva-ivangorod/index.php?page=$1 [L]
+  # QSA — ради ?preview=… у черновиков, ссылку на предпросмотр даёт админка
+  RewriteRule ^granica-narva-ivangorod/([a-z0-9-]+)/$ granica-narva-ivangorod/index.php?slug=$1 [L,QSA]
 </IfModule>
 
 <IfModule mod_deflate.c>

@@ -50,6 +50,13 @@ const NOT_IN_SITEMAP = new Set([
   // в шапке src/pages/privacy.astro.
   "/privacy/",
   "/en/privacy/",
+
+  // Шаблоны раздела «Граница Нарва — Ивангород» (01.10.2026): не страницы, а
+  // заготовки с метками __POST_TITLE__, которые заполняет PHP. Снаружи
+  // отвечают 404 (.htaccess). Сам раздел — в своей карте,
+  // /granica-narva-ivangorod/sitemap.xml, её отдаёт PHP из базы.
+  "/granica-narva-ivangorod/shablon/lenta/",
+  "/granica-narva-ivangorod/shablon/zapis/",
 ]);
 
 const problems = [];

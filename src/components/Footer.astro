@@ -12,6 +12,7 @@ import {
 } from "../i18n/ui";
 import { footerLinks } from "../data/routes";
 import { pricelistPaths } from "../data/pricelist";
+import { borderPath } from "../data/border";
 
 interface Props {
   lang: Lang;
@@ -215,6 +216,20 @@ const row = "group flex items-baseline justify-between gap-4 text-ink-muted tran
                 href={`${localePath(lang, "/")}#car`}>{t("nav.car")}</a
               >
             </li>
+            {/* Лента сводок об очереди (01.10.2026). Ссылка из подвала — главная
+                перелинковка раздела: его страницы отдаёт PHP, в карту сайта
+                /sitemap.xml они не попадают, и без ссылок с остальных страниц
+                краулер узнал бы о ленте только из её собственной карты.
+                Только в русском подвале: лента на русском. */}
+            {
+              lang === "ru" && (
+                <li>
+                  <a class="text-ink-muted transition-colors hover:text-brand-ink" href={borderPath}>
+                    {t("footer.queue")}
+                  </a>
+                </li>
+              )
+            }
             <li>
               <a
                 class="text-ink-muted transition-colors hover:text-brand-ink"
