@@ -1,12 +1,20 @@
 ---
-import { facts, type Lang } from "../i18n/ui";
+import { facts, useTranslations, type Lang } from "../i18n/ui";
 
 interface Props {
   lang: Lang;
   /** compact — узкий вид для подвала, full — кнопки в блоке заявки */
   variant?: "full" | "compact";
+  /**
+   * Кнопки под формой заявки: скрипт OrderForm.astro подставляет в ссылку
+   * заполненную заявку (`?text=`). Метка data-messenger — для него. Без JS
+   * это обычные ссылки на чат, так что ничего не ломается.
+   */
+  prefill?: boolean;
 }
-const { lang, variant = "full" } = Astro.props;
+const { lang, variant = "full", prefill = false } = Astro.props;
+const t = useTranslations(lang);
+const tgHref = facts.telegramUser ? `https://t.me/${facts.telegramUser}` : facts.telegram;
 
 // Логотипы берутся с внешнего CDN, локальных файлов нет — так и заказано.
 // Раз запрос уходит на сторону, домен добавлен в img-src в public/.htaccess,
@@ -18,16 +26,18 @@ const logo = {
 
 const items = [
   {
+    id: "wa",
     href: facts.whatsapp,
     label: "WhatsApp",
     src: logo.wa,
-    hint: lang === "ru" ? "Ответим сразу" : "We reply instantly",
+    hint: prefill ? t("form.viaHint") : lang === "ru" ? "Ответим сразу" : "We reply instantly",
   },
   {
-    href: facts.telegram,
+    id: "tg",
+    href: tgHref,
     label: "Telegram",
     src: logo.tg,
-    hint: lang === "ru" ? "Можно без звонка" : "No call needed",
+    hint: prefill ? t("form.viaHint") : lang === "ru" ? "Можно без звонка" : "No call needed",
   },
 ];
 ---
@@ -40,6 +50,7 @@ const items = [
           href={m.href}
           target="_blank"
           rel="noopener"
+          data-messenger={prefill ? m.id : undefined}
           class="glass flex items-center gap-3 rounded-xl px-4 py-3 transition-transform hover:-translate-y-0.5"
         >
           <img

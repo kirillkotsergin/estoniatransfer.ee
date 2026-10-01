@@ -87,6 +87,18 @@ export const facts = {
   phoneHref: "tel:+37256277764",
   whatsapp: "https://wa.me/37256277764",
   telegram: "https://t.me/+37256277764",
+  /**
+   * Имя пользователя в Telegram, без @ — например "estoniatransfer".
+   *
+   * Пустое — ссылки Telegram идут по номеру, как сейчас (`t.me/+372…`). Это
+   * работает, но только у тех, кому настройки приватности номера разрешают
+   * найти вас по нему. Впишете имя — кнопка «Telegram» под формой заявки
+   * откроет `t.me/<имя>?text=…`, и тот же адрес засчитает конверсия Google Ads
+   * (Base.astro). Заполненная заявка подставляется в обоих случаях: параметр
+   * `text` Telegram поддерживает и у ссылок по имени, и у ссылок по номеру
+   * (core.telegram.org/api/links, проверено 02.10.2026).
+   */
+  telegramUser: "",
   email: "info@estoniatransfer.ee",
   /**
    * Юридические реквизиты. Названы владельцем 23.09.2026.
@@ -501,6 +513,11 @@ export const ui = {
     "form.clear": "Сбросить",
     "form.prevMonth": "Предыдущий месяц",
     "form.nextMonth": "Следующий месяц",
+    // Кнопки мессенджеров под формой: отправляют заполненную заявку
+    "form.viaHint": "Отправить эту заявку",
+    "form.viaMissing": "Чтобы отправить заявку в мессенджер, заполните:",
+    "form.viaReady": "Открываем мессенджер: заявка уже в поле сообщения, осталось нажать «Отправить».",
+    "form.viaCopied": "Текст заявки ещё и скопирован — если поле окажется пустым, просто вставьте его.",
 
     "answers.eyebrow": "Ответы коротко",
     "faq.eyebrow": "Частые вопросы",
@@ -715,6 +732,10 @@ export const ui = {
     "form.clear": "Clear",
     "form.prevMonth": "Previous month",
     "form.nextMonth": "Next month",
+    "form.viaHint": "Send this request",
+    "form.viaMissing": "To send the request to a messenger, please fill in:",
+    "form.viaReady": "Opening the messenger: the request is already in the message field, just press Send.",
+    "form.viaCopied": "The text is also copied — if the field is empty, simply paste it.",
 
     "answers.eyebrow": "Short answers",
     "faq.eyebrow": "FAQ",

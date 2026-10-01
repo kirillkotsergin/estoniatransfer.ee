@@ -45,7 +45,7 @@ const label = "block text-[0.85rem] font-semibold text-ink-muted";
       ⚠️ Атрибут работает только на div, span и section. На <aside> выше, на
       <footer> и на <p> с самой строкой Google его игнорирует молча — поэтому
       он висит здесь, на ближайшем div, и накрывает всю карточку заявки. */}
-  <div class="glass rounded-[var(--radius-card)] p-6 sm:p-8" data-nosnippet>
+  <div class="glass rounded-[var(--radius-card)] p-6 sm:p-8" data-nosnippet data-order-card>
     <p class="text-[0.82rem] font-semibold uppercase tracking-[0.16em] text-brand-ink">
       {t("order.eyebrow")}
     </p>
@@ -221,9 +221,13 @@ const label = "block text-[0.85rem] font-semibold text-ink-muted";
       <p class="text-[0.85rem] leading-relaxed text-ink-dim">{t("form.note")}</p>
     </form>
 
+    {/* Кнопки мессенджеров отправляют ЭТУ заявку: скрипт ниже собирает поля
+        формы в текст и подставляет его в ссылку (?text=). Без JS — обычные
+        ссылки на чат. Остальные кнопки WhatsApp/Telegram на сайте (шапка,
+        плавающая кнопка, подвал) по-прежнему открывают пустой чат. */}
     <p class="mt-6 text-[0.82rem] uppercase tracking-[0.14em] text-ink-dim">{t("order.or")}</p>
     <div class="mt-3">
-      <Messengers lang={lang} />
+      <Messengers lang={lang} prefill />
     </div>
 
     <a
@@ -240,8 +244,21 @@ const label = "block text-[0.85rem] font-semibold text-ink-muted";
   define:vars={{
     months: cal.months,
     dayNames: cal.days,
-    waBase: facts.whatsapp,
+    orderWa: facts.whatsapp,
+    // Имена с префиксом order, а не waBase/tgBase, как в скрипте Google Ads в
+    // Base.astro. Сейчас совпадение не страшно — Astro 7 оборачивает каждый
+    // скрипт с define:vars в свою функцию (проверено по сборке 02.10.2026), —
+    // но если обёртка однажды пропадёт, одинаковые `const` уронят второй
+    // скрипт целиком (CLAUDE.md, 5.2).
+    orderTg: facts.telegramUser ? `https://t.me/${facts.telegramUser}` : facts.telegram,
+    queuePrice: facts.queueSlot.price,
+    // Текст заявки в мессенджер — всегда по-русски, его читает водитель.
+    // Поэтому и города в нём русские, на какой бы версии сайта ни заполняли.
+    citiesRu: Object.fromEntries(Object.entries(cities).map(([id, v]) => [id, v.ru])),
     labels: {
+      viaMissing: t("form.viaMissing"),
+      viaReady: t("form.viaReady"),
+      viaCopied: t("form.viaCopied"),
       pick: t("form.pickDate"),
       errSame: t("form.errSame"),
       errRequired: t("form.errRequired"),
@@ -461,6 +478,79 @@ const label = "block text-[0.85rem] font-semibold text-ink-muted";
           btn.disabled = false;
           btn.textContent = labels.submit;
         });
+    });
+
+    // ── Заявка в WhatsApp или Telegram ─────────────────────────────────────
+    //
+    // Клик по кнопке мессенджера под формой: проверяем поля, собираем текст
+    // заявки и подменяем href ссылки ПРЯМО В ОБРАБОТЧИКЕ. Переход браузер
+    // делает уже по новому адресу, в новой вкладке (target=_blank), поэтому
+    // window.open не нужен и блокировщик всплывающих окон не мешает.
+    //
+    // Обработчик Google Ads в Base.astro ловит тот же клик позже, на document:
+    // адрес по-прежнему начинается с wa.me/… или t.me/…, и конверсия
+    // засчитывается. Если поля не заполнены, здесь стоит preventDefault, и
+    // тот обработчик клик пропускает — пустая попытка конверсией не считается.
+    var monthsGen = ["января", "февраля", "марта", "апреля", "мая", "июня",
+      "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+    var phoneEl = form.querySelector("#of-phone");
+    var card = form.closest("[data-order-card]") || document;
+
+    function val(f, k) {
+      return String(f.get(k) || "").trim();
+    }
+
+    // Что не так, или null. Обязательны маршрут, дата и телефон; имя — нет:
+    // человек пишет из своего мессенджера, и кто он, водитель и так видит.
+    function messengerProblem(f) {
+      if (val(f, "from") === val(f, "to")) return { msg: labels.errSame, el: toSel };
+      var missing = [], first = null;
+      if (!val(f, "from") || !val(f, "to")) { missing.push(labels.from + " / " + labels.to); first = first || fromSel; }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(val(f, "date"))) { missing.push(labels.date); first = first || trigger; }
+      if ((val(f, "phone").match(/\d/g) || []).length < 7) { missing.push(labels.phone); first = first || phoneEl; }
+      if (!missing.length) return null;
+      return { msg: labels.viaMissing + " " + missing.join(", ").toLowerCase() + ".", el: first };
+    }
+
+    function messengerText(f) {
+      var d = val(f, "date").split("-");
+      var lines = [
+        "Здравствуйте! Заявка на трансфер с сайта estoniatransfer.ee",
+        "",
+        "Маршрут: " + citiesRu[val(f, "from")] + " — " + citiesRu[val(f, "to")],
+        "Дата: " + Number(d[2]) + " " + monthsGen[Number(d[1]) - 1] + " " + d[0],
+        "Пассажиров: " + val(f, "pax"),
+      ];
+      if (f.get("queue")) lines.push("Место в очереди на границе: да, +" + queuePrice + " €");
+      if (val(f, "name")) lines.push("Имя: " + val(f, "name"));
+      lines.push("Телефон: " + val(f, "phone"));
+      if (val(f, "email")) lines.push("Почта: " + val(f, "email"));
+      if (locale !== "ru") lines.push("Заполнено на английской версии сайта");
+      return lines.join("\n");
+    }
+
+    Array.prototype.forEach.call(card.querySelectorAll("[data-messenger]"), function (a) {
+      var isTg = a.getAttribute("data-messenger") === "tg";
+      var base = isTg ? orderTg : orderWa;
+      a.addEventListener("click", function (e) {
+        var f = new FormData(form);
+        var problem = messengerProblem(f);
+        if (problem) {
+          e.preventDefault();
+          showMsg(problem.msg, false);
+          if (problem.el) problem.el.focus();
+          return;
+        }
+        var text = messengerText(f);
+        a.href = base + "?text=" + encodeURIComponent(text);
+        // Telegram Desktop и веб-версия иногда не подставляют текст — копия в
+        // буфере обмена страхует. Ошибку (нет прав, старый браузер) глотаем:
+        // ссылка всё равно откроется.
+        if (isTg && navigator.clipboard) {
+          navigator.clipboard.writeText(text).catch(function () {});
+        }
+        showMsg(labels.viaReady + (isTg ? " " + labels.viaCopied : ""), true);
+      });
     });
 
     renderDayNames();

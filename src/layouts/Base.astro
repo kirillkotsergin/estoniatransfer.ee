@@ -310,6 +310,8 @@ const canonical = new URL(localePath(lang, pathFor(lang)), site).href;
               phoneHref: facts.phoneHref,
               waBase: facts.whatsapp,
               tgBase: facts.telegram,
+              // ссылка по имени в Telegram, если оно задано (facts.telegramUser)
+              tgUserBase: facts.telegramUser ? `https://t.me/${facts.telegramUser}` : "",
             }}
           >
             window.dataLayer = window.dataLayer || [];
@@ -371,6 +373,7 @@ const canonical = new URL(localePath(lang, pathFor(lang)), site).href;
               var h = a.getAttribute("href") || "";
               if (h === phoneHref) return conversion;
               if (h.indexOf(waBase) === 0 || h.indexOf(tgBase) === 0) return conversion;
+              if (tgUserBase && h.indexOf(tgUserBase) === 0) return conversion;
               return null;
             }
 
