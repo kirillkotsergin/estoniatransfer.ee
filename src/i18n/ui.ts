@@ -98,7 +98,7 @@ export const facts = {
    * `text` Telegram поддерживает и у ссылок по имени, и у ссылок по номеру
    * (core.telegram.org/api/links, проверено 02.10.2026).
    */
-  telegramUser: "",
+  telegramUser: "kirja777", // назван владельцем 02.10.2026
   email: "info@estoniatransfer.ee",
   /**
    * Юридические реквизиты. Названы владельцем 23.09.2026.

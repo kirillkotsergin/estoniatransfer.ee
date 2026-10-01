@@ -88,7 +88,7 @@ const home = localePath(lang, "/");
         <BrandIcon name="whatsapp" class="size-4" />
       </a>
       <a
-        href={facts.telegram}
+        href={facts.telegramUser ? `https://t.me/${facts.telegramUser}` : facts.telegram}
         target="_blank"
         rel="noopener"
         aria-label={lang === "ru" ? "Написать в Telegram" : "Message us on Telegram"}

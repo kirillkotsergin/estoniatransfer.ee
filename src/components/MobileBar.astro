@@ -22,7 +22,8 @@ interface Props {
 }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-const btn = "flex min-h-12 items-center justify-center gap-2 rounded-2xl px-4 font-semibold";
+const tgHref = facts.telegramUser ? `https://t.me/${facts.telegramUser}` : facts.telegram;
+const btn ="flex min-h-12 items-center justify-center gap-2 rounded-2xl px-4 font-semibold";
 ---
 
 <nav
@@ -36,13 +37,13 @@ const btn = "flex min-h-12 items-center justify-center gap-2 rounded-2xl px-4 fo
       <BrandIcon name="whatsapp" class="size-5 shrink-0" />
       WhatsApp
     </a>
-    <a href={facts.phoneHref} class={`${btn} bg-night text-white active:bg-[#1b2940]`}>
-      <svg viewBox="0 0 24 24" fill="none" class="size-5 shrink-0" aria-hidden="true">
-        <path
-          d="M6.6 3.5h2.9l1.5 3.7-2 1.3a11 11 0 0 0 5 5l1.3-2 3.7 1.5v2.9a1.6 1.6 0 0 1-1.8 1.6A15.6 15.6 0 0 1 5 5.3 1.6 1.6 0 0 1 6.6 3.5Z"
-          fill="currentColor"></path>
-      </svg>
-      {t("fab.call")}
+    {/* Telegram вместо «Позвонить» (02.10.2026, решение владельца). Синий —
+        #1677B8, а не фирменный #2AABEE: белый текст на #2AABEE даёт 2.57,
+        на #1677B8 — 4.81, норма сайта 4.5. Адрес — по имени из
+        facts.telegramUser, его же засчитывает конверсия в Base.astro. */}
+    <a href={tgHref} target="_blank" rel="noopener" class={`${btn} bg-[#1677B8] text-white active:bg-[#136CA8]`}>
+      <BrandIcon name="telegram" class="size-5 shrink-0" />
+      Telegram
     </a>
   </div>
 </nav>
