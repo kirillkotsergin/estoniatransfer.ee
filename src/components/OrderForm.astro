@@ -256,7 +256,6 @@ const label = "block text-[0.85rem] font-semibold text-ink-muted";
     // Поэтому и города в нём русские, на какой бы версии сайта ни заполняли.
     citiesRu: Object.fromEntries(Object.entries(cities).map(([id, v]) => [id, v.ru])),
     labels: {
-      viaMissing: t("form.viaMissing"),
       viaReady: t("form.viaReady"),
       viaCopied: t("form.viaCopied"),
       pick: t("form.pickDate"),
@@ -489,41 +488,33 @@ const label = "block text-[0.85rem] font-semibold text-ink-muted";
     //
     // Обработчик Google Ads в Base.astro ловит тот же клик позже, на document:
     // адрес по-прежнему начинается с wa.me/… или t.me/…, и конверсия
-    // засчитывается. Если поля не заполнены, здесь стоит preventDefault, и
-    // тот обработчик клик пропускает — пустая попытка конверсией не считается.
+    // засчитывается — в том числе при пустой форме.
     var monthsGen = ["января", "февраля", "марта", "апреля", "мая", "июня",
       "июля", "августа", "сентября", "октября", "ноября", "декабря"];
-    var phoneEl = form.querySelector("#of-phone");
     var card = form.closest("[data-order-card]") || document;
 
     function val(f, k) {
       return String(f.get(k) || "").trim();
     }
 
-    // Что не так, или null. Обязательны маршрут, дата и телефон; имя — нет:
-    // человек пишет из своего мессенджера, и кто он, водитель и так видит.
-    function messengerProblem(f) {
-      if (val(f, "from") === val(f, "to")) return { msg: labels.errSame, el: toSel };
-      var missing = [], first = null;
-      if (!val(f, "from") || !val(f, "to")) { missing.push(labels.from + " / " + labels.to); first = first || fromSel; }
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(val(f, "date"))) { missing.push(labels.date); first = first || trigger; }
-      if ((val(f, "phone").match(/\d/g) || []).length < 7) { missing.push(labels.phone); first = first || phoneEl; }
-      if (!missing.length) return null;
-      return { msg: labels.viaMissing + " " + missing.join(", ").toLowerCase() + ".", el: first };
-    }
-
+    // Полей не проверяем вовсе (решение владельца 02.10.2026): человек пишет
+    // из своего мессенджера, и недостающее водитель уточнит в переписке.
+    // В текст идёт только то, что заполнено; пустая форма даёт приветствие.
     function messengerText(f) {
-      var d = val(f, "date").split("-");
       var lines = [
         "Здравствуйте! Заявка на трансфер с сайта estoniatransfer.ee",
         "",
-        "Маршрут: " + citiesRu[val(f, "from")] + " — " + citiesRu[val(f, "to")],
-        "Дата: " + Number(d[2]) + " " + monthsGen[Number(d[1]) - 1] + " " + d[0],
-        "Пассажиров: " + val(f, "pax"),
       ];
+      var from = citiesRu[val(f, "from")], to = citiesRu[val(f, "to")];
+      if (from || to) lines.push("Маршрут: " + (from || "?") + " — " + (to || "?"));
+      if (/^\d{4}-\d{2}-\d{2}$/.test(val(f, "date"))) {
+        var d = val(f, "date").split("-");
+        lines.push("Дата: " + Number(d[2]) + " " + monthsGen[Number(d[1]) - 1] + " " + d[0]);
+      }
+      if (val(f, "pax")) lines.push("Пассажиров: " + val(f, "pax"));
       if (f.get("queue")) lines.push("Место в очереди на границе: да, +" + queuePrice + " €");
       if (val(f, "name")) lines.push("Имя: " + val(f, "name"));
-      lines.push("Телефон: " + val(f, "phone"));
+      if (val(f, "phone")) lines.push("Телефон: " + val(f, "phone"));
       if (val(f, "email")) lines.push("Почта: " + val(f, "email"));
       if (locale !== "ru") lines.push("Заполнено на английской версии сайта");
       return lines.join("\n");
@@ -534,13 +525,6 @@ const label = "block text-[0.85rem] font-semibold text-ink-muted";
       var base = isTg ? orderTg : orderWa;
       a.addEventListener("click", function (e) {
         var f = new FormData(form);
-        var problem = messengerProblem(f);
-        if (problem) {
-          e.preventDefault();
-          showMsg(problem.msg, false);
-          if (problem.el) problem.el.focus();
-          return;
-        }
         var text = messengerText(f);
         a.href = base + "?text=" + encodeURIComponent(text);
         // Telegram Desktop и веб-версия иногда не подставляют текст — копия в
